@@ -20,7 +20,11 @@
 - **Markdown 渲染**：标题、列表、表格、引用、脚注、任务列表、删除线、高亮
 - **打印排版**：A4 / Letter / A5，页边距可选；「打印 / 存 PDF」→ 浏览器打印界面 → 另存为 PDF
   - 产出是**矢量文字 PDF**：文字可选中、可搜索、放大不糊，不是截图
-- **数学公式**：LaTeX 子集 → MathML（Chrome 109+ 原生支持，不依赖 KaTeX / MathJax）
+- **数学公式**：内联 **Temml 0.14**（MIT）把 LaTeX 转成 MathML
+  - 覆盖 amsmath / amssymb 的绝大多数命令：`\lesssim` `\geqslant` `\twoheadrightarrow` `\boxed` `\cancel` `\overrightarrow` `\operatorname` `\color` `\begin{aligned}` …
+  - 输出仍是 MathML，靠浏览器原生排版，**不引入任何字体文件**；打印/导出照样是矢量文字
+  - Temml 也认不出的冷门写法会退回内置的简易解析器，最差是原样显示命令名，不会整段丢内容
+- **化学式**：`\ce{H2SO4}`、`\ce{2H2 + O2 -> 2H2O}`、`\ce{N2(g) + 3H2(g) <=> 2NH3(g)}`、`\ce{2H2O2 ->[MnO2] 2H2O + O2}`、`\ce{CuSO4.5H2O}`、`\ce{SO4^2-}`；单位 `\pu{1.0e-3 mol/L}`。自带轻量转换，不需要 mhchem
 - **内嵌 SVG**：正文里直接写 `<svg>`，打印保持真矢量
 - **渲染型围栏**（本版新增）：
   - ```` ```svg ```` 围栏内容渲染成矢量图
@@ -50,6 +54,13 @@
 
 渲染型围栏与原始 HTML 都会经过过滤：`<script>`、`onclick` 等事件属性、外链 `url()`、`@import` 都会被移除，
 避免载入外部资源或执行脚本。仅用于可信来源的文档排版。
+
+运行时不发任何网络请求：Markdown 解析、公式转换、字体、设置与历史全部在本机完成
+（Temml、KaTeX 之类的库都**已内联进这一个文件**，不是 CDN 引用）。
+
+## 第三方组件
+
+- [Temml](https://temml.org) 0.14.0 — LaTeX → MathML，MIT License，已内联（含许可证全文），见 [THIRD-PARTY.md](THIRD-PARTY.md)
 
 ## 许可证
 
