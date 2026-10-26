@@ -44,7 +44,10 @@ not follow you between entries — pick one and stick with it.
   Everything sits in the browser's IndexedDB; nothing is uploaded.
 - **Seven UI languages** — 简体中文 · 繁體中文 · 日本語 · 한국어 · Deutsch · Français · English.
   Detected from your browser on first load, switchable from the 🌐 dropdown in the toolbar, and the built-in
-  sample document follows the language as well.
+  sample document follows the language as well (each language has its own hand-written sample, not machine output).
+  Switching language **reloads the page** by default so every label, menu and sample is rebuilt cleanly, and swaps
+  the sample to the new language; both behaviours can be switched off in Settings, and the seven accent-colour
+  presets are translated too.
 
 ## Usage
 
