@@ -4100,7 +4100,9 @@ function buildStandaloneHtml(o){
       md = sampleTextFor(newLang);
       editor.value = md;
       render.lastKey = null;
-      scheduleSave();
+      saveDocNow();          /* 同步落盘：下面如果整页刷新，防抖保存会被掐掉 */
+    } else {
+      saveDocNow();
     }
     if (state.langReload !== false){
       saveCfg();                    /* 同步写 localStorage，刷新后 init 直接读到新语言 */
@@ -5063,14 +5065,36 @@ function buildStandaloneHtml(o){
     toast(t('已存 {0}（Markdown 源码）。要 PDF 请点「打印 / 存 PDF」', docTitle() + '.md'));
   });
 
-  /* 示例文档：每种界面语言各一份（#sampleDoc 是简体中文原版，其余是 #sampleDoc-<lang>） */
+  /* 示例文档：每种界面语言各一份。
+     注意 #sampleDoc 是简体中文原版（没有 -zh-CN 后缀），这里必须显式映射，
+     否则 zh-CN 会一路回退到英文示例——这就是「示例没成功」的那个 bug。 */
+  var SAMPLE_ID = { 'zh-CN': 'sampleDoc' };
+  function sampleElFor(lang){
+    var id = SAMPLE_ID[lang] || ('sampleDoc-' + lang);
+    return document.getElementById(id) ||
+           document.getElementById('sampleDoc-' + lang) ||
+           document.getElementById('sampleDoc') ||
+           document.getElementById('sampleDoc-en');
+  }
   function sampleTextFor(lang){
-    var el = document.getElementById('sampleDoc-' + lang) ||
-             document.getElementById('sampleDoc-en') ||
-             document.getElementById('sampleDoc');
+    var el = sampleElFor(lang);
     return el ? el.textContent.replace(/^\n/, '') : '';
   }
   function sampleText(){ return sampleTextFor(currentLang()); }
+  /* 这段内容是不是「某个语言的示例」？用于判断能不能安全地自动换语言 */
+  function isAnySample(text){
+    if (!text || !text.trim()) return false;
+    var langs = ['zh-CN'].concat(LANG_IDS.filter(function(x){ return x !== 'zh-CN'; }));
+    for (var i = 0; i < langs.length; i++){
+      if (sampleTextFor(langs[i]) === text) return true;
+    }
+    return false;
+  }
+  /* 立即把文档写进 localStorage（重载前必须用这个，scheduleSave 是 600ms 防抖，刷新会把它掐掉） */
+  function saveDocNow(){
+    clearTimeout(saveTimer);
+    try { localStorage.setItem(LS_DOC, md); } catch (e) {}
+  }
 
   /* 载入示例会覆盖当前内容，先问一声 */
   async function loadSample(){
@@ -5356,6 +5380,9 @@ function buildStandaloneHtml(o){
 
     var savedDoc = null;
     try { savedDoc = localStorage.getItem(LS_DOC); } catch (e) {}
+    /* 上次存的正好是某个语言的示例 → 换成当前语言的示例；
+       否则换语言后整页刷新回来，示例还是旧语言那份（这就是「示例没跟着换」的第二个 bug） */
+    if (savedDoc && state.langSample !== false && isAnySample(savedDoc)) savedDoc = null;
     md = (savedDoc && savedDoc.trim()) ? savedDoc : sampleText();
     editor.value = md;
     render();
