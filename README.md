@@ -62,6 +62,13 @@
 
 - [Temml](https://temml.org) 0.14.0 — LaTeX → MathML，MIT License，已内联（含许可证全文），见 [THIRD-PARTY.md](THIRD-PARTY.md)
 
+## 相关项目
+
+- **[md2pdf-authoring](https://github.com/w32394045-dotcom/md2pdf-authoring)** —— 配套的 AI Skill（通用）。
+  教 AI 正确使用这个工具，并写出「公式、化学式、图表都渲染正确、打印不出血」的 Markdown：
+  公式与 `\ce` 化学式规范、渲染型围栏画图、表格与分页版式、`scripts/check_md.py` 交付前自检。
+  想让 AI 帮你出讲义 / 题包 / 技术文档，先装它，能少踩一大堆排版坑。
+
 ## 许可证
 
 [MIT](LICENSE) © 2026 w32394045-dotcom
