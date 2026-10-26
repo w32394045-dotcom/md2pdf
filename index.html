@@ -237,7 +237,7 @@ button,input,select,textarea{font-family:inherit}
 .markdown-body thead th{background:var(--doc-quote);font-weight:600}
 .markdown-body img{max-width:100%;height:auto;border-radius:8px}
 .markdown-body hr{border:0;border-top:1px solid var(--doc-line);margin:1.9em 0}
-.markdown-body mark{background:#ffe98a;color:#3a2c00;padding:0 .16em;border-radius:3px}
+.markdown-body mark{background:var(--doc-mark,#ffe98a);color:var(--doc-mark-ink,#3a2c00);padding:0 .16em;border-radius:3px}
 .markdown-body kbd{font-family:var(--doc-mono);font-size:.85em;border:1px solid var(--doc-line);border-bottom-width:2px;border-radius:5px;padding:.1em .4em;background:var(--doc-code)}
 .markdown-body sup.fn-ref a{text-decoration:none;font-size:.8em;padding:0 .1em}
 .markdown-body .footnotes{margin-top:2.4em;font-size:.92em;color:var(--doc-muted)}
@@ -258,6 +258,18 @@ button,input,select,textarea{font-family:inherit}
 .markdown-body pre code .tok-meta{color:var(--tok-meta)}
 .markdown-body pre code .tok-add{color:var(--tok-add);background:var(--tok-add-bg);display:inline-block;width:100%}
 .markdown-body pre code .tok-del{color:var(--tok-del);background:var(--tok-del-bg);display:inline-block;width:100%}
+
+/* ---------- 主题色选择器 ---------- */
+.accent-wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;padding:6px 0 2px}
+#accentWheel{width:168px;height:168px;touch-action:none;cursor:crosshair;flex:0 0 auto}
+.accent-side{flex:1;min-width:150px;display:flex;flex-direction:column;gap:8px}
+.accent-row{display:flex;align-items:center;gap:8px}
+.accent-swatch{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);flex:0 0 auto;background:#2f6fed}
+.accent-hex{flex:1;min-width:0;min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:9px;
+  background:var(--panel);color:var(--text);font-family:ui-monospace,monospace;font-size:13px;letter-spacing:.02em}
+.accent-hex:focus{outline:2px solid var(--accent);outline-offset:1px}
+.accent-range{flex:1;min-width:0;accent-color:var(--accent)}
+.accent-tip{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
 
 /* ---------- 渲染型围栏（```html / ```css / ```svg） ---------- */
 .markdown-body .md-render{margin:1.1em 0}
@@ -370,8 +382,28 @@ button,input,select,textarea{font-family:inherit}
     <div class="setting"><label>字号</label><div class="seg" data-key="size">
       <button data-val="14">小</button><button data-val="16">中</button><button data-val="18">大</button></div></div>
     <label class="chk"><input type="checkbox" id="optSoftBreak"> 单个换行就换行（中文习惯）</label>
-    <label class="chk"><input type="checkbox" id="optToc"> 生成目录</label>
     <label class="chk"><input type="checkbox" id="optHl"> 代码块语法高亮</label>
+  </div>
+
+  <div class="grp"><h4>目录</h4>
+    <label class="chk"><input type="checkbox" id="optToc"> 生成目录</label>
+    <div class="setting"><label>层级</label><div class="seg" data-key="tocDepth">
+      <button data-val="1">H1</button><button data-val="2">H1–H2</button><button data-val="3">H1–H3</button><button data-val="6">全部</button></div></div>
+  </div>
+
+  <div class="grp"><h4>主题色</h4>
+    <div class="accent-wrap">
+      <canvas id="accentWheel" width="336" height="336" aria-label="主题色色环"></canvas>
+      <div class="accent-side">
+        <div class="accent-row">
+          <span class="accent-swatch" id="accentSwatch"></span>
+          <input type="text" class="accent-hex" id="accentHex" value="#2F6FED" spellcheck="false" autocomplete="off" aria-label="主题色色值">
+        </div>
+        <div class="setting"><label>明度</label>
+          <input type="range" id="accentVal" class="accent-range" min="0" max="100" value="100"></div>
+        <p class="accent-tip">拖动色环上的圆点选色（可以拖到任意位置，不限于那些小点）；也能直接改上面的色值。它控制引用块竖杠、链接、目录高亮等强调色。</p>
+      </div>
+    </div>
   </div>
 
   <div class="grp"><h4>打印</h4>
@@ -623,7 +655,10 @@ $$
 
 在「⚙️ 设置」里可以调：
 
-- **排版**：主题、字号、单个换行就换行（中文习惯）、自动目录、代码块语法高亮
+- **排版**：主题、字号、单个换行就换行（中文习惯）、代码块语法高亮
+- **目录**：是否生成目录，以及目录收录到第几级标题（H1 / H1–H2 / H1–H3 / 全部）
+- **主题色**：色环拖动选色（可拖到任意位置），或直接输入 `#RRGGBB` 色值；另有明度滑块。
+  它控制引用块左侧竖杠、引用块背景、链接、目录高亮、任务框勾选等强调色，导出 HTML 时一并带上
 - **打印**：纸张 A4 / Letter / A5、页边距、链接后附网址
 - **字体**：正文和代码都能换成自己导入的字体
 - **公式**：可以整体关掉 LaTeX 解析
@@ -2505,6 +2540,7 @@ function buildStandaloneHtml(o){
   var state = {
     theme:'light', size:16, paper:'A4', margins:'normal',
     softBreak:true, toc:true, linkUrl:false, math:true, hl:true,
+    tocDepth:3, accent:'#2F6FED',
     fontBody:'', fontMono:''
   };
   var md = '';
@@ -2774,8 +2810,10 @@ function buildStandaloneHtml(o){
     var hs = preview.querySelectorAll('h1,h2,h3,h4,h5,h6');
     if (!hs.length) return;
     var html = '<nav class="toc"><div class="toc-title">目录</div><ol>', depth = 0;
+    var maxLv = state.tocDepth || 3;
     for (var i = 0; i < hs.length; i++){
       var h = hs[i], lv = +h.tagName.charAt(1);
+      if (lv > maxLv) continue;
       /* 解析器现在一定会给标题写 id（slug 形式），直接复用——
          这样目录锚点和正文里的 [x](#锚点) 指的是同一处，不会各写各的 */
       if (!h.id) h.id = 'h-' + (i + 1);
@@ -2789,7 +2827,7 @@ function buildStandaloneHtml(o){
   }
 
   function render(){
-    var key = md + '\u0000' + state.softBreak + '\u0000' + state.toc + '\u0000' + state.math + '\u0000' + state.hl + '\u0000' + imgStamp;
+    var key = md + '\u0000' + state.softBreak + '\u0000' + state.toc + '\u0000' + state.math + '\u0000' + state.hl + '\u0000' + state.tocDepth + '\u0000' + imgStamp;
     if (key === render.lastKey){ return; }
     render.lastKey = key;
     try {
@@ -2838,6 +2876,154 @@ function buildStandaloneHtml(o){
     }, 600);
   }
 
+  /* -------- 主题色：色环 + 色值 -------- */
+  function parseHexColor(v){
+    var s = String(v == null ? '' : v).trim().replace(/^#/, '');
+    if (s.length === 3) s = s.charAt(0)+s.charAt(0)+s.charAt(1)+s.charAt(1)+s.charAt(2)+s.charAt(2);
+    if (!/^[0-9a-fA-F]{6}$/.test(s)) return null;
+    return { r:parseInt(s.slice(0,2), 16), g:parseInt(s.slice(2,4), 16), b:parseInt(s.slice(4,6), 16) };
+  }
+  function rgbToHex(r, g, b){
+    function hx(v){ v = Math.max(0, Math.min(255, Math.round(v))); return ('0' + v.toString(16)).slice(-2); }
+    return '#' + hx(r) + hx(g) + hx(b);
+  }
+  function rgbToHsv(c){
+    var r = c.r / 255, g = c.g / 255, b = c.b / 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, hh = 0;
+    if (d){
+      if (mx === r) hh = ((g - b) / d) % 6;
+      else if (mx === g) hh = (b - r) / d + 2;
+      else hh = (r - g) / d + 4;
+      hh *= 60; if (hh < 0) hh += 360;
+    }
+    return { h:hh, s: mx ? d / mx : 0, v: mx };
+  }
+  function hsvToRgb(hh, ss, vv){
+    hh = ((hh % 360) + 360) % 360;
+    var c = vv * ss, x = c * (1 - Math.abs((hh / 60) % 2 - 1)), m = vv - c, r, g, b;
+    if (hh < 60){ r = c; g = x; b = 0; }
+    else if (hh < 120){ r = x; g = c; b = 0; }
+    else if (hh < 180){ r = 0; g = c; b = x; }
+    else if (hh < 240){ r = 0; g = x; b = c; }
+    else if (hh < 300){ r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+    return { r:(r + m) * 255, g:(g + m) * 255, b:(b + m) * 255 };
+  }
+  function accentRgb(){ return parseHexColor(state.accent) || parseHexColor('#2F6FED'); }
+  function blendToward(base, c, k){          /* k = 强调色所占比例 */
+    return rgbToHex(base.r + (c.r - base.r) * k,
+                    base.g + (c.g - base.g) * k,
+                    base.b + (c.b - base.b) * k);
+  }
+  function quoteTint(c){
+    return state.theme === 'dark' ? blendToward({ r:31, g:35, b:42 }, c, 0.14)
+                                  : blendToward({ r:255, g:255, b:255 }, c, 0.07);
+  }
+  /* 色环：极坐标铺点阵（角度=色相，半径=饱和度），中心趋白、边缘饱和。
+     拖动不受这些点限制——整块圆面任意位置都能取色。 */
+  function drawAccentWheel(){
+    var cv = $('#accentWheel');
+    if (!cv || !cv.getContext) return;
+    var g = cv.getContext('2d'), W = cv.width, Hh = cv.height;
+    var cx = W / 2, cy = Hh / 2, R = Math.min(W, Hh) / 2 - 12;
+    g.clearRect(0, 0, W, Hh);
+    var rings = 12;
+    for (var ri = 1; ri <= rings; ri++){
+      var rad = R * ri / rings;
+      var count = Math.max(6, Math.round(ri * 4));
+      for (var ai = 0; ai < count; ai++){
+        var ang = (ai / count) * Math.PI * 2 - Math.PI / 2;
+        var x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad;
+        var cc = hsvToRgb((ai / count) * 360, ri / rings, 1);
+        g.fillStyle = rgbToHex(cc.r, cc.g, cc.b);
+        g.beginPath(); g.arc(x, y, Math.max(2.4, R / rings * 0.34), 0, Math.PI * 2); g.fill();
+      }
+    }
+    var hs = rgbToHsv(accentRgb());
+    var a2 = (hs.h / 360) * Math.PI * 2 - Math.PI / 2;
+    var r2 = hs.s * R;
+    var mx = cx + Math.cos(a2) * r2, my = cy + Math.sin(a2) * r2;
+    g.beginPath(); g.arc(mx, my, 10, 0, Math.PI * 2);
+    g.lineWidth = 3; g.strokeStyle = '#fff'; g.stroke();
+    g.beginPath(); g.arc(mx, my, 10, 0, Math.PI * 2);
+    g.lineWidth = 1.5; g.strokeStyle = 'rgba(0,0,0,.5)'; g.stroke();
+    g.beginPath(); g.arc(mx, my, 5.5, 0, Math.PI * 2);
+    g.fillStyle = state.accent; g.fill();
+  }
+  /* 相对亮度 → 前景该用黑还是白 */
+  function inkOn(c){
+    function lin(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+    var L = 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+    return L > 0.55 ? '#0b0d10' : '#ffffff';
+  }
+  /* 界面强调色：深色主题别太暗、浅色主题别太白，保证按钮上的字能看清 */
+  function uiAccent(c, dark){
+    var hsv = rgbToHsv(c);
+    if (dark){ if (hsv.v < 0.62) hsv.v = 0.62; }
+    else { if (hsv.v > 0.88) hsv.v = 0.88; if (hsv.v < 0.32) hsv.v = 0.32; }
+    var o = hsvToRgb(hsv.h, hsv.s, hsv.v);
+    return rgbToHex(o.r, o.g, o.b);
+  }
+  /* 边框/分隔线：在中性灰上薄薄带一点主色 */
+  function lineTint(c, dark){
+    var base = dark ? { r:43, g:48, b:55 } : { r:224, g:228, b:234 };
+    return blendToward(base, c, dark ? 0.24 : 0.16);
+  }
+  /* ==高亮== 底色：始终压在浅色一侧，保证深色字能读 */
+  function markTint(c){
+    var k = rgbToHsv(c).v < 0.5 ? 0.28 : 0.18;
+    return blendToward({ r:255, g:255, b:255 }, c, k);
+  }
+  /* 打印安全色：墨水要够深，浅黄之类的强调色印出来会看不见 */
+  function printAccent(c){
+    var hsv = rgbToHsv(c);
+    if (hsv.v > 0.72) hsv.v = 0.72;
+    if (hsv.s < 0.25 && hsv.v > 0.55) hsv.v = 0.55;
+    var o = hsvToRgb(hsv.h, hsv.s, hsv.v);
+    return rgbToHex(o.r, o.g, o.b);
+  }
+  /* 打印覆盖样式必须排在 docCss 之后且带 !important，才压得住它自带的 @media print */
+  function applyPrintAccent(){
+    var st = document.getElementById('accentPrintCss');
+    if (!st){
+      st = document.createElement('style');
+      st.id = 'accentPrintCss';
+      document.head.appendChild(st);
+    }
+    var pa = printAccent(accentRgb());
+    var pc = parseHexColor(pa);
+    st.textContent = '@media print{html .markdown-body{' +
+      '--doc-accent:' + pa + ' !important;' +
+      '--doc-quote:' + blendToward({ r:255, g:255, b:255 }, pc, 0.07) + ' !important;' +
+      '--doc-line:' + lineTint(pc, false) + ' !important' +
+      '}}';
+  }
+  function applyAccent(){
+    var c = accentRgb();
+    var dark = state.theme === 'dark';
+    var root = document.documentElement.style;
+    var mk = markTint(c);
+    root.setProperty('--doc-accent', state.accent);   /* 链接 / 引用竖杠 / 任务框 / 目录高亮 */
+    root.setProperty('--doc-quote', quoteTint(c));    /* 引用块底 / 表头底 / 目录底 */
+    root.setProperty('--doc-line', lineTint(c, dark));/* 标题下划线 / 表格边框 / 分隔线 */
+    root.setProperty('--doc-mark', mk);               /* ==高亮== 底色 */
+    root.setProperty('--doc-mark-ink', inkOn(parseHexColor(mk)));
+    var ui = uiAccent(c, dark);                       /* 界面自身（按钮/标签/焦点框/勾选框） */
+    root.setProperty('--accent', ui);
+    root.setProperty('--accent-ink', inkOn(parseHexColor(ui)));
+    var sw = $('#accentSwatch'); if (sw) sw.style.background = state.accent;
+    var hx = $('#accentHex');
+    if (hx && document.activeElement !== hx) hx.value = String(state.accent).toUpperCase();
+    var rv = $('#accentVal');
+    if (rv && document.activeElement !== rv) rv.value = Math.round(rgbToHsv(c).v * 100);
+    drawAccentWheel();
+    applyPrintAccent();
+  }
+  function setAccentHsv(hh, ss, vv){
+    var c = hsvToRgb(hh, ss, vv);
+    state.accent = rgbToHex(c.r, c.g, c.b);
+  }
+
   /* -------- 应用设置 -------- */
   var MARGINS = { narrow:'12mm 10mm', normal:'18mm 16mm', wide:'24mm 20mm' };
   function applySettings(){
@@ -2846,6 +3032,7 @@ function buildStandaloneHtml(o){
     root.setProperty('--doc-size', state.size + 'px');
     root.setProperty('--doc-print-size', (state.size * 0.75).toFixed(2) + 'pt');
     applyFontVars();
+    applyAccent();
     pageRule.textContent = '@page{size:' + state.paper + ';margin:' + MARGINS[state.margins] + '}';
     document.body.classList.toggle('link-url', !!state.linkUrl);
     document.querySelectorAll('.seg').forEach(function(seg){
@@ -2927,6 +3114,11 @@ function buildStandaloneHtml(o){
     /* 必须拼在 docCss 后面：同特异性下后写的赢，否则会被 docCss 自带的 :root 打回默认值 */
     var override = ':root{--doc-size:' + state.size + 'px;' +
       '--doc-print-size:' + (state.size * 0.75).toFixed(2) + 'pt;' +
+      '--doc-accent:' + state.accent + ';' +
+      '--doc-quote:' + quoteTint(accentRgb()) + ';' +
+      '--doc-line:' + lineTint(accentRgb(), false) + ';' +
+      '--doc-mark:' + markTint(accentRgb()) + ';' +
+      '--doc-mark-ink:' + inkOn(parseHexColor(markTint(accentRgb()))) + ';' +
       '--doc-font:' + (document.documentElement.style.getPropertyValue('--doc-font') || FONT_SANS) + ';' +
       '--doc-mono:' + (document.documentElement.style.getPropertyValue('--doc-mono') || FONT_MONO) + '}';
 
@@ -2999,7 +3191,7 @@ function buildStandaloneHtml(o){
     seg.addEventListener('click', function(ev){
       var b = ev.target.closest('button'); if (!b) return;
       var key = seg.getAttribute('data-key'), val = b.getAttribute('data-val');
-      state[key] = (key === 'size') ? parseInt(val, 10) : val;
+      state[key] = (key === 'size' || key === 'tocDepth') ? parseInt(val, 10) : val;
       saveCfg(); applySettings(); flushRender();
     });
   });
@@ -3017,6 +3209,61 @@ function buildStandaloneHtml(o){
       render.lastKey = null; flushRender();
     });
   });
+
+  /* -------- 主题色交互：色环拖动 / 色值输入 / 明度 -------- */
+  (function(){
+    var cv = $('#accentWheel');
+    if (cv){
+      var dragging = false;
+      function pick(ev){
+        var r = cv.getBoundingClientRect();
+        var px = (ev.clientX - r.left) / r.width * cv.width;
+        var py = (ev.clientY - r.top) / r.height * cv.height;
+        var cx = cv.width / 2, cy = cv.height / 2;
+        var R = Math.min(cv.width, cv.height) / 2 - 12;
+        var dx = px - cx, dy = py - cy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var ss = Math.max(0, Math.min(1, dist / R));
+        var ang = Math.atan2(dy, dx) + Math.PI / 2;          /* 顶端为 0° */
+        var hh = ((ang / (Math.PI * 2)) * 360 + 360) % 360;
+        setAccentHsv(hh, ss, rgbToHsv(accentRgb()).v);
+        saveCfg(); applyAccent();
+      }
+      cv.addEventListener('pointerdown', function(ev){
+        dragging = true;
+        if (cv.setPointerCapture && ev.pointerId != null){ try { cv.setPointerCapture(ev.pointerId); } catch (e) {} }
+        pick(ev); ev.preventDefault();
+      });
+      cv.addEventListener('pointermove', function(ev){ if (dragging){ pick(ev); ev.preventDefault(); } });
+      cv.addEventListener('pointerup', function(){ dragging = false; });
+      cv.addEventListener('pointercancel', function(){ dragging = false; });
+      cv.addEventListener('pointerleave', function(){ dragging = false; });
+    }
+
+    var hx = $('#accentHex');
+    if (hx){
+      hx.addEventListener('input', function(){
+        var c = parseHexColor(this.value);
+        if (!c) return;
+        state.accent = rgbToHex(c.r, c.g, c.b);
+        saveCfg(); applyAccent();
+      });
+      hx.addEventListener('change', function(){
+        var c = parseHexColor(this.value);
+        if (c) state.accent = rgbToHex(c.r, c.g, c.b);
+        saveCfg(); applyAccent(); this.value = String(state.accent).toUpperCase();
+      });
+    }
+
+    var rv = $('#accentVal');
+    if (rv){
+      rv.addEventListener('input', function(){
+        var hs = rgbToHsv(accentRgb());
+        setAccentHsv(hs.h, hs.s, (+this.value) / 100);
+        saveCfg(); applyAccent();
+      });
+    }
+  })();
 
   $('#fontBody').addEventListener('change', function(){
     state.fontBody = this.value; saveCfg(); applyFontVars();
