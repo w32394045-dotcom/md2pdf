@@ -4,12 +4,16 @@
 
 ## 在线使用
 
-| 入口 | 地址 | 说明 |
-|---|---|---|
-| **主站** | **https://md2pdf.xszx.cc.cd** | Cloudflare 部署，日常用这个 |
-| 备用 | https://w32394045-dotcom.github.io/md2pdf/ | GitHub Pages，主站异常时用 |
+**主站：https://md2pdf.xszx.cc.cd** —— 平时用这个就行。
 
-两个地址跑的是同一份 `index.html`，功能完全一致；数据都只存在你自己的浏览器里，所以换地址打开不会串、但历史文件也不共通。
+| 入口 | 地址 | 什么时候用 |
+|---|---|---|
+| **主站** | **https://md2pdf.xszx.cc.cd** | 默认用这个（自建域名，Cloudflare 部署） |
+| 备用 1 | https://md2pdf.w32394045.workers.dev | 同一个 Cloudflare Worker 的原生地址，域名解析出问题时用 |
+| 备用 2 | https://w32394045-dotcom.github.io/md2pdf/ | GitHub Pages，Cloudflare 整体不可用时用 |
+
+三处跑的是同一份 `index.html`（内容逐字节一致），功能完全相同。数据只存在你自己的浏览器里，
+所以换地址打开时设置不会跟过去、历史文件也不共通——认准主站用就好。
 
 ## 功能
 
