@@ -151,7 +151,7 @@ button,input,select,textarea{font-family:inherit}
   /* 顺序要紧：先把所有 pane 打开，再用更高优先级关掉编辑区 */
   .panes{display:block !important;background:none !important;gap:0 !important}
   .pane{display:block !important;background:none !important}
-  .toolbar,.settings,.tabs,.toast,.modal-mask,.no-print{display:none !important}
+  .toolbar,.settings,.tabs,.toast,.modal-mask,.files-pane,.no-print{display:none !important}
   .panes .editor-pane{display:none !important}
   #previewScroll{overflow:visible !important;height:auto !important;padding:0 !important}
   .markdown-body{
@@ -167,6 +167,54 @@ button,input,select,textarea{font-family:inherit}
   opacity:0;pointer-events:none;transition:opacity .22s;max-width:86vw;text-align:center
 }
 .toast.on{opacity:1}
+
+/* ---------- 主题色预设 ---------- */
+.presets{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 6px}
+.preset{
+  display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 12px 0 8px;
+  border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);
+  font-size:13px;cursor:pointer;
+}
+.preset:active{transform:translateY(1px)}
+.preset i{width:15px;height:15px;border-radius:50%;flex:0 0 auto;box-shadow:inset 0 0 0 1px #0002}
+.preset.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);font-weight:600}
+.row-btns{display:flex;flex-wrap:wrap;gap:8px;padding:6px 0 2px}
+
+/* ---------- 历史文件 ---------- */
+.files-pane{min-height:0;display:none;flex-direction:column;overflow:hidden;background:var(--panel);flex:1}
+.files-pane.on{display:flex}
+.files-head{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.files-head .ftitle{font-weight:650;font-size:14px}
+.files-head .fsub{color:var(--muted);font-size:12px}
+.files-list{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 44px}
+.filecard{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;margin:0 0 8px;
+  border:1px solid var(--line);border-radius:11px;background:var(--bg);cursor:pointer;
+}
+.filecard:hover{border-color:var(--accent)}
+.filecard.active{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.filecard .fmain{flex:1;min-width:0}
+.filecard .fname{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filecard .fmeta{color:var(--muted);font-size:12px;margin-top:3px}
+.filecard .fbtns{display:flex;gap:6px;flex:0 0 auto}
+.fbadge{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
+  background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:600;vertical-align:1px;
+}
+@media (max-width:560px){
+  .filecard{flex-wrap:wrap}
+  .filecard .fbtns{width:100%;justify-content:flex-end}
+}
+/* 宽屏默认左右分栏，看历史文件时两栏让位给整块列表 */
+body.show-files .panes{grid-template-columns:1fr !important;background:none !important;gap:0 !important}
+body.show-files .editor-pane,body.show-files .preview-pane{display:none !important}
+/* 上面这条 hide 规则在打印块之后，特异性也一样，所以打印时必须在这里扳回来，
+   否则「开着历史面板按打印」会印出一张白纸 */
+@media print{
+  body.show-files .panes{display:block !important}
+  html body.show-files .preview-pane{display:block !important}
+  .files-pane{display:none !important}
+}
 </style>
 <style id="docCss">
 /* ============================================================
@@ -368,6 +416,7 @@ button,input,select,textarea{font-family:inherit}
   <button class="btn" id="btnOpen">📂 打开</button>
   <button class="btn" id="btnSave" title="保存 Markdown 源码，不是 PDF">💾 存 .md</button>
   <button class="btn" id="btnSample">示例</button>
+  <button class="btn" id="btnFiles" title="历史文件（存在本机数据库里）">🗂 历史</button>
   <span class="spacer"></span>
   <button class="btn icon" id="btnSettings" aria-label="设置" title="设置">⚙️</button>
   <input type="file" id="fileInput" multiple hidden>
@@ -392,6 +441,7 @@ button,input,select,textarea{font-family:inherit}
   </div>
 
   <div class="grp"><h4>主题色</h4>
+    <div class="presets" id="accentPresets"></div>
     <div class="accent-wrap">
       <canvas id="accentWheel" width="336" height="336" aria-label="主题色色环"></canvas>
       <div class="accent-side">
@@ -401,8 +451,20 @@ button,input,select,textarea{font-family:inherit}
         </div>
         <div class="setting"><label>明度</label>
           <input type="range" id="accentVal" class="accent-range" min="0" max="100" value="100"></div>
-        <p class="accent-tip">拖动色环上的圆点选色（可以拖到任意位置，不限于那些小点）；也能直接改上面的色值。它控制引用块竖杠、链接、目录高亮等强调色。</p>
+        <p class="accent-tip">上面几套是预设，点一下就换；想自己调就拖色环上的圆点（可以拖到任意位置，不限于那些小点），也能直接改色值。它控制引用块竖杠、链接、目录高亮等强调色。</p>
+        <div class="row-btns">
+          <button class="btn mini" id="btnAccentReset">↺ 重置主题色</button>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <div class="grp"><h4>数据</h4>
+    <p class="accent-tip" id="dbInfo">设置和历史文件都存本机数据库（IndexedDB），不上传、不联网。</p>
+    <div class="row-btns">
+      <button class="btn mini" data-files-act="save">＋ 存一份到历史</button>
+      <button class="btn mini" id="btnCfgReset">↺ 恢复全部默认设置</button>
+      <button class="btn mini danger" data-files-act="clear">清空历史</button>
     </div>
   </div>
 
@@ -458,6 +520,7 @@ button,input,select,textarea{font-family:inherit}
 <nav class="tabs">
   <button class="tab on" data-pane="edit">编辑</button>
   <button class="tab" data-pane="preview">预览</button>
+  <button class="tab" data-pane="files">历史</button>
   <span class="stats" id="stats"></span>
 </nav>
 
@@ -467,6 +530,17 @@ button,input,select,textarea{font-family:inherit}
   </section>
   <section class="pane preview-pane" id="panePreview">
     <div id="previewScroll"><article class="markdown-body" id="preview"></article></div>
+  </section>
+  <section class="files-pane" id="paneFiles">
+    <div class="files-head">
+      <span class="ftitle">🗂 历史文件</span>
+      <span class="fsub" id="filesMeta"></span>
+      <span class="spacer"></span>
+      <button class="btn mini" data-files-act="save">＋ 存一份</button>
+      <button class="btn mini danger" data-files-act="clear">清空</button>
+      <button class="btn mini" id="btnFilesClose">✕ 关闭</button>
+    </div>
+    <div class="files-list" id="filesList"></div>
   </section>
 </main>
 
@@ -493,6 +567,7 @@ button,input,select,textarea{font-family:inherit}
 1. 点「📂 打开」选一个 `.md` 文件，或者直接在「编辑」页里打字 / 粘贴。
 2. 切到「预览」看排版效果（屏幕宽的时候左右分栏，边写边看）。
 3. 点「🖨 打印 / PDF」，在系统打印界面把目标改成 **另存为 PDF** 保存。
+4. 想看之前写过的？点顶栏「🗂 历史」，里面是自动存下来的本地副本，可以打开或删除。
 
 > 导出的是真正的矢量文字 PDF：文字可以选中、搜索、复制，放大不会糊，体积也小。不是截图拼出来的。
 
@@ -657,11 +732,20 @@ $$
 
 - **排版**：主题、字号、单个换行就换行（中文习惯）、代码块语法高亮
 - **目录**：是否生成目录，以及目录收录到第几级标题（H1 / H1–H2 / H1–H3 / 全部）
-- **主题色**：色环拖动选色（可拖到任意位置），或直接输入 `#RRGGBB` 色值；另有明度滑块。
-  它控制引用块左侧竖杠、引用块背景、链接、目录高亮、任务框勾选等强调色，导出 HTML 时一并带上
+- **主题色**：上面一排预设点一下就换；想自己调就拖色环（可拖到任意位置），或直接输入 `#RRGGBB` 色值，另有明度滑块；「↺ 重置主题色」回到默认蓝。
+  它控制引用块左侧竖杠、引用块背景、链接、表头底色、标题下划线、目录高亮、任务框勾选等强调色，导出 HTML 时一并带上
 - **打印**：纸张 A4 / Letter / A5、页边距、链接后附网址
 - **字体**：正文和代码都能换成自己导入的字体
 - **公式**：可以整体关掉 LaTeX 解析
+- **数据**：设置和历史文件都存在浏览器本地数据库里；可以「＋ 存一份到历史」，也可以「↺ 恢复全部默认设置」
+
+### 历史文件（存在本机数据库）
+
+顶栏「🗂 历史」会列出你在这个浏览器里写过的文档：标题、最后修改时间、字数、占用空间。点一张卡片直接打开继续写，卡片上的「删除」只删那一条，「清空」会删掉全部（删之前都会先确认）。
+
+文档不用手动存：打字停下约两秒就会自动更新当前这一条的快照，所以关掉页面再回来，历史里还是最新的。最多保留 50 条，超了自动丢最旧的。
+
+> 数据只存在这台设备的浏览器里（IndexedDB），不上传、不联网。换浏览器、换设备、清空站点数据都看不到；无痕窗口里通常直接不可用，此时界面会明确提示，而不是假装存上了。
 
 ### 导入自己的字体
 
@@ -2537,12 +2621,15 @@ function buildStandaloneHtml(o){
   document.head.appendChild(pageRule);
 
   var LS_DOC = 'md2pdf:doc', LS_CFG = 'md2pdf:cfg';
-  var state = {
+  /* 默认值单独放一份：「恢复全部默认」要按它还原，和状态混在一起就没法还原 */
+  var DEFAULTS = {
     theme:'light', size:16, paper:'A4', margins:'normal',
     softBreak:true, toc:true, linkUrl:false, math:true, hl:true,
     tocDepth:3, accent:'#2F6FED',
     fontBody:'', fontMono:''
   };
+  var state = {};
+  for (var dk in DEFAULTS) state[dk] = DEFAULTS[dk];
   var md = '';
 
   /* 系统字体栈 */
@@ -2550,12 +2637,54 @@ function buildStandaloneHtml(o){
   var FONT_SERIF = 'Georgia,"Times New Roman","Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif';
   var FONT_MONO = 'ui-monospace,SFMono-Regular,Menlo,Consolas,"Noto Sans Mono CJK SC","Courier New",monospace';
 
-  /* -------- 设置持久化 -------- */
+  /* -------- 设置持久化 --------
+     两处都写：
+       localStorage —— 同步、打开页面瞬间就能用，不用等异步读；
+       IndexedDB    —— 真正的数据库保存，容量大，也方便以后加导入导出。
+     启动时两份都看，时间戳更新的那份说了算，避免异步读回来把刚改的覆盖掉。 */
+  var LS_CFG_AT = 'md2pdf:cfg:at', LS_DOC_ID = 'md2pdf:docid';
+  function cfgSnapshot(){
+    var o = {};
+    for (var k in DEFAULTS) o[k] = state[k];
+    return o;
+  }
+  function cfgApply(obj){
+    if (!obj) return;
+    for (var k in obj) if (k in DEFAULTS) state[k] = obj[k];
+  }
+  function persistCfgLocal(at){
+    try {
+      localStorage.setItem(LS_CFG, JSON.stringify(cfgSnapshot()));
+      localStorage.setItem(LS_CFG_AT, String(at || Date.now()));
+    } catch (e) {}
+  }
+  function lsCfgAt(){
+    var v = 0;
+    try { v = parseInt(localStorage.getItem(LS_CFG_AT) || '0', 10) || 0; } catch (e) {}
+    return v;
+  }
   try {
     var savedCfg = JSON.parse(localStorage.getItem(LS_CFG) || 'null');
-    if (savedCfg) for (var kk in savedCfg) if (kk in state) state[kk] = savedCfg[kk];
+    if (savedCfg) for (var kk in savedCfg) if (kk in DEFAULTS) state[kk] = savedCfg[kk];
   } catch (e) {}
-  function saveCfg(){ try { localStorage.setItem(LS_CFG, JSON.stringify(state)); } catch (e) {} }
+  var cfgDbTimer = null;
+  function saveCfg(){
+    var at = Date.now();
+    persistCfgLocal(at);
+    clearTimeout(cfgDbTimer);
+    cfgDbTimer = setTimeout(function(){
+      dbWrite(DB_STORE_KV, { id:'cfg', at:at, v:1, cfg: cfgSnapshot() }).catch(function() {});
+    }, 450);
+  }
+  /* 数据库里那份比 localStorage 新 —— 多半是上次异步写还没落地就关了页面 */
+  async function hydrateCfg(){
+    var rec = await dbReadOne(DB_STORE_KV, 'cfg');
+    if (!rec || !rec.cfg) return false;
+    if ((rec.at || 0) <= lsCfgAt()) return false;
+    cfgApply(rec.cfg);
+    persistCfgLocal(rec.at);
+    return true;
+  }
 
   /* -------- 提示 -------- */
   var toastTimer = null;
@@ -2614,10 +2743,14 @@ function buildStandaloneHtml(o){
   }
 
   /* =====================================================================
-     字体库：IndexedDB 存字体文件，用 FontFace 注册
-     IndexedDB 不可用时降级成内存态（本次会话有效，刷新即失效）
+     IndexedDB：三个仓库
+       fonts —— 导入的字体文件
+       docs  —— 历史文件（办公室软件那种「最近打开」）
+       kv    —— 设置快照
+     整个数据库不可用时降级：字体进内存态，历史文件不落盘（会明确提示）
      ===================================================================== */
-  var DB_NAME = 'md2pdf', DB_STORE = 'fonts', DB_VER = 1;
+  var DB_NAME = 'md2pdf', DB_VER = 2;
+  var DB_STORE = 'fonts', DB_STORE_DOCS = 'docs', DB_STORE_KV = 'kv';
   var fontRecs = [];          /* {id, family, name, ext, size, data} */
   var memOnly = [];           /* 降级存储 */
   var dbPromise = null, dbWarned = false;
@@ -2633,6 +2766,8 @@ function buildStandaloneHtml(o){
       req.onupgradeneeded = function(){
         var db = req.result;
         if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE, { keyPath:'id' });
+        if (!db.objectStoreNames.contains(DB_STORE_DOCS)) db.createObjectStore(DB_STORE_DOCS, { keyPath:'id' });
+        if (!db.objectStoreNames.contains(DB_STORE_KV)) db.createObjectStore(DB_STORE_KV, { keyPath:'id' });
       };
       req.onsuccess = function(){ res(req.result); };
       req.onerror = function(){ res(null); };
@@ -2640,50 +2775,93 @@ function buildStandaloneHtml(o){
     });
     return dbPromise;
   }
-  function dbAll(){
+
+  /* ---- 通用读写：拿不到数据库时返回 null / false，由调用方决定怎么降级 ---- */
+  function dbReadAll(store){
     return openDB().then(function(db){
-      if (!db) return memOnly.slice();
+      if (!db) return null;
       return new Promise(function(res){
         try {
-          var out = [], tx = db.transaction(DB_STORE, 'readonly');
-          var cur = tx.objectStore(DB_STORE).openCursor();
+          var out = [], tx = db.transaction(store, 'readonly');
+          var cur = tx.objectStore(store).openCursor();
           cur.onsuccess = function(){
             var c = cur.result;
             if (c){ out.push(c.value); c.continue(); } else res(out);
           };
           cur.onerror = function(){ res(out); };
-        } catch (e){ res(memOnly.slice()); }
+        } catch (e){ res(null); }
       });
-    }).catch(function(){ return memOnly.slice(); });
+    }).catch(function(){ return null; });
   }
-  function dbPut(rec){
+  function dbReadOne(store, id){
     return openDB().then(function(db){
-      if (!db){
-        if (!dbWarned){ dbWarned = true; toast('浏览器不支持本地数据库，字体只在本次会话有效'); }
-        memOnly.push(rec);
-        return;
-      }
+      if (!db) return null;
       return new Promise(function(res){
         try {
-          var tx = db.transaction(DB_STORE, 'readwrite');
-          tx.objectStore(DB_STORE).put(rec);
-          tx.oncomplete = function(){ res(); };
-          tx.onerror = function(){ res(); };
-        } catch (e){ res(); }
+          var req = db.transaction(store, 'readonly').objectStore(store).get(id);
+          req.onsuccess = function(){ res(req.result || null); };
+          req.onerror = function(){ res(null); };
+        } catch (e){ res(null); }
       });
+    }).catch(function(){ return null; });
+  }
+  function dbWrite(store, rec){
+    return openDB().then(function(db){
+      if (!db) return false;
+      return new Promise(function(res){
+        try {
+          var tx = db.transaction(store, 'readwrite');
+          tx.objectStore(store).put(rec);
+          tx.oncomplete = function(){ res(true); };
+          tx.onerror = function(){ res(false); };
+          tx.onabort = function(){ res(false); };
+        } catch (e){ res(false); }
+      });
+    }).catch(function(){ return false; });
+  }
+  function dbRemove(store, id){
+    return openDB().then(function(db){
+      if (!db) return false;
+      return new Promise(function(res){
+        try {
+          var tx = db.transaction(store, 'readwrite');
+          tx.objectStore(store).delete(id);
+          tx.oncomplete = function(){ res(true); };
+          tx.onerror = function(){ res(false); };
+        } catch (e){ res(false); }
+      });
+    }).catch(function(){ return false; });
+  }
+  function dbWipe(store){
+    return openDB().then(function(db){
+      if (!db) return false;
+      return new Promise(function(res){
+        try {
+          var tx = db.transaction(store, 'readwrite');
+          tx.objectStore(store).clear();
+          tx.oncomplete = function(){ res(true); };
+          tx.onerror = function(){ res(false); };
+        } catch (e){ res(false); }
+      });
+    }).catch(function(){ return false; });
+  }
+
+  /* ---- 字体库（带内存降级） ---- */
+  function dbAll(){
+    return dbReadAll(DB_STORE).then(function(list){
+      return (list === null) ? memOnly.slice() : list;
+    });
+  }
+  function dbPut(rec){
+    return dbWrite(DB_STORE, rec).then(function(ok){
+      if (ok) return;
+      if (!dbWarned){ dbWarned = true; toast('浏览器不支持本地数据库，字体只在本次会话有效'); }
+      memOnly.push(rec);
     });
   }
   function dbDel(id){
-    return openDB().then(function(db){
-      if (!db){ memOnly = memOnly.filter(function(r){ return r.id !== id; }); return; }
-      return new Promise(function(res){
-        try {
-          var tx = db.transaction(DB_STORE, 'readwrite');
-          tx.objectStore(DB_STORE).delete(id);
-          tx.oncomplete = function(){ res(); };
-          tx.onerror = function(){ res(); };
-        } catch (e){ res(); }
-      });
+    return dbRemove(DB_STORE, id).then(function(ok){
+      if (!ok) memOnly = memOnly.filter(function(r){ return r.id !== id; });
     });
   }
 
@@ -3018,6 +3196,7 @@ function buildStandaloneHtml(o){
     if (rv && document.activeElement !== rv) rv.value = Math.round(rgbToHsv(c).v * 100);
     drawAccentWheel();
     applyPrintAccent();
+    markPresets();   /* 和预设色一致就把那个预设点亮 */
   }
   function setAccentHsv(hh, ss, vv){
     var c = hsvToRgb(hh, ss, vv);
@@ -3165,6 +3344,9 @@ function buildStandaloneHtml(o){
       editor.value = md;
       render.lastKey = null;
       flushRender(); scheduleSave();
+      /* 新打开的 md 另起一条历史，别把上一份覆盖掉 */
+      setCurDocId('');
+      saveSnapshot({ newId:true, silent:true }).catch(function(){});
       document.querySelector('.tab[data-pane="preview"]').click();
       toast('已载入 ' + file.name);
     } catch (e){ toast('读取失败：' + (e && e.message || e)); }
@@ -3173,19 +3355,29 @@ function buildStandaloneHtml(o){
   /* -------- 事件 -------- */
   editor.addEventListener('input', function(){
     md = editor.value;
-    scheduleRender(); scheduleSave();
+    scheduleRender(); scheduleSave(); scheduleSnapshot();
   });
 
-  document.querySelectorAll('.tab').forEach(function(t){
-    t.addEventListener('click', function(){
-      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
-      t.classList.add('on');
-      var pane = t.getAttribute('data-pane');
-      $('#paneEdit').classList.toggle('on', pane === 'edit');
-      $('#panePreview').classList.toggle('on', pane === 'preview');
-      if (pane === 'preview') renderIfDirty();
+  /* 分栏切换：编辑 / 预览 / 历史。宽屏没有标签栏，所以顶栏另有一个「历史」按钮 */
+  function setPane(pane){
+    document.querySelectorAll('.tab').forEach(function(x){
+      x.classList.toggle('on', x.getAttribute('data-pane') === pane);
     });
+    var showFiles = pane === 'files';
+    document.body.classList.toggle('show-files', showFiles);
+    $('#paneEdit').classList.toggle('on', pane === 'edit');
+    $('#panePreview').classList.toggle('on', pane === 'preview');
+    $('#paneFiles').classList.toggle('on', showFiles);
+    if (showFiles) renderFiles();
+    else if (pane === 'preview') renderIfDirty();
+  }
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){ setPane(t.getAttribute('data-pane')); });
   });
+  $('#btnFiles').addEventListener('click', function(){
+    setPane(document.body.classList.contains('show-files') ? 'preview' : 'files');
+  });
+  $('#btnFilesClose').addEventListener('click', function(){ setPane('preview'); });
 
   document.querySelectorAll('.seg').forEach(function(seg){
     seg.addEventListener('click', function(ev){
@@ -3300,8 +3492,12 @@ function buildStandaloneHtml(o){
     return old;
   }
   $('#btnPrint').addEventListener('click', function(){
-    if (!previewVisible()) document.querySelector('.tab[data-pane="preview"]').click();
+    /* 开着历史面板时先切回预览，不然宽屏下预览是隐藏的，会印出白纸 */
+    if (!previewVisible() || document.body.classList.contains('show-files')){
+      document.querySelector('.tab[data-pane="preview"]').click();
+    }
     flushRender();
+    saveSnapshot({ silent:true }).catch(function(){});
     if (typeof window.print !== 'function'){ toast('当前浏览器不支持打印，请用 Chrome / Edge 打开'); return; }
     var old = setPrintTitle();
     try { window.print(); }   /* 同步调用，保住用户手势（部分安卓浏览器要求） */
@@ -3311,6 +3507,7 @@ function buildStandaloneHtml(o){
   window.addEventListener('beforeprint', function(){ if (document.title !== docTitle()) setPrintTitle(); });
 
   $('#btnHtml').addEventListener('click', function(){
+    saveSnapshot({ silent:true }).catch(function(){});
     exportStandalone().catch(function(e){ toast('导出失败：' + (e && e.message || e)); });
   });
 
@@ -3331,6 +3528,7 @@ function buildStandaloneHtml(o){
   });
 
   $('#btnSave').addEventListener('click', function(){
+    saveSnapshot({ silent:true }).catch(function(){});
     download(new Blob([md], { type:'text/markdown;charset=utf-8' }), docTitle() + '.md');
     /* 网页没法自己写出 PDF 文件（这是浏览器的限制，不是没做），
        真 PDF 只能走系统打印——所以这里明确把人指过去，免得以为下错了 */
@@ -3362,10 +3560,243 @@ function buildStandaloneHtml(o){
     else if (k === 'o'){ e.preventDefault(); $('#btnOpen').click(); }
   });
 
+  /* =====================================================================
+     主题预设 / 重置
+     ===================================================================== */
+  var PRESETS = [
+    { name:'默认蓝', c:'#2F6FED' },
+    { name:'墨黑',   c:'#3A4149' },
+    { name:'朱砂',   c:'#C0392B' },
+    { name:'青碧',   c:'#0E8C7F' },
+    { name:'松绿',   c:'#2E7D32' },
+    { name:'琥珀',   c:'#B45309' },
+    { name:'靛紫',   c:'#6D4AC4' }
+  ];
+  function normHex(v){
+    var c = parseHexColor(v);
+    return c ? rgbToHex(c.r, c.g, c.b).toUpperCase() : '';
+  }
+  function buildPresets(){
+    var box = $('#accentPresets'); if (!box) return;
+    box.innerHTML = PRESETS.map(function(p){
+      return '<button type="button" class="preset" data-hex="' + p.c + '">' +
+             '<i style="background:' + p.c + '"></i>' + escapeHtml(p.name) + '</button>';
+    }).join('');
+    box.addEventListener('click', function(ev){
+      var b = ev.target.closest('.preset'); if (!b) return;
+      applyPreset(b.getAttribute('data-hex'));
+    });
+  }
+  function markPresets(){
+    var cur = normHex(state.accent);
+    document.querySelectorAll('#accentPresets .preset').forEach(function(b){
+      b.classList.toggle('on', normHex(b.getAttribute('data-hex')) === cur);
+    });
+  }
+  function applyPreset(hex){
+    var n = normHex(hex);
+    if (!n) return;
+    state.accent = n;
+    saveCfg(); applyAccent(); markPresets();
+  }
+  function resetAccent(){
+    state.accent = DEFAULTS.accent;
+    saveCfg(); applyAccent(); markPresets();
+    toast('主题色已重置为默认');
+  }
+  async function resetAllSettings(){
+    var ok = await confirmDlg('恢复默认设置',
+      '主题、字号、目录、主题色、纸张边距、字体全部恢复默认值。历史文件不受影响。', '恢复默认');
+    if (!ok) return;
+    cfgApply(DEFAULTS);
+    saveCfg();
+    applySettings(); refreshFontUI();
+    render.lastKey = null; flushRender();
+    markPresets();
+    toast('已恢复默认设置');
+  }
+
+  /* =====================================================================
+     历史文件：存进 IndexedDB 的 docs 仓库，像 Office 里的「最近打开」
+     ===================================================================== */
+  var MAX_DOCS = 50;
+  var curDocId = '';
+  try { curDocId = localStorage.getItem(LS_DOC_ID) || ''; } catch (e) {}
+
+  function sampleText(){ return $('#sampleDoc').textContent.replace(/^\n/, ''); }
+  function newDocId(){ return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function byteLen(s){
+    try { if (window.TextEncoder) return new TextEncoder().encode(s).length; } catch (e) {}
+    try { return unescape(encodeURIComponent(s)).length; } catch (e) { return String(s || '').length; }
+  }
+  function setCurDocId(id){
+    curDocId = id || '';
+    try { localStorage.setItem(LS_DOC_ID, curDocId); } catch (e) {}
+  }
+  function fmtWhen(ts){
+    if (!ts) return '时间未知';
+    var d = new Date(ts), now = new Date();
+    var diff = now.getTime() - ts;
+    if (diff < 45000) return '刚刚';
+    if (diff < 3600000) return Math.max(1, Math.floor(diff / 60000)) + ' 分钟前';
+    function p2(n){ return (n < 10 ? '0' : '') + n; }
+    function sameDay(a, b){
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+    var hm = p2(d.getHours()) + ':' + p2(d.getMinutes());
+    if (sameDay(d, now)) return '今天 ' + hm;
+    if (sameDay(d, new Date(now.getTime() - 86400000))) return '昨天 ' + hm;
+    var short = p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + hm;
+    return d.getFullYear() === now.getFullYear() ? short : d.getFullYear() + '-' + short;
+  }
+
+  /* 存一份快照：默认更新「当前这条」，newId 则另起一条 */
+  async function saveSnapshot(opts){
+    opts = opts || {};
+    if (!md.trim()){ if (!opts.silent) toast('文档是空的，没东西可存'); return null; }
+    var id = (opts.newId || !curDocId) ? newDocId() : curDocId;
+    var prev = await dbReadOne(DB_STORE_DOCS, id);
+    var now = Date.now();
+    var s = countStats(md);
+    var rec = {
+      id: id, title: docTitle(), md: md,
+      chars: s.words, lines: s.lines, bytes: byteLen(md),
+      at: now, createdAt: (prev && prev.createdAt) || now
+    };
+    var ok = await dbWrite(DB_STORE_DOCS, rec);
+    if (!ok){
+      if (!opts.silent) toast('存不进本机数据库（浏览器可能禁用了 IndexedDB）');
+      return null;
+    }
+    setCurDocId(id);
+    pruneDocs();
+    refreshDbInfo();
+    if (document.body.classList.contains('show-files')) renderFiles();
+    if (!opts.silent) toast('已存到历史：' + rec.title);
+    return rec;
+  }
+  /* 打字停下 2.6 秒自动存一次；没动过的示例不留历史 */
+  var snapTimer = null;
+  function scheduleSnapshot(){
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(function(){
+      if (!md.trim()) return;
+      if (md === sampleText()) return;
+      saveSnapshot({ silent:true }).catch(function(){});
+    }, 2600);
+  }
+  async function pruneDocs(){
+    var all = await dbReadAll(DB_STORE_DOCS);
+    if (!all || all.length <= MAX_DOCS) return;
+    all.sort(function(a, b){ return (b.at || 0) - (a.at || 0); });
+    var extra = all.slice(MAX_DOCS);
+    for (var i = 0; i < extra.length; i++) await dbRemove(DB_STORE_DOCS, extra[i].id);
+  }
+
+  async function renderFiles(){
+    var list = $('#filesList'); if (!list) return;
+    var all = await dbReadAll(DB_STORE_DOCS);
+    if (all === null){
+      list.innerHTML = '<p class="empty">这个浏览器拿不到本地数据库（无痕/隐私模式常见），历史文件用不了。</p>';
+      $('#filesMeta').textContent = '';
+      return;
+    }
+    all.sort(function(a, b){ return (b.at || 0) - (a.at || 0); });
+    var total = 0;
+    for (var i = 0; i < all.length; i++) total += (all[i].bytes || 0);
+    $('#filesMeta').textContent = all.length ? (all.length + ' 份 · 共 ' + fmtSize(total)) : '';
+    if (!all.length){
+      list.innerHTML = '<p class="empty">还没有历史文件。在这里写的文档会自动存一份；点上面的「＋ 存一份」可以立刻存。</p>';
+      return;
+    }
+    list.innerHTML = all.map(function(d){
+      var active = (d.id === curDocId);
+      return '<div class="filecard' + (active ? ' active' : '') + '" data-id="' + attrEsc(d.id) + '">' +
+        '<div class="fmain">' +
+          '<div class="fname">' + escapeHtml(d.title || '未命名') +
+            (active ? '<span class="fbadge">当前</span>' : '') + '</div>' +
+          '<div class="fmeta">' + fmtWhen(d.at) + ' · ' + (d.chars || 0) + ' 字 · ' + fmtSize(d.bytes || 0) + '</div>' +
+        '</div>' +
+        '<div class="fbtns">' +
+          '<button type="button" class="btn mini" data-act="open">打开</button>' +
+          '<button type="button" class="btn mini danger" data-act="del">删除</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  async function openDoc(id){
+    var d = await dbReadOne(DB_STORE_DOCS, id);
+    if (!d){ toast('这份记录已经不在数据库里了'); renderFiles(); return; }
+    clearTimeout(snapTimer);
+    md = d.md || '';
+    editor.value = md;
+    setCurDocId(d.id);
+    render.lastKey = null;
+    flushRender(); scheduleSave();
+    setPane('preview');
+    toast('已打开「' + (d.title || '未命名') + '」');
+  }
+  async function deleteDoc(id){
+    var d = await dbReadOne(DB_STORE_DOCS, id);
+    var ok = await confirmDlg('删除这份历史文件',
+      '「' + ((d && d.title) || '未命名') + '」会从本机数据库里删掉，删完没法恢复。', '删除');
+    if (!ok) return;
+    await dbRemove(DB_STORE_DOCS, id);
+    if (id === curDocId) setCurDocId('');   /* 编辑器里的内容还在，只是不再绑定这条记录 */
+    renderFiles(); refreshDbInfo();
+    toast('已删除');
+  }
+  async function clearDocs(){
+    var all = await dbReadAll(DB_STORE_DOCS);
+    if (all && !all.length){ toast('历史是空的'); return; }
+    var ok = await confirmDlg('清空历史文件',
+      '把 ' + ((all && all.length) || 0) + ' 份历史文件全部删掉？这个操作没法撤销。编辑器里当前的内容不受影响。', '全部删除');
+    if (!ok) return;
+    await dbWipe(DB_STORE_DOCS);
+    setCurDocId('');
+    renderFiles(); refreshDbInfo();
+    toast('历史已清空');
+  }
+  async function refreshDbInfo(){
+    var el = $('#dbInfo'); if (!el) return;
+    var all = await dbReadAll(DB_STORE_DOCS);
+    if (all === null){
+      el.textContent = '这个浏览器拿不到本地数据库（无痕模式常见），设置只在本次会话有效。';
+      return;
+    }
+    var total = 0;
+    for (var i = 0; i < all.length; i++) total += (all[i].bytes || 0);
+    el.textContent = '设置和历史都存本机数据库（IndexedDB），不上传、不联网。现有 ' +
+      all.length + ' 份历史文件，约 ' + fmtSize(total) + '。';
+  }
+
+  /* 预设 / 重置 / 历史 的事件 */
+  $('#btnAccentReset').addEventListener('click', resetAccent);
+  $('#btnCfgReset').addEventListener('click', function(){ resetAllSettings().catch(function(){}); });
+  document.querySelectorAll('[data-files-act]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var act = b.getAttribute('data-files-act');
+      if (act === 'save') saveSnapshot({ newId:true }).catch(function(){});
+      else if (act === 'clear') clearDocs().catch(function(){});
+    });
+  });
+  $('#filesList').addEventListener('click', function(ev){
+    var card = ev.target.closest('.filecard'); if (!card) return;
+    var id = card.getAttribute('data-id');
+    var btn = ev.target.closest('button[data-act]');
+    if (btn && btn.getAttribute('data-act') === 'del'){ deleteDoc(id).catch(function(){}); return; }
+    openDoc(id).catch(function(){});
+  });
+
   /* -------- 初始化 -------- */
   (async function init(){
     refreshFontUI();
+    buildPresets();
+    /* 数据库里那份通常比 localStorage 新（异步写可能还没落地就关了页面） */
+    try { await hydrateCfg(); } catch (e) {}
     applySettings();
+    markPresets();
+    refreshDbInfo();
 
     var savedDoc = null;
     try { savedDoc = localStorage.getItem(LS_DOC); } catch (e) {}
