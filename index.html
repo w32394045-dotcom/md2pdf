@@ -1,0 +1,3151 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Markdown → PDF</title>
+<style id="appCss">
+:root{
+  --bg:#eef0f4; --panel:#fff; --text:#1b1d21; --muted:#6b7280; --line:#e0e4ea;
+  --accent:#2f6fed; --accent-ink:#fff; --danger:#d64545;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","HarmonyOS Sans SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif;
+  --radius:12px;
+}
+html[data-theme="dark"]{
+  --bg:#15171b; --panel:#1d2025; --text:#e7e9ec; --muted:#98a0ab; --line:#2b3037;
+  --accent:#6690fb; --accent-ink:#0b0d10; --danger:#f07171;
+  /* 预览纸面跟着暗色走；打印时由 docCss 的 @media print 用 !important 扳回黑白 */
+  --doc-bg:#1d2025; --doc-text:#e7e9ec; --doc-muted:#98a0ab; --doc-line:#2b3037;
+  --doc-code:#23272e; --doc-quote:#1f232a; --doc-accent:#6690fb;
+  /* 代码高亮的深色配色（浅色默认值在 docCss 的 :root 里） */
+  --tok-com:#8b949e; --tok-str:#a5d6ff; --tok-num:#79c0ff; --tok-kw:#ff7b72;
+  --tok-fn:#d2a8ff; --tok-typ:#ffa657; --tok-attr:#79c0ff; --tok-var:#ffa657;
+  --tok-tag:#7ee787; --tok-pun:#8b949e; --tok-meta:#d2a8ff;
+  --tok-add:#7ee787; --tok-add-bg:#12261e; --tok-del:#ffa198; --tok-del-bg:#25171c;
+}
+*{box-sizing:border-box}
+html{height:100%}
+body{
+  margin:0; height:100vh; height:100dvh; display:flex; flex-direction:column;
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right);
+  -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent;
+}
+button,input,select,textarea{font-family:inherit}
+
+/* ---------- 顶栏 ---------- */
+.toolbar{display:flex;gap:6px;align-items:center;padding:8px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.btn{
+  min-height:40px;padding:0 13px;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel);color:var(--text);font-size:14px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
+.btn.icon{padding:0 11px;font-size:16px}
+.btn.mini{min-height:32px;padding:0 10px;font-size:13px}
+.btn.danger{color:var(--danger);border-color:var(--line)}
+.spacer{flex:1}
+
+/* ---------- 设置面板 ---------- */
+.settings{background:var(--panel);border-bottom:1px solid var(--line);padding:0 10px 12px;font-size:13px;max-height:56vh;overflow:auto}
+.grp{padding-top:8px}
+.grp>h4{
+  margin:6px 0 2px;font-size:12px;font-weight:600;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.setting{display:flex;align-items:center;gap:10px;padding:7px 0;flex-wrap:wrap}
+.setting>label{min-width:64px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{
+  min-height:36px;padding:0 14px;border:0;background:transparent;color:var(--text);
+  font-size:13px;cursor:pointer;border-right:1px solid var(--line)
+}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.chk{display:flex;align-items:center;gap:8px;padding:7px 0;color:var(--text)}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.sel{
+  flex:1;min-width:150px;min-height:38px;padding:0 10px;font-size:13px;
+  border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);
+}
+.tip{margin:8px 0 0;padding:9px 11px;background:var(--quote-bg,#f7f9fc);border-left:3px solid var(--accent);
+     border-radius:0 8px 8px 0;color:var(--muted);line-height:1.65}
+.fontlist{margin:2px 0 4px}
+.fontrow{
+  display:flex;align-items:center;gap:8px;padding:6px 9px;margin:4px 0;
+  border:1px solid var(--line);border-radius:9px;background:var(--bg);
+}
+.fontrow .fname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fontrow .fmeta{color:var(--muted);font-size:11px;white-space:nowrap}
+.empty{color:var(--muted);padding:5px 2px}
+
+/* 「去哪找免费字体」折叠块 */
+.more{margin:6px 0 2px;font-size:13px}
+.more>summary{
+  cursor:pointer;color:var(--accent);padding:7px 2px;list-style:none;
+  display:flex;align-items:center;gap:6px;min-height:36px;
+}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::before{content:"▸";display:inline-block;transition:transform .15s}
+.more[open]>summary::before{transform:rotate(90deg)}
+.links{margin:2px 0 8px;padding-left:1.35em;line-height:1.75;color:var(--muted)}
+.links li{margin:5px 0}
+.links b{color:var(--text)}
+.warn{
+  margin:6px 0 2px;padding:9px 11px;background:var(--quote-bg,#f7f9fc);
+  border-left:3px solid var(--danger);border-radius:0 8px 8px 0;
+  color:var(--muted);line-height:1.65;
+}
+.warn b{color:var(--danger)}
+
+/* ---------- 标签页 / 分栏 ---------- */
+.tabs{display:flex;align-items:center;gap:6px;padding:7px 8px;background:var(--panel);border-bottom:1px solid var(--line)}
+.tab{min-height:34px;padding:0 16px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:14px;cursor:pointer}
+.tab.on{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
+.stats{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+
+.panes{flex:1;min-height:0;display:grid;grid-template-columns:1fr}
+.pane{min-height:0;display:none;overflow:hidden}
+.pane.on{display:flex;flex-direction:column}
+@media (min-width:900px){
+  .tabs{display:none}
+  .panes{grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+  .pane{display:flex !important;flex-direction:column;background:var(--panel)}
+}
+
+#editor{
+  flex:1;width:100%;border:0;outline:none;resize:none;padding:14px 16px 60px;
+  background:var(--panel);color:var(--text);font-family:var(--doc-mono);font-size:15px;line-height:1.72;tab-size:2;
+}
+#previewScroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:14px}
+@media (max-width:899px){#previewScroll{padding:10px}}
+
+/* 预览区里的文档纸面：用 docCss 的变量，保证「预览 = 打印 = 导出」三者一致 */
+.markdown-body{
+  max-width:860px;margin:0 auto;padding:26px 24px 60px;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--radius);
+}
+
+/* ---------- 确认弹窗 ---------- */
+.modal-mask{
+  position:fixed;inset:0;background:#0006;z-index:120;display:flex;
+  align-items:center;justify-content:center;padding:22px;
+  opacity:0;pointer-events:none;transition:opacity .16s;
+}
+.modal-mask.on{opacity:1;pointer-events:auto}
+.modal{
+  width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:18px 18px 12px;box-shadow:0 18px 50px #0004;
+}
+.modal h3{margin:0 0 8px;font-size:16px}
+.modal p{margin:0 0 14px;color:var(--muted);line-height:1.6;font-size:14px}
+.modal .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+/* ---------- 打印：只留文档本身 ---------- */
+@media print{
+  html,body{height:auto !important;display:block !important;background:#fff !important;padding:0 !important;margin:0 !important}
+  /* 顺序要紧：先把所有 pane 打开，再用更高优先级关掉编辑区 */
+  .panes{display:block !important;background:none !important;gap:0 !important}
+  .pane{display:block !important;background:none !important}
+  .toolbar,.settings,.tabs,.toast,.modal-mask,.no-print{display:none !important}
+  .panes .editor-pane{display:none !important}
+  #previewScroll{overflow:visible !important;height:auto !important;padding:0 !important}
+  .markdown-body{
+    max-width:none !important;margin:0 !important;padding:0 !important;border:0 !important;
+    border-radius:0 !important;background:#fff !important;box-shadow:none !important;
+  }
+}
+
+/* ---------- 提示条 ---------- */
+.toast{
+  position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:#000c;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;z-index:99;
+  opacity:0;pointer-events:none;transition:opacity .22s;max-width:86vw;text-align:center
+}
+.toast.on{opacity:1}
+</style>
+<style id="docCss">
+/* ============================================================
+   文档样式（docCss）——预览、打印、导出三处共用同一份，
+   且不依赖应用外壳的任何变量，导出后单独打开也完全一致。
+   ============================================================ */
+:root{
+  --doc-bg:#fff; --doc-text:#1b1d21; --doc-muted:#6b7280; --doc-line:#e0e4ea;
+  --doc-code:#f4f5f8; --doc-quote:#f7f9fc; --doc-accent:#2f6fed;
+  --doc-font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","HarmonyOS Sans SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif;
+  --doc-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Noto Sans Mono CJK SC","Courier New",monospace;
+  --doc-size:16px;
+  --doc-print-size:12pt;
+  /* 代码高亮配色。默认是浅色一套；深色主题的值在 app.css 里覆盖，
+     打印时由下面 @media print 用 !important 扳回浅色，保证印在纸上清楚 */
+  --tok-com:#6e7781; --tok-str:#0a3069; --tok-num:#0550ae; --tok-kw:#cf222e;
+  --tok-fn:#8250df; --tok-typ:#953800; --tok-attr:#0550ae; --tok-var:#953800;
+  --tok-tag:#116329; --tok-pun:#57606a; --tok-meta:#8250df;
+  --tok-add:#116329; --tok-add-bg:#dafbe1; --tok-del:#82071e; --tok-del-bg:#ffebe9;
+}
+.markdown-body{
+  font-family:var(--doc-font);
+  font-size:var(--doc-size);line-height:1.78;overflow-wrap:break-word;
+  color:var(--doc-text);background:var(--doc-bg);
+}
+.markdown-body>*:first-child{margin-top:0}
+.markdown-body>*:last-child{margin-bottom:0}
+.markdown-body h1,.markdown-body h2,.markdown-body h3,
+.markdown-body h4,.markdown-body h5,.markdown-body h6{font-weight:600;line-height:1.35;margin:1.6em 0 .7em}
+.markdown-body h1{font-size:1.65em;padding-bottom:.3em;border-bottom:2px solid var(--doc-line)}
+.markdown-body h2{font-size:1.35em;padding-bottom:.25em;border-bottom:1px solid var(--doc-line)}
+.markdown-body h3{font-size:1.17em}
+.markdown-body h4{font-size:1.03em}
+.markdown-body h5,.markdown-body h6{font-size:1em;color:var(--doc-muted)}
+.markdown-body p{margin:.85em 0}
+.markdown-body a{color:var(--doc-accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:.06em}
+.markdown-body strong{font-weight:650}
+.markdown-body code{font-family:var(--doc-mono);font-size:.89em;background:var(--doc-code);padding:.15em .36em;border-radius:4px}
+.markdown-body pre{
+  background:var(--doc-code);border:1px solid var(--doc-line);border-radius:9px;
+  padding:.9em 1.05em;margin:1em 0;overflow:auto;
+}
+.markdown-body pre code{
+  background:none;padding:0;font-size:.86em;line-height:1.65;white-space:pre;
+  display:block;overflow-wrap:normal;
+}
+.markdown-body blockquote{
+  margin:1em 0;padding:.1em 1.1em;border-left:4px solid var(--doc-accent);
+  background:var(--doc-quote);border-radius:0 8px 8px 0;color:var(--doc-muted)
+}
+.markdown-body blockquote>:first-child{margin-top:.7em}
+.markdown-body blockquote>:last-child{margin-bottom:.7em}
+.markdown-body ul,.markdown-body ol{padding-left:1.65em;margin:.85em 0}
+.markdown-body li{margin:.28em 0}
+.markdown-body li.task{list-style:none;margin-left:-1.3em}
+.task-box{
+  display:inline-block;width:.95em;height:.95em;border:1.6px solid #9aa3ad;border-radius:3px;
+  vertical-align:-.13em;margin-right:.45em;position:relative
+}
+.task-box.checked{background:var(--doc-accent);border-color:var(--doc-accent)}
+.task-box.checked::after{
+  content:"";position:absolute;left:.26em;top:.06em;width:.24em;height:.48em;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)
+}
+.table-wrap{overflow-x:auto;margin:1em 0}
+.markdown-body table{border-collapse:collapse;width:100%;font-size:.95em}
+.markdown-body th,.markdown-body td{border:1px solid var(--doc-line);padding:.5em .72em;vertical-align:top}
+.markdown-body thead th{background:var(--doc-quote);font-weight:600}
+.markdown-body img{max-width:100%;height:auto;border-radius:8px}
+.markdown-body hr{border:0;border-top:1px solid var(--doc-line);margin:1.9em 0}
+.markdown-body mark{background:#ffe98a;color:#3a2c00;padding:0 .16em;border-radius:3px}
+.markdown-body kbd{font-family:var(--doc-mono);font-size:.85em;border:1px solid var(--doc-line);border-bottom-width:2px;border-radius:5px;padding:.1em .4em;background:var(--doc-code)}
+.markdown-body sup.fn-ref a{text-decoration:none;font-size:.8em;padding:0 .1em}
+.markdown-body .footnotes{margin-top:2.4em;font-size:.92em;color:var(--doc-muted)}
+.markdown-body .footnotes ol{padding-left:1.4em}
+.markdown-body .fn-back{text-decoration:none;margin-left:.35em}
+
+/* ---------- 代码高亮 ---------- */
+.markdown-body pre code .tok-com{color:var(--tok-com);font-style:italic}
+.markdown-body pre code .tok-str{color:var(--tok-str)}
+.markdown-body pre code .tok-num{color:var(--tok-num)}
+.markdown-body pre code .tok-kw{color:var(--tok-kw)}
+.markdown-body pre code .tok-fn{color:var(--tok-fn)}
+.markdown-body pre code .tok-typ{color:var(--tok-typ)}
+.markdown-body pre code .tok-attr{color:var(--tok-attr)}
+.markdown-body pre code .tok-var{color:var(--tok-var)}
+.markdown-body pre code .tok-tag{color:var(--tok-tag)}
+.markdown-body pre code .tok-pun{color:var(--tok-pun)}
+.markdown-body pre code .tok-meta{color:var(--tok-meta)}
+.markdown-body pre code .tok-add{color:var(--tok-add);background:var(--tok-add-bg);display:inline-block;width:100%}
+.markdown-body pre code .tok-del{color:var(--tok-del);background:var(--tok-del-bg);display:inline-block;width:100%}
+
+/* ---------- 渲染型围栏（```html / ```css / ```svg） ---------- */
+.markdown-body .md-render{margin:1.1em 0}
+.markdown-body .md-render>*:first-child{margin-top:0}
+.markdown-body .md-render>*:last-child{margin-bottom:0}
+
+/* ---------- 内嵌 SVG ---------- */
+/* max-width 是给 width/height 写死成大尺寸的图兜底；有 viewBox 时
+   height:auto 会自己保持比例，不会被压扁 */
+.markdown-body .md-svg{display:block;margin:1.1em 0;text-align:center;overflow-x:auto}
+.markdown-body span.md-svg{display:inline-block;margin:0;text-align:left;vertical-align:-.15em;overflow:visible}
+.markdown-body .md-svg>svg{max-width:100%;height:auto}
+.markdown-body span.md-svg>svg{max-width:100%;height:auto;vertical-align:middle}
+
+/* ---------- 公式（MathML） ---------- */
+.markdown-body math{font-size:1.05em;line-height:1.35}
+.markdown-body .math-display{
+  display:block;text-align:center;margin:1.05em 0;
+  overflow-x:auto;overflow-y:hidden;padding:2px 0;
+}
+.markdown-body .math-display math{display:block}
+.markdown-body .math-error{
+  background:#fff4f4;border:1px solid #f0c9c9;color:#a33;
+  font-size:.9em;white-space:pre-wrap;
+}
+.markdown-body .math-error code{background:none;color:inherit;font-size:1em}
+
+/* ---------- 目录 ---------- */
+.toc{margin:0 0 1.8em;padding:14px 16px;border:1px solid var(--doc-line);border-radius:10px;background:var(--doc-quote)}
+.toc-title{font-weight:650;margin-bottom:.5em;font-size:1.02em}
+.toc ol{list-style:none;padding-left:0;margin:0;font-size:.94em}
+.toc ol ol{padding-left:1.1em;margin:.15em 0}
+.toc li{margin:.2em 0}
+.toc a{text-decoration:none;color:var(--doc-text)}
+.toc a:hover{color:var(--doc-accent)}
+
+/* 手动分页：<div class="page-break"></div> */
+.page-break{height:0;margin:0;border:0}
+
+/* ---------- 打印 ---------- */
+@media print{
+  /* 变量用 !important：暗色主题的 html[data-theme="dark"] 特异性更高，
+     不加就拿它没辙，会印出一张黑纸 */
+  html .markdown-body{
+    --doc-text:#000 !important; --doc-muted:#444 !important; --doc-line:#c3c8cf !important;
+    --doc-code:#f5f5f5 !important; --doc-quote:#fafafa !important; --doc-accent:#1a4fbb !important;
+    /* 高亮配色同理：深色主题下不加 !important 会印出浅色字，纸上等于白印 */
+    --tok-com:#6e7781 !important; --tok-str:#0a3069 !important; --tok-num:#0550ae !important;
+    --tok-kw:#cf222e !important; --tok-fn:#8250df !important; --tok-typ:#953800 !important;
+    --tok-attr:#0550ae !important; --tok-var:#953800 !important; --tok-tag:#116329 !important;
+    --tok-pun:#57606a !important; --tok-meta:#8250df !important;
+    --tok-add:#116329 !important; --tok-add-bg:#dafbe1 !important;
+    --tok-del:#82071e !important; --tok-del-bg:#ffebe9 !important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    max-width:none !important;margin:0 !important;padding:0 !important;border:0 !important;
+    border-radius:0 !important;background:#fff !important;color:#000 !important;
+    font-size:var(--doc-print-size) !important;
+    box-shadow:none !important;line-height:1.72;orphans:2;widows:2;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .markdown-body pre,.markdown-body blockquote,.markdown-body table,
+  .markdown-body img,.markdown-body .toc,.markdown-body .task-box,
+  .markdown-body math{
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .markdown-body h1,.markdown-body h2,.markdown-body h3,
+  .markdown-body h4,.markdown-body h5,.markdown-body h6{break-after:avoid-page;page-break-after:avoid;break-inside:avoid}
+  .markdown-body pre,.markdown-body blockquote,.markdown-body table,
+  .markdown-body figure,.markdown-body img,.markdown-body li,.markdown-body .toc,
+  .markdown-body .md-svg,.markdown-body .math-display{
+    break-inside:avoid;page-break-inside:avoid;
+  }
+  /* 大图撑满版面宽度，别留一圈白 */
+  .markdown-body .md-svg{overflow:visible !important}
+  .markdown-body .md-svg>svg{max-width:100% !important}
+  .markdown-body thead{display:table-header-group}
+  .markdown-body tr{break-inside:avoid;page-break-inside:avoid}
+  .table-wrap{overflow:visible !important}
+  .markdown-body a{color:#1a4fbb}
+  /* 长代码行在纸上要能折行，否则直接被裁掉 */
+  .markdown-body pre{overflow:visible !important}
+  .markdown-body pre code{white-space:pre-wrap !important;overflow-wrap:anywhere;word-break:break-word}
+  .markdown-body .math-display{overflow:visible !important}
+  .markdown-body .page-break{break-after:page;page-break-after:always;height:0}
+  body.link-url .markdown-body a[href^="http"]::after{
+    content:" (" attr(href) ")";font-size:.85em;color:#555;word-break:break-all
+  }
+}
+</style>
+</head>
+<body>
+
+<header class="toolbar">
+  <button class="btn primary" id="btnPrint" title="走安卓系统打印，目标选「另存为 PDF」">🖨 打印 / 存 PDF</button>
+  <button class="btn" id="btnHtml">📄 导出 HTML</button>
+  <button class="btn" id="btnOpen">📂 打开</button>
+  <button class="btn" id="btnSave" title="保存 Markdown 源码，不是 PDF">💾 存 .md</button>
+  <button class="btn" id="btnSample">示例</button>
+  <span class="spacer"></span>
+  <button class="btn icon" id="btnSettings" aria-label="设置" title="设置">⚙️</button>
+  <input type="file" id="fileInput" multiple hidden>
+  <input type="file" id="fontInput" multiple hidden>
+</header>
+
+<section class="settings" id="settings" hidden>
+
+  <div class="grp"><h4>排版</h4>
+    <div class="setting"><label>主题</label><div class="seg" data-key="theme">
+      <button data-val="light">浅色</button><button data-val="dark">深色</button></div></div>
+    <div class="setting"><label>字号</label><div class="seg" data-key="size">
+      <button data-val="14">小</button><button data-val="16">中</button><button data-val="18">大</button></div></div>
+    <label class="chk"><input type="checkbox" id="optSoftBreak"> 单个换行就换行（中文习惯）</label>
+    <label class="chk"><input type="checkbox" id="optToc"> 生成目录</label>
+    <label class="chk"><input type="checkbox" id="optHl"> 代码块语法高亮</label>
+  </div>
+
+  <div class="grp"><h4>打印</h4>
+    <div class="setting"><label>纸张</label><div class="seg" data-key="paper">
+      <button data-val="A4">A4</button><button data-val="Letter">Letter</button><button data-val="A5">A5</button></div></div>
+    <div class="setting"><label>页边距</label><div class="seg" data-key="margins">
+      <button data-val="narrow">窄</button><button data-val="normal">常规</button><button data-val="wide">宽</button></div></div>
+    <label class="chk"><input type="checkbox" id="optLinkUrl"> 打印时在链接后附上网址</label>
+  </div>
+
+  <div class="grp"><h4>字体</h4>
+    <div class="setting"><label>正文</label>
+      <select class="sel" id="fontBody"></select></div>
+    <div class="setting"><label>代码</label>
+      <select class="sel" id="fontMono"></select></div>
+    <div class="setting"><label>字体库</label>
+      <button class="btn mini" id="btnFontImport">＋ 导入字体</button>
+      <span class="fmeta" id="fontHint" style="color:var(--muted);font-size:12px"></span></div>
+    <div class="fontlist" id="fontList"></div>
+    <details class="more">
+      <summary>去哪找免费字体</summary>
+      <ul class="links">
+        <li><a href="https://fonts.google.com" target="_blank" rel="noopener">Google Fonts</a>
+          —— 全开源。中文挑 <b>Noto Sans SC</b> / <b>Noto Serif SC</b>，在字体页右上角点「Download family」拿 .ttf</li>
+        <li><a href="https://github.com/adobe-fonts/source-han-sans" target="_blank" rel="noopener">思源黑体</a> /
+            <a href="https://github.com/adobe-fonts/source-han-serif" target="_blank" rel="noopener">思源宋体</a>
+          —— Adobe 官方仓库，OFL 协议，字最全，最稳妥</li>
+        <li><a href="https://www.maoken.com" target="_blank" rel="noopener">猫啃网</a>
+          —— 专收中文免费商用字体，每款都标了授权来源，中文字体首选</li>
+        <li><a href="https://www.100font.com" target="_blank" rel="noopener">100font</a>
+          —— 免注册直接下，中英日韩都有，按授权类型分了类</li>
+        <li><a href="https://www.fontsquirrel.com" target="_blank" rel="noopener">Font Squirrel</a>
+          —— 西文为主，每款都标了能不能商用</li>
+      </ul>
+      <p class="warn"><b>「免费下载」≠「免费商用」。</b>导入的字体在「导出 HTML」时会一起打包进文件里，
+      等于你在二次分发它——对外发布的文档请只挑 OFL / MIT / Apache 这类明确允许再分发的。
+      另外很多免费中文字体只做了常用 3500 字，冷僻字会掉回系统字体、看着像串了字号。</p>
+    </details>
+  </div>
+
+  <div class="grp"><h4>公式</h4>
+    <label class="chk"><input type="checkbox" id="optMath"> 解析 LaTeX 公式（$…$、$$…$$、\(…\)、\[…\]）</label>
+  </div>
+
+  <p class="tip"><b>导出 PDF：</b>点「打印 / 存 PDF」，在系统打印界面把目标选成「<b>另存为 PDF</b>」再保存。<br>
+  （「存 .md」存的是 Markdown 源码；网页自身写不出 PDF 文件，这条路必须走系统打印。）<br>
+  这样出来的是<b>真正的矢量文字 PDF</b>——文字可选中、可搜索、可复制，放大不糊，不是截图。<br>
+  想要页码，在打印界面里把「页眉和页脚」打开即可（浏览器会自动加页码）。<br>
+  <b>文档里有本地图片？</b>点「打开」时把 <code>.md</code> 和图片一起选中，程序会按文件名自动对应。</p>
+</section>
+
+<nav class="tabs">
+  <button class="tab on" data-pane="edit">编辑</button>
+  <button class="tab" data-pane="preview">预览</button>
+  <span class="stats" id="stats"></span>
+</nav>
+
+<main class="panes">
+  <section class="pane editor-pane on" id="paneEdit">
+    <textarea id="editor" spellcheck="false" placeholder="在这里写 Markdown，或点上面的「打开」选一个 .md 文件…"></textarea>
+  </section>
+  <section class="pane preview-pane" id="panePreview">
+    <div id="previewScroll"><article class="markdown-body" id="preview"></article></div>
+  </section>
+</main>
+
+<div class="modal-mask" id="modalMask" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">确认</h3>
+    <p id="modalText"></p>
+    <div class="row">
+      <button class="btn" id="modalCancel">取消</button>
+      <button class="btn primary" id="modalOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="text/plain" id="sampleDoc">
+# Markdown 排版与 PDF 导出
+
+这是一个**完全离线**的 Markdown 阅读 / 排版工具：单个 HTML 文件，不联网、不装依赖，手机上打开就能用。
+
+## 一、怎么用
+
+1. 点「📂 打开」选一个 `.md` 文件，或者直接在「编辑」页里打字 / 粘贴。
+2. 切到「预览」看排版效果（屏幕宽的时候左右分栏，边写边看）。
+3. 点「🖨 打印 / PDF」，在系统打印界面把目标改成 **另存为 PDF** 保存。
+
+> 导出的是真正的矢量文字 PDF：文字可以选中、搜索、复制，放大不会糊，体积也小。不是截图拼出来的。
+
+## 二、支持的语法
+
+### 文字样式
+
+**加粗**、*斜体*、***加粗斜体***、~~删除线~~、==高亮==、`行内代码`、上标脚注[^1]。
+
+### 列表
+
+- 无序列表
+- 支持嵌套：
+  - 第二层
+    1. 有序列表也能嵌
+    2. 第二项
+- [ ] 待办事项（未完成）
+- [x] 待办事项（已完成）
+
+### 表格
+
+表格单元格里的 `|` 只要写在反引号里就不会把列切断：
+
+| 功能 | 写法 | 状态 |
+|:-----|:----:|-----:|
+| 实时预览 | 边写边看 | ✅ |
+| 打印导出 | 矢量文字 PDF | ✅ |
+| 转义竖线 | `` `a|b` `` 算一格 | ✅ |
+
+### 代码
+
+```js
+function hello(name) {
+  console.log(`你好，${name}`);
+}
+```
+
+长代码行在纸上也会自动折行，不会被裁掉：
+
+```text
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags,attachments
+```
+
+### 数学公式
+
+行内公式用 `$…$`：质能方程 $E = mc^2$，欧拉恒等式 $e^{i\pi} + 1 = 0$，向量 $\vec{v} = (v_1, v_2, v_3)$。
+
+独立成行的公式用 `$$…$$`：
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
+$$
+
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
+
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
+
+$$
+\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} = 0
+\qquad
+\Omega = \{ x \in \mathbb{R}^n : \|x\| \le 1 \}
+$$
+
+常用符号：$\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$，关系符 $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$。
+
+> 公式渲染成 MathML，同样是**矢量文字**，能选中、能搜索、打印不糊。
+> 价格不会被误判成公式：$5-$10、$100 和 $200 都保持原样。
+
+### 内嵌图形（SVG）
+
+正文里可以直接写 `<svg>`。画出来是**真矢量**——放大不糊，打印走的是矢量路径，不是位图。
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">预览</text>
+  <text class="flow-lbl" x="409" y="65">系统打印</text>
+  <text class="flow-lbl" x="551" y="65">矢量 PDF</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
+</svg>
+
+图里那段 `<style>` 是这张图自己的配色，程序会给它加上作用域——只作用于这一张图，
+不会串到别的图或者界面本身上去。上面的箭头用的是图内 `<defs>` 里定义的 marker。
+
+### 渲染型代码块（```svg / ```css / ```html）
+
+围栏里写的内容**不会当代码显示**，而是直接渲染出来。适合画结构图、做版式、给整份文档加自定义样式。
+
+```css
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+```
+
+```html
+<div class="note-box">这段是 HTML 渲染出来的：<b>加粗</b>、<span style="color:#d64545">红色</span>、还有 <code>行内代码</code>。</div>
+```
+
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">围栏里的 SVG</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">打印仍是矢量</text>
+</svg>
+```
+
+规则：
+
+- 标 `css`：整段当样式表，作用于**整份文档**；它本身不产生可见内容，只负责给后面的 HTML 上样式。
+- 标 `html`：渲染成 HTML；里面若有 `<style>` 会被抽出并生效。
+- 标 `svg`：渲染成矢量图形。
+- 标 `render`：按内容自动判断成上面哪一种。
+- **只想显示代码、不想渲染**：把语言标成 `text`（或 `plain`）。
+- 安全边界：脚本、`onclick` 之类事件属性、外链 `url()`、`@import` 都会被去掉。
+
+### 引用与分隔线
+
+> 这是一段引用。
+> 可以写成多行，会自动合并成一个引用块。
+
+---
+
+### 链接与脚注
+
+[Claude Code](https://claude.com/claude-code) 是一个命令行工具，也可以直接写裸链接：https://claude.com
+
+[^1]: 脚注会自动编号，并在文末统一排列。
+
+### 分页控制
+
+<div class="page-break"></div>
+
+上面那行 HTML 会让后面的内容从新的一页开始（只在导出 PDF 时生效）。
+
+## 三、打印与个性化
+
+在「⚙️ 设置」里可以调：
+
+- **排版**：主题、字号、单个换行就换行（中文习惯）、自动目录、代码块语法高亮
+- **打印**：纸张 A4 / Letter / A5、页边距、链接后附网址
+- **字体**：正文和代码都能换成自己导入的字体
+- **公式**：可以整体关掉 LaTeX 解析
+
+### 导入自己的字体
+
+点「＋ 导入字体」选 `.ttf` / `.otf` / `.woff` / `.woff2` 文件，字体文件会存进浏览器的本地数据库，**下次打开还在**，不用重复导入。导入后在「正文」「代码」下拉框里选用。
+
+### 导出成独立 HTML
+
+点「📄 导出 HTML」会把当前排版（含用到的字体和图片）打包成**一个 HTML 文件**，发给别人直接打开就是这个样子，不依赖任何外部文件。
+
+### 文档里有本地图片
+
+点「📂 打开」时把 `.md` 和图片**一起选中**，程序按文件名自动对应 `![](图片名.png)`，不用改 Markdown 里的路径。
+
+## 四、已知边界
+
+1. 公式支持的是 LaTeX 常用子集：上下标、分式、根号、求和求积积分、极限、矩阵（`pmatrix` / `bmatrix` / `cases` 等）、希腊字母、`\text{}`。特别冷门的宏包命令会原样显示出来，不会默默吞掉。
+2. 图片用 `https://` 网址最稳；本地图片请在「打开」时连图片一起选中。
+3. 原始 HTML 与渲染型围栏（`html` / `css` / `svg`）都会做安全过滤：脚本、事件属性、外链 `url()`、`@import` 一律去掉。
+4. 页码由浏览器打印界面控制：在打印预览里把「页眉和页脚」打开即可。
+</script>
+
+<script>
+/*==MD-PARSER-START==*/
+/* =====================================================================
+   纯函数层：不依赖 DOM、不依赖浏览器 API，便于在 node 里直接跑测试。
+   包含 Markdown 解析、LaTeX→MathML 转换、以及若干纯工具函数。
+   ===================================================================== */
+
+/* ---------------- 基础转义 ---------------- */
+/* 文本节点只转义 & < >；引号交给 attr()，这样链接标题里的引号不会破坏语法解析 */
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, function(c){ return c === '&' ? '&amp;' : (c === '<' ? '&lt;' : '&gt;'); }); }
+/* 属性值：值本身已经过 escapeHtml，这里只需再挡引号和尖括号 */
+function attr(s){ return String(s).replace(/["'<>]/g, function(c){
+  return c === '"' ? '&quot;' : (c === "'" ? '&#39;' : (c === '<' ? '&lt;' : '&gt;')); }); }
+
+/* 过滤危险 HTML：脚本/样式/框架、on* 事件、javascript: 协议 */
+function sanitizeHtml(s){
+  return String(s)
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta|base|form|input|button|textarea|select|svg|math)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(/<\s*\/?\s*(script|style|iframe|object|embed|link|meta|base|form|input|button|textarea|select)\b[^>]*>/gi, '')
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\b(href|src|xlink:href)\s*=\s*("|')?\s*(?:javascript|vbscript|data:text\/html)\s*:[^"'>\s]*(\2)?/gi, '$1="#"');
+}
+
+/* 拦掉 javascript:/vbscript:/data:text/html 这类伪协议 */
+function safeUrl(u){
+  var s = String(u).replace(/[\u0000-\u0020\u00a0]/g, '');
+  return /^(javascript|vbscript|data:text\/html)/i.test(s) ? '#' : u;
+}
+
+/* =====================================================================
+   内嵌 SVG
+   —— 放行正文里手写的 <svg>…</svg>，让图形在 PDF 里保持真矢量。
+   走 <img src="x.svg"> 的话 Chrome 会按打印分辨率栅格化，放大就糊，
+   所以「图形要矢量」这条只能靠内联，光有图片映射不够。
+
+   安全边界（.md 可能是别人给的，不能默认可信）：
+   · script / foreignObject / animate 系列连内容一起丢
+   · 属性里的 on* 一律删；url() 只认 #id 和内嵌 data:image
+   · 外链（http/https）一律掐——放进来「离线可用」就破了
+   ===================================================================== */
+
+/* 放行的 SVG 元素。故意不收 animate/set —— 它们能把 href 改成外链 */
+var SVG_TAGS = ('svg g defs symbol use switch a '
+  + 'path rect circle ellipse line polyline polygon '
+  + 'text tspan textPath title desc metadata view '
+  + 'linearGradient radialGradient stop pattern '
+  + 'clipPath mask marker '
+  + 'filter feGaussianBlur feOffset feBlend feColorMatrix feComponentTransfer '
+  + 'feFuncR feFuncG feFuncB feFuncA feComposite feConvolveMatrix feDisplacementMap '
+  + 'feDistantLight fePointLight feSpotLight feDiffuseLighting feSpecularLighting '
+  + 'feFlood feImage feMerge feMergeNode feMorphology feTile feTurbulence feDropShadow '
+  + 'image style').split(' ');
+var SVG_OK = {};
+for (var _si = 0; _si < SVG_TAGS.length; _si++) SVG_OK[SVG_TAGS[_si].toLowerCase()] = 1;
+
+/* 这几个不只是「不认」，连里面的东西一起丢 */
+var SVG_KILL = { script:1, foreignobject:1, animate:1, animatetransform:1,
+                 animatemotion:1, set:1, handler:1, listener:1 };
+
+/* 标签的收尾 '>'。要跳开引号里的 >（title="a>b" 这种） */
+function tagEnd(src, lt){
+  var q = 0;
+  for (var i = lt + 1; i < src.length; i++){
+    var c = src.charAt(i);
+    if (q){ if (c === q) q = 0; continue; }
+    if (c === '"' || c === "'"){ q = c; continue; }
+    if (c === '>') return i;
+  }
+  return -1;
+}
+/* 与 open 处的 '{' 配对的那个 '}' */
+function cssBraceEnd(css, open){
+  var d = 0, q = 0;
+  for (var i = open; i < css.length; i++){
+    var c = css.charAt(i);
+    if (q){ if (c === '\\'){ i++; continue; } if (c === q) q = 0; continue; }
+    if (c === '"' || c === "'"){ q = c; continue; }
+    if (c === '{') d++;
+    else if (c === '}'){ d--; if (!d) return i; }
+  }
+  return -1;
+}
+/* url() 只留本文件内的引用和内嵌图片，外链换成 none */
+function cssUrls(css){
+  return String(css).replace(/url\(\s*(['"]?)([^'")]*)\1\s*\)/gi, function(m, q, u){
+    u = u.trim();
+    if (!u || u.charAt(0) === '#') return m;
+    if (/^data:image\//i.test(u)) return m;
+    return 'none';
+  });
+}
+/* SVG 的文本节点：源里写的是 HTML 实体（&lt; 之类），
+   整串再转一次 & 就变成 &amp;lt;，字面上多印一个 &lt; 出来 */
+function escapeSvgText(s){
+  return String(s)
+    .replace(/&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+);)/g, '&amp;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+/* 这张图里定义了哪些关键帧。改名之后 animation 引用也得跟着改，否则动画直接失效 */
+function kfNames(css){
+  var m, re = /@(?:-webkit-)?keyframes\s+([-\w]+)/gi, out = {};
+  while ((m = re.exec(css))) out[m[1]] = 1;
+  return out;
+}
+function cssDecls(body, scope, kf){
+  var s = cssUrls(body)
+    .replace(/expression\s*\(/gi, '(')
+    .replace(/(javascript|vbscript)\s*:/gi, '');
+  if (kf && scope){
+    s = s.replace(/(^|[;{\s])(animation(?:-name)?)(\s*:\s*)([^;}]*)/gi, function(m, pre, prop, sep, val){
+      return pre + prop + sep + val.replace(/[-\w]+/g, function(w){
+        return kf[w] ? scope + '-' + w : w;
+      });
+    });
+  }
+  return s;
+}
+/* 选择器列表加前缀。逗号只有落在括号外的才算分隔符（:is(a,b)、[x=","] 里不算） */
+function cssScopeSel(sel, scope){
+  var parts = [], cur = '', d = 0, i, c;
+  for (i = 0; i < sel.length; i++){
+    c = sel.charAt(i);
+    if (c === '(' || c === '[') d++;
+    else if (c === ')' || c === ']') d--;
+    if (c === ',' && d <= 0){ parts.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  parts.push(cur);
+  var out = [];
+  for (i = 0; i < parts.length; i++){
+    var s = parts[i].trim();
+    if (s) out.push('.' + scope + ' ' + s);
+  }
+  return out.join(',');
+}
+/* 逐条规则加前缀。raw=true 是处于 @keyframes 里，那层的 0%/from/to 不是选择器 */
+function cssScope(css, scope, raw, kf){
+  if (!kf) kf = kfNames(css);
+  var out = '', i = 0, n = css.length;
+  while (i < n){
+    var b = css.indexOf('{', i);
+    var semi = css.indexOf(';', i);
+    /* 分号在花括号前面 → 这是条不带块的语句（@import 之类）。
+       不先摘掉的话，它会连着后面第一条规则一起被当成 prelude 吞下去 */
+    if (semi >= 0 && (b < 0 || semi < b)){
+      var stmt = css.slice(i, semi).trim();
+      i = semi + 1;
+      if (stmt && stmt.charAt(0) === '@' && !/^@(import|charset|namespace)\b/i.test(stmt)) out += stmt + ';';
+      continue;
+    }
+    if (b < 0) break;
+    var pre = css.slice(i, b).trim();
+    var e = cssBraceEnd(css, b);
+    var body = css.slice(b + 1, e < 0 ? n : e);
+    i = e < 0 ? n : e + 1;
+    if (!pre) continue;
+    if (pre.charAt(0) === '@'){
+      var at = (/^@([a-zA-Z-]+)/.exec(pre) || [0, ''])[1].toLowerCase();
+      if (at === 'import' || at === 'charset' || at === 'namespace') continue;
+      if (at === 'keyframes' || at === '-webkit-keyframes'){
+        /* 关键帧名字加前缀，免得撞上外壳自己的动画 */
+        var kn = pre.replace(/^@(-webkit-)?keyframes\s+/i, '').trim();
+        out += pre.replace(kn, scope + '-' + kn) + '{' + cssScope(body, scope, true, kf) + '}';
+        continue;
+      }
+      if (at === 'font-face' || at === 'page' || at === 'property' || at === 'counter-style'){
+        out += pre + '{' + cssDecls(body, scope, kf) + '}';   /* 这几样本就是全局的，不能加前缀 */
+        continue;
+      }
+      out += pre + '{' + cssScope(body, scope, false, kf) + '}';   /* @media/@supports/@layer：进里面接着加 */
+      continue;
+    }
+    out += (raw ? pre : cssScopeSel(pre, scope)) + '{' + cssDecls(body, scope, kf) + '}';
+  }
+  return out;
+}
+/* 属性值里的 url() 有没有外链 */
+function svgUrlOk(v){
+  var ok = true;
+  String(v).replace(/url\(\s*(['"]?)([^'")]*)\1\s*\)/gi, function(m, q, u){
+    u = u.trim();
+    if (!u || u.charAt(0) === '#' || /^data:image\//i.test(u)) return m;
+    ok = false; return m;
+  });
+  return ok;
+}
+/* 保留属性、删危险属性 */
+function svgAttrs(tag){
+  var s = tag.replace(/^<\s*\/?\s*[a-zA-Z][\w:.-]*/, '').replace(/\/?\s*>$/, '');
+  var out = '', m;
+  var re = /([a-zA-Z_:][\w:.-]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'=<>`]+))?/g;
+  while ((m = re.exec(s))){
+    var n = m[1].toLowerCase();
+    if (m[2] === undefined){ out += ' ' + m[1]; continue; }   /* 布尔属性 */
+    var v = m[2];
+    if (v.charAt(0) === '"' || v.charAt(0) === "'") v = v.slice(1, -1);
+    if (/^on/i.test(n)) continue;                             /* 事件处理器 */
+    if (n === 'href' || n === 'xlink:href' || n === 'src' || n === 'srcset'){
+      var u = v.replace(/[\u0000-  ]/g, '');
+      /* use/image 只认本文件内的 id 或内嵌图片，别的一律不留外链 */
+      if (u.charAt(0) !== '#' && !/^blob:/i.test(u) && !/^data:image\//i.test(u)) continue;
+    }
+    if (/\burl\(/i.test(v) && !svgUrlOk(v)) continue;
+    if (n === 'style') v = cssDecls(v);
+    out += ' ' + m[1] + '="' + attr(v) + '"';
+  }
+  return out;
+}
+/* 把一段完整的 <svg>…</svg> 洗成能安全放进页面的 HTML */
+function svgSanitize(src, scope){
+  var out = '', p = 0, n = src.length, kill = 0;
+  while (p < n){
+    var lt = src.indexOf('<', p);
+    if (lt < 0){ if (!kill) out += escapeSvgText(src.slice(p)); break; }
+    if (lt > p && !kill) out += escapeSvgText(src.slice(p, lt));
+    if (src.substr(lt, 4) === '<!--'){                        /* 注释 */
+      var ce = src.indexOf('-->', lt + 4);
+      p = ce < 0 ? n : ce + 3; continue;
+    }
+    if (src.charAt(lt + 1) === '!' || src.charAt(lt + 1) === '?'){   /* <!DOCTYPE>/<?xml>/CDATA */
+      var de = src.indexOf('>', lt);
+      p = de < 0 ? n : de + 1; continue;
+    }
+    var gt = tagEnd(src, lt);
+    if (gt < 0){ if (!kill) out += escapeSvgText(src.slice(lt)); break; }
+    var tag = src.slice(lt, gt + 1);
+    p = gt + 1;
+
+    var mm = /^<\s*(\/?)\s*([a-zA-Z][\w:.-]*)/.exec(tag);
+    if (!mm) continue;                                        /* 认不出是标签，丢掉 */
+    var closing = mm[1] === '/';
+    var name = mm[2].toLowerCase();
+    var selfClose = /\/\s*>$/.test(tag);
+
+    if (SVG_KILL[name]){
+      if (closing){ if (kill) kill--; }
+      else if (!selfClose) kill++;
+      continue;
+    }
+    if (kill) continue;                                       /* 死亡区间里的一切都丢 */
+    if (!SVG_OK[name]) continue;                              /* 不在白名单里的元素丢掉 */
+
+    if (name === 'style' && !closing){
+      /* 样式表得整段取出来加作用域；逐标签走会把 CSS 当文本转义掉 */
+      var se = src.toLowerCase().indexOf('</style', p);
+      var raw = se < 0 ? src.slice(p) : src.slice(p, se);
+      if (se < 0) p = n;
+      else { var sg = src.indexOf('>', se); p = sg < 0 ? n : sg + 1; }
+      out += '<style>' + cssScope(raw.replace(/<!\[CDATA\[|\]\]>/g, ''), scope) + '</style>';
+      continue;
+    }
+    if (closing){ out += '</' + name + '>'; continue; }
+    out += '<' + name + svgAttrs(tag) + (selfClose ? '/>' : '>');
+  }
+  return out;
+}
+/* 从 pos 处的 '<svg' 起，找配对 '</svg>' 的结束位置（含）；找不到返回 -1 */
+function svgSpanEnd(src, pos){
+  var depth = 0, re = /<\s*(\/)?\s*svg\b[^>]*>/gi, m;
+  re.lastIndex = pos;
+  while ((m = re.exec(src))){
+    var end = m.index + m[0].length;
+    if (m[1]){ depth--; if (depth <= 0) return end; }
+    else if (/\/\s*>$/.test(m[0])){ if (!depth) return end; }
+    else depth++;
+  }
+  return -1;
+}
+/* 把串里所有完整的 <svg>…</svg> 交给 fn 处理，其余原样留着 */
+function replaceSvgSpans(text, fn){
+  var re = /<svg[\s>\/]/gi, out = '', p = 0, m;
+  re.lastIndex = 0;
+  while ((m = re.exec(text))){
+    var end = svgSpanEnd(text, m.index);
+    if (end < 0){ re.lastIndex = m.index + 4; continue; }
+    out += text.slice(p, m.index) + fn(text.slice(m.index, end));
+    p = end; re.lastIndex = end;
+  }
+  return out + text.slice(p);
+}
+/* 每张图一个作用域名：两张 Illustrator 导出的图都叫 .cls-1，不加就互相串色 */
+var svgSeq = 0;
+function renderSvg(markup, block){
+  svgSeq++;
+  var scope = 'mdsvg' + svgSeq;
+  var cls = 'md-svg ' + scope;
+  var inner = svgSanitize(markup, scope);
+  return block ? '<div class="' + cls + '">' + inner + '</div>'
+               : '<span class="' + cls + '">' + inner + '</span>';
+}
+
+/* =====================================================================
+   渲染型围栏：```svg / ```css / ```html / ```render（含 render-* 变体）
+   —— 围栏里的内容不再当代码显示，直接渲染进文档。
+   安全边界与内嵌 SVG 保持一致：脚本、事件属性、外链资源一律不放行。
+   想「显示代码而不渲染」时，把语言标成 text 或 plain 即可。
+   ===================================================================== */
+var RENDER_LANGS = { svg:1, css:1, html:1, render:1,
+                     'render-svg':1, 'render-css':1, 'render-html':1 };
+
+/* CSS 净化：掐掉能加载外部资源或执行脚本的写法 */
+function cssSanitize(css){
+  var s = String(css)
+    .replace(/@import[\s\S]*?;/gi, '')
+    .replace(/expression\s*\(/gi, 'none(')
+    .replace(/(?:behavior|-moz-binding)\s*:[^;}]*/gi, '')
+    .replace(/(?:java|vb)script\s*:/gi, '');
+  return cssUrls(s);                      /* url() 只留 #id 与内嵌 data:image */
+}
+function styleTags(css){ return '<style>' + cssSanitize(css) + '</style>'; }
+
+/* 统一入口：一段围栏内容 → 可直接插进文档的 HTML */
+function renderRawBlock(kind, raw){
+  var src = String(raw == null ? '' : raw);
+  var k = String(kind || 'auto').toLowerCase();
+
+  if (k === 'render' || k === 'auto'){                /* 看内容长相自己判断 */
+    if (/^\s*<svg[\s>\/]/i.test(src)) k = 'svg';
+    else if (!/^\s*</.test(src) && /[{}]/.test(src)) k = 'css';
+    else k = 'html';
+  }
+  if (k === 'svg' || k === 'render-svg'){
+    if (!/<svg[\s>\/]/i.test(src)) return '<pre><code>' + escapeHtml(src) + '</code></pre>';
+    return renderSvg(src, true);
+  }
+  if (k === 'css' || k === 'render-css'){
+    return styleTags(src);                /* 纯样式：作用于整份文档，自身不产出可见内容 */
+  }
+  /* html：先把 <style> 抽出来单独净化，其余走通用 HTML 过滤 */
+  var styles = '';
+  var rest = src.replace(/<style\b[^>]*>([\s\S]*?)<\/style\s*>/gi, function(_m, css){
+    styles += styleTags(css); return '';
+  });
+  /* 内联 style="..." 里的 url() 也要过一遍，否则能引外部资源、破坏离线 */
+  rest = rest.replace(/(\sstyle\s*=\s*)("|')([\s\S]*?)\2/gi, function(_m, pre, q, val){
+    return pre + q + cssSanitize(val) + q;
+  });
+  return '<div class="md-render">' + styles + sanitizeHtml(rest) + '</div>';
+}
+
+/* =====================================================================
+   LaTeX 子集 → MathML
+   Chrome 109+ 原生支持 MathML Core，所以不需要外挂 KaTeX/MathJax，
+   离线可用，而且打印时公式是矢量文字，能选中、能搜索。
+   ===================================================================== */
+
+var TEX_SYM = {
+  /* 小写希腊 */
+  alpha:'α', beta:'β', gamma:'γ', delta:'δ', epsilon:'ε', varepsilon:'ϵ', zeta:'ζ',
+  eta:'η', theta:'θ', vartheta:'ϑ', iota:'ι', kappa:'κ', lambda:'λ', mu:'μ', nu:'ν',
+  xi:'ξ', pi:'π', rho:'ρ', sigma:'σ', varsigma:'ς', tau:'τ', upsilon:'υ', phi:'φ',
+  varphi:'ϕ', chi:'χ', psi:'ψ', omega:'ω',
+  /* 大写希腊 */
+  Gamma:'Γ', Delta:'Δ', Theta:'Θ', Lambda:'Λ', Xi:'Ξ', Pi:'Π', Sigma:'Σ',
+  Upsilon:'Υ', Phi:'Φ', Psi:'Ψ', Omega:'Ω',
+  /* 二元运算 */
+  times:'×', div:'÷', cdot:'⋅', pm:'±', mp:'∓', ast:'∗', star:'⋆', circ:'∘',
+  bullet:'∙', oplus:'⊕', ominus:'⊖', otimes:'⊗', odot:'⊙', uplus:'⊎', sqcup:'⊔',
+  sqcap:'⊓', triangleleft:'◁', triangleright:'▷', wr:'≀', diamond:'⋄',
+  /* 关系 */
+  leq:'≤', le:'≤', geq:'≥', ge:'≥', neq:'≠', ne:'≠', equiv:'≡', approx:'≈',
+  sim:'∼', simeq:'≃', cong:'≅', propto:'∝', asymp:'≍', doteq:'≐', models:'⊨',
+  perp:'⊥', parallel:'∥', mid:'∣', nmid:'∤', subset:'⊂', subseteq:'⊆',
+  supset:'⊃', supseteq:'⊇', sqsubset:'⊏', sqsupset:'⊐', in:'∈', notin:'∉',
+  ni:'∋', notni:'∌', prec:'≺', succ:'≻', ll:'≪', gg:'≫',
+  /* 箭头 */
+  to:'→', gets:'←', rightarrow:'→', leftarrow:'←', leftrightarrow:'↔',
+  Rightarrow:'⇒', Leftarrow:'⇐', Leftrightarrow:'⇔', implies:'⟹', iff:'⟺',
+  mapsto:'↦', longrightarrow:'⟶', longleftarrow:'⟵', hookrightarrow:'↪',
+  uparrow:'↑', downarrow:'↓', updownarrow:'↕', nearrow:'↗', searrow:'↘',
+  /* 其他符号 */
+  infty:'∞', partial:'∂', nabla:'∇', forall:'∀', exists:'∃', nexists:'∄',
+  emptyset:'∅', varnothing:'∅', cup:'∪', cap:'∩', setminus:'∖', smallsetminus:'∖',
+  wedge:'∧', vee:'∨', land:'∧', lor:'∨', neg:'¬', lnot:'¬',
+  ldots:'…', dots:'…', cdots:'⋯', vdots:'⋮', ddots:'⋱',
+  angle:'∠', therefore:'∴', because:'∵', prime:'′', hbar:'ℏ', ell:'ℓ',
+  Re:'ℜ', Im:'ℑ', aleph:'ℵ', wp:'℘', surd:'√', checkmark:'✓',
+  degree:'°', S:'§', P:'¶', copyright:'©', clubsuit:'♣', diamondsuit:'♢',
+  heartsuit:'♡', spadesuit:'♠', flat:'♭', natural:'♮', sharp:'♯',
+  lceil:'⌈', rceil:'⌉', lfloor:'⌊', rfloor:'⌋', langle:'⟨', rangle:'⟩',
+  lVert:'‖', rVert:'‖', lvert:'|', rvert:'|', vert:'|', Vert:'‖', backslash:'\\'
+};
+/* 大运算符：显示模式下上下标放在正上方/正下方 */
+var TEX_BIGOP = { sum:'∑', prod:'∏', coprod:'∐', int:'∫', iint:'∬', iiint:'∭',
+  oint:'∮', bigcup:'⋃', bigcap:'⋂', bigoplus:'⨁', bigotimes:'⨂', bigodot:'⨀',
+  bigvee:'⋁', bigwedge:'⋀', bigsqcup:'⨆' };
+/* 函数名：直立显示 */
+var TEX_FUNC = ('sin cos tan cot sec csc arcsin arccos arctan sinh cosh tanh coth '
+  + 'log ln lg exp lim limsup liminf max min sup inf det dim ker deg gcd hom '
+  + 'arg Pr mod').split(' ');
+/* 间距命令 */
+var TEX_SPACE = { ',':' ', ':':' ', ';':' ', '!':'', quad:'\u2003', qquad:'\u2003\u2003',
+  ' ':' ', thinspace:'\u2009', medspace:'\u2005', thickspace:'\u2005', enspace:'\u2002',
+  enskip:'\u2002', hspace:'\u2003', '~':'\u00a0' };
+
+/* 数学字母表：\mathbb / \mathcal / \mathfrak / \mathsf / \mathtt */
+var TEX_ALPHABET = (function(){
+  function build(upperBase, lowerBase, holes, holeChars){
+    var up = {}, lo = {};
+    var A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', a = 'abcdefghijklmnopqrstuvwxyz';
+    for (var i = 0; i < 26; i++){
+      up[A[i]] = holes[A[i]] || String.fromCodePoint(upperBase + i);
+      lo[a[i]] = holes[a[i]] || String.fromCodePoint(lowerBase + i);
+    }
+    for (var k in holeChars) up[k] = holeChars[k];
+    return { upper: up, lower: lo };
+  }
+  return {
+    /* 双线：ℂ ℍ ℕ ℙ ℚ ℝ ℤ 在 Letterlike 区，其余在 U+1D538 起 */
+    mathbb: build(0x1D538, 0x1D552, {},
+      { C:'ℂ', H:'ℍ', N:'ℕ', P:'ℙ', Q:'ℚ', R:'ℝ', Z:'ℤ' }),
+    /* 花体：注意有几个字母在 Letterlike 区 */
+    mathcal: build(0x1D49C, 0x1D4B6, {},
+      { B:'ℬ', E:'ℰ', F:'ℱ', H:'ℋ', I:'ℐ', L:'ℒ', M:'ℳ', R:'ℛ' }),
+    mathfrak: build(0x1D504, 0x1D51E, {},
+      { C:'ℭ', H:'ℌ', I:'ℑ', R:'ℜ', Z:'ℨ' }),
+    mathsf: build(0x1D5A0, 0x1D5BA, {}, {}),
+    mathtt: build(0x1D670, 0x1D68A, {}, {})
+  };
+})();
+
+/* 把一段文本按字母表映射；非字母原样保留 */
+function mapAlphabet(text, table){
+  var out = '';
+  for (var i = 0; i < text.length; i++){
+    var c = text[i];
+    out += (table.upper[c] || table.lower[c] || c);
+  }
+  return out;
+}
+
+/* ---- 词法分析 ---- */
+function texTokens(src){
+  var out = [], i = 0, n = src.length;
+  while (i < n){
+    var c = src[i];
+    if (c === '\\'){
+      var rest = src.slice(i), m = /^\\([a-zA-Z]+|.)/.exec(rest);
+      if (!m){ i++; continue; }
+      out.push({ t:'cmd', v:m[1] });
+      i += m[0].length;
+      while (src[i] === ' ' || src[i] === '\n') i++;   /* 吞掉命令后的空白 */
+    } else if (c === '{' || c === '}'){ out.push({ t:c }); i++; }
+    else if (c === '^' || c === '_'){ out.push({ t:c }); i++; }
+    else if (c === '&'){ out.push({ t:'&' }); i++; }
+    else if (c === '%'){ while (i < n && src[i] !== '\n') i++; }
+    else if (c === '\n' || c === ' ' || c === '\t'){ i++; }
+    else if (c >= '0' && c <= '9'){
+      var j = i; while (j < n && ((src[j] >= '0' && src[j] <= '9') || src[j] === '.')) j++;
+      out.push({ t:'num', v:src.slice(i, j) }); i = j;
+    } else { out.push({ t:'chr', v:c }); i++; }
+  }
+  return out;
+}
+
+var TEX_OPCHARS = '+-=<>()[]|/,;:!?*';
+
+/* ---- 语法分析：token 流 → MathML ---- */
+function texParse(tokens, display){
+  var p = 0, n = tokens.length;
+
+  function peek(k){ return tokens[p + (k || 0)]; }
+  function isCmd(tk, name){ return tk && tk.t === 'cmd' && tk.v === name; }
+
+  /* 读取一个参数：{...} 或单个原子 */
+  function readArg(){
+    skipSpaceCmds();
+    var tk = peek();
+    if (!tk) return '';
+    if (tk.t === '{'){
+      p++;
+      var inner = parseSeq('}');
+      if (peek() && peek().t === '}') p++;
+      /* 必须包一层：\frac{a+b}{c} 的分子是多个原子，mfrac 只认两个子元素 */
+      return '<mrow>' + inner + '</mrow>';
+    }
+    return parseAtomWithScripts();
+  }
+  /* 读取 {…} 里的原始 token（不做语法解析）——\substack 这类需要自己拆行拆列 */
+  function readRawGroup(){
+    skipSpaceCmds();
+    if (!peek() || peek().t !== '{') return null;
+    p++;
+    var out = [], depth = 1;
+    while (peek()){
+      var tk = peek();
+      if (tk.t === '{') depth++;
+      else if (tk.t === '}'){ depth--; if (!depth){ p++; break; } }
+      out.push(tk); p++;
+    }
+    return out;
+  }
+  /* 可选参数 [..]，返回其 token（没有则返回 null） */
+  function readOptArg(){
+    skipSpaceCmds();
+    if (peek() && peek().t === 'chr' && peek().v === '['){
+      p++;
+      var out = [], depth = 0;
+      while (peek()){
+        var tk = peek();
+        if (tk.t === 'chr' && tk.v === '[') depth++;
+        else if (tk.t === 'chr' && tk.v === ']'){
+          if (!depth){ p++; break; }
+          depth--;
+        }
+        out.push(tk); p++;
+      }
+      return out;
+    }
+    return null;
+  }
+  /* <mrow></mrow> 这种空参数当没写，免得生成空的 mover 子元素 */
+  function isEmptyArg(html){ return !html || html === '<mrow></mrow>'; }
+  function skipSpaceCmds(){
+    while (peek() && peek().t === 'cmd' && TEX_SPACE[peek().v] !== undefined &&
+           !TEX_SYM[peek().v] && !TEX_BIGOP[peek().v]) p++;
+  }
+  /* 只有后面真跟着上下标时才吞间距命令，否则 a\,b 里的 \, 会被静默丢掉 */
+  function skipSpaceBeforeScript(){
+    var q = p;
+    while (tokens[q] && tokens[q].t === 'cmd' && TEX_SPACE[tokens[q].v] !== undefined &&
+           !TEX_SYM[tokens[q].v] && !TEX_BIGOP[tokens[q].v]) q++;
+    if (tokens[q] && (tokens[q].t === '^' || tokens[q].t === '_')) p = q;
+  }
+
+  /* 一个原子（不含上下标） */
+  function parseAtom(){
+    var tk = peek();
+    if (!tk){ p++; return ''; }
+    if (tk.t === '{'){
+      p++;
+      var inner = parseSeq('}');
+      if (peek() && peek().t === '}') p++;
+      return '<mrow>' + inner + '</mrow>';
+    }
+    if (tk.t === 'num'){ p++; return '<mn>' + escapeHtml(tk.v) + '</mn>'; }
+    if (tk.t === 'chr'){ p++; return chrAtom(tk.v); }
+    if (tk.t === '&' || tk.t === '^' || tk.t === '_' || tk.t === '}'){ p++; return ''; }
+    /* 命令 */
+    p++;
+    return cmdAtom(tk.v);
+  }
+
+  function chrAtom(c){
+    if (TEX_OPCHARS.indexOf(c) >= 0) return '<mo>' + escapeHtml(c) + '</mo>';
+    if (/[a-zA-Z]/.test(c)) return '<mi>' + escapeHtml(c) + '</mi>';
+    var sym = /[∀-⋿⨀-⫿]/.test(c);
+    return (sym ? '<mo>' : '<mi>') + escapeHtml(c) + (sym ? '</mo>' : '</mi>');
+  }
+
+  function cmdAtom(name){
+    /* 间距 */
+    if (TEX_SPACE[name] !== undefined)
+      return '<mspace width="' + (TEX_SPACE[name].length ? '0.28em' : '0') + '"></mspace>';
+    /* 符号表 */
+    if (TEX_SYM[name] !== undefined) return '<mo>' + escapeHtml(TEX_SYM[name]) + '</mo>';
+    /* 大运算符：上下标另处理，这里给基础符号 */
+    if (TEX_BIGOP[name] !== undefined) return '<mo>' + TEX_BIGOP[name] + '</mo>';
+    /* \bmod 排出来是 mod，不带那个 b */
+    if (name === 'bmod') name = 'mod';
+    /* 函数名 */
+    if (TEX_FUNC.indexOf(name) >= 0) return '<mi mathvariant="normal" style="font-style:normal">' + escapeHtml(name) + '</mi>';
+
+    switch (name){
+      case 'frac': case 'dfrac': case 'tfrac': {
+        var num = readArg(), den = readArg();
+        return '<mfrac>' + num + den + '</mfrac>';
+      }
+      case 'binom': case 'dbinom': case 'tbinom': {
+        var bn = readArg(), bk = readArg();
+        return '<mrow><mo>(</mo><mfrac linethickness="0">' + bn + bk + '</mfrac><mo>)</mo></mrow>';
+      }
+      case 'sqrt': {
+        var idx = '';
+        skipSpaceCmds();
+        if (peek() && peek().t === 'chr' && peek().v === '['){
+          p++;
+          var buf = '';
+          while (peek() && !(peek().t === 'chr' && peek().v === ']')) buf += parseAtomWithScripts();
+          if (peek()) p++;
+          idx = buf;
+        }
+        var body = readArg();
+        return idx ? '<mroot>' + body + idx + '</mroot>' : '<msqrt>' + body + '</msqrt>';
+      }
+      case 'text': case 'textrm': case 'textnormal': case 'mbox': case 'operatorname': {
+        skipSpaceCmds();
+        var txt = '';
+        if (peek() && peek().t === '{'){
+          p++;
+          var depth = 1;
+          while (peek() && depth > 0){
+            var t2 = peek();
+            if (t2.t === '{') depth++;
+            else if (t2.t === '}'){ depth--; if (!depth){ p++; break; } }
+            txt += (t2.t === 'cmd' ? (TEX_SYM[t2.v] || t2.v) : (t2.v || (t2.t === 'num' ? t2.v : '')));
+            if (t2.t === '&') txt += ' ';
+            p++;
+          }
+          if (t2 && t2.t === '&') {}
+        }
+        return '<mtext>' + escapeHtml(txt) + '</mtext>';
+      }
+      case 'mathrm': case 'mathbf': case 'mathit': case 'mathsf': case 'mathtt':
+      case 'mathfrak': case 'mathcal': case 'mathbb': case 'boldsymbol':
+      case 'bm': case 'pmb': {
+        var arg = readArg();
+        if (name === 'mathbb' || name === 'mathcal' || name === 'mathfrak' ||
+            name === 'mathsf' || name === 'mathtt'){
+          /* 转成 Unicode 数学字母表字符：Chrome 的 MathML Core 已不支持 mathvariant */
+          var plain = arg.replace(/<[^>]+>/g, '');
+          return '<mi>' + escapeHtml(mapAlphabet(plain, TEX_ALPHABET[name])) + '</mi>';
+        }
+        var style = (name === 'mathit') ? 'font-style:italic' : 'font-style:normal';
+        if (name === 'mathbf' || name === 'boldsymbol' || name === 'bm' || name === 'pmb') style += ';font-weight:bold';
+        return '<mstyle style="' + style + '">' + arg + '</mstyle>';
+      }
+      case 'hat': case 'widehat': case 'bar': case 'overline': case 'vec':
+      case 'dot': case 'ddot': case 'tilde': case 'widetilde': case 'check':
+      case 'breve': case 'acute': case 'grave': {
+        var base = readArg();
+        var accentMap = { hat:'^', widehat:'^', bar:'‾', overline:'‾', vec:'⃗',
+          dot:'˙', ddot:'¨', tilde:'~', widetilde:'~', check:'ˇ', breve:'˘',
+          acute:'´', grave:'`' };
+        return '<mover accent="true">' + base + '<mo>' + accentMap[name] + '</mo></mover>';
+      }
+      case 'underline': {
+        return '<munder accentunder="true">' + readArg() + '<mo>_</mo></munder>';
+      }
+      /* ---- 上下花括号：\overbrace{a+b}^{n} 标在上方 ---- */
+      case 'overbrace': case 'underbrace': {
+        var brBase = readArg();
+        var brMark = name === 'overbrace' ? '⏞' : '⏟';
+        var brLab = null;
+        for (var bg = 0; bg < 2; bg++){
+          skipSpaceBeforeScript();
+          var bt = peek();
+          if (bt && bt.t === '^' && name === 'overbrace'){ p++; brLab = readScriptArg(); }
+          else if (bt && bt.t === '_' && name === 'underbrace'){ p++; brLab = readScriptArg(); }
+          else break;
+        }
+        /* 先让括号贴住内容，再把标注摞在括号外面——和 LaTeX 的排法一致 */
+        var brInner = name === 'overbrace'
+          ? '<mover accent="true">' + brBase + '<mo stretchy="true">' + brMark + '</mo></mover>'
+          : '<munder accentunder="true">' + brBase + '<mo stretchy="true">' + brMark + '</mo></munder>';
+        if (isEmptyArg(brLab)) return brInner;
+        return name === 'overbrace' ? '<mover>' + brInner + brLab + '</mover>'
+                                    : '<munder>' + brInner + brLab + '</munder>';
+      }
+      /* ---- 可加标注的伸缩箭头：\xrightarrow[下]{上} ---- */
+      case 'xrightarrow': case 'xleftarrow': case 'xleftrightarrow':
+      case 'xRightarrow': case 'xLeftarrow': case 'xLeftrightarrow':
+      case 'xmapsto': case 'xhookrightarrow': case 'xhookleftarrow': {
+        var xa = { xrightarrow:'→', xleftarrow:'←', xleftrightarrow:'↔',
+                   xRightarrow:'⇒', xLeftarrow:'⇐', xLeftrightarrow:'⇔',
+                   xmapsto:'↦', xhookrightarrow:'↪', xhookleftarrow:'↩' }[name];
+        var xBelow = readOptArg();
+        var xAbove = readArg();
+        var xArrow = '<mo stretchy="true">' + xa + '</mo>';
+        if (xBelow && !isEmptyArg(texParseTokens(xBelow, display))){
+          return '<munderover>' + xArrow + texParseTokens(xBelow, display) + xAbove + '</munderover>';
+        }
+        if (isEmptyArg(xAbove)) return xArrow;
+        return '<mover>' + xArrow + xAbove + '</mover>';
+      }
+      /* ---- 自定义上下标注 ---- */
+      case 'overset': case 'stackrel': {
+        var osTop = readArg(), osBase = readArg();
+        return '<mover>' + osBase + osTop + '</mover>';
+      }
+      case 'underset': {
+        var usLow = readArg(), usBase = readArg();
+        return '<munder>' + usBase + usLow + '</munder>';
+      }
+      /* ---- 尺寸命令：\big \Big \bigg \Bigg 及其 l/r/m 变体 ---- */
+      case 'big': case 'Big': case 'bigg': case 'Bigg':
+      case 'bigl': case 'bigr': case 'bigm':
+      case 'Bigl': case 'Bigr': case 'Bigm':
+      case 'biggl': case 'biggr': case 'biggm':
+      case 'Biggl': case 'Biggr': case 'Biggm': {
+        var bem = name.indexOf('Bigg') === 0 ? 2.6
+                : name.indexOf('bigg') === 0 ? 2.1
+                : name.indexOf('Big') === 0 ? 1.6 : 1.2;
+        skipSpaceCmds();
+        var bd = readDelim();
+        if (!bd) return '';
+        /* 用固定字号而不是 stretchy=true：\big 是「大一号」，不是「撑满」 */
+        return '<mo stretchy="false" style="font-size:' + bem + 'em">' + escapeHtml(bd) + '</mo>';
+      }
+      /* ---- 模运算 ---- */
+      case 'pmod': case 'pod': {
+        return '<mrow><mspace width="0.44em"></mspace><mo>(</mo>' +
+               '<mi mathvariant="normal" style="font-style:normal">mod</mi>' +
+               '<mspace width="0.28em"></mspace>' + readArg() + '<mo>)</mo></mrow>';
+      }
+      case 'cfrac': {
+        var cfn = readArg(), cfd = readArg();
+        return '<mfrac>' + cfn + cfd + '</mfrac>';
+      }
+      /* ---- 占位（不可见，但占位置） ---- */
+      case 'phantom': case 'hphantom': case 'vphantom': {
+        return '<mphantom>' + readArg() + '</mphantom>';
+      }
+      /* ---- 单列多行，给 \sum_{\substack{…}} 用 ---- */
+      case 'substack': {
+        var stk = readRawGroup();
+        return stk ? renderEnv('substack', stk) : '';
+      }
+      case 'left': {
+        var open = readDelim(), body = parseSeqUntilRight();
+        var close = '';
+        skipSpaceCmds();
+        if (isCmd(peek(), 'right')){ p++; close = readDelim(); }
+        /* 空定界符（\left. / \right.）不生成 <mo>，否则会多出一个空盒子 */
+        return '<mrow>' + (open ? '<mo stretchy="true">' + escapeHtml(open) + '</mo>' : '') +
+               body + (close ? '<mo stretchy="true">' + escapeHtml(close) + '</mo>' : '') + '</mrow>';
+      }
+      case 'right': return '<mo stretchy="true">' + escapeHtml(readDelim()) + '</mo>';
+      case 'begin': return parseEnvironment();
+      case 'displaystyle': case 'textstyle': case 'scriptstyle': case 'limits': case 'nolimits':
+        return '';
+      case 'not': {
+        skipSpaceCmds();
+        return '<mo≯</mo>' + parseAtom();
+      }
+      /* 单个非字母的命令名都是**转义出来的符号**：\{ \} \| \% \& \# \_ \$。
+         readDelim 认识它们（所以 \left\{ 一直是对的），但光秃秃写一个 \{
+         会掉到下面「未知命令」那条路，原样吐出反斜杠加花括号——屏幕上就是
+         两个字符 `\{`，而不是一个 `{`。 */
+      case '{': case '}': case '(': case ')': case '[': case ']':
+        return '<mo>' + escapeHtml(name) + '</mo>';
+      case '|': return '<mo>‖</mo>';             /* TeX 里 \| 是双竖线，不是单根 */
+      case '%': case '&': case '#': case '_': case '$':
+        return '<mi mathvariant="normal" style="font-style:normal">'
+               + escapeHtml(name) + '</mi>';
+      default:
+        /* 未知命令：按字面显示，不丢内容 */
+        return '<mi mathvariant="normal" style="font-style:normal">' + escapeHtml('\\' + name) + '</mi>';
+    }
+  }
+
+  function readDelim(){
+    skipSpaceCmds();
+    var tk = peek();
+    if (!tk) return '';
+    if (tk.t === 'cmd'){
+      p++;
+      if (TEX_SYM[tk.v]) return TEX_SYM[tk.v];
+      if (tk.v === 'lbrace') return '{';
+      if (tk.v === 'rbrace') return '}';
+      if (tk.v === 'langle') return '⟨';
+      if (tk.v === 'rangle') return '⟩';
+      if (tk.v === 'vert' || tk.v === 'lvert' || tk.v === 'rvert') return '|';
+      if (tk.v === 'Vert') return '‖';
+      /* 单个非字母的命令都是转义定界符：\{ \} \| \! 之类，取它本身 */
+      if (tk.v.length === 1 && !/[a-zA-Z]/.test(tk.v)) return tk.v === '.' ? '' : tk.v;
+      if (tk.v === 'left' || tk.v === 'right') return '';
+      return '\\' + tk.v;
+    }
+    p++;
+    if (tk.t === 'num') return tk.v;
+    /* \left. 和 \bigg. 里的点是「这边不要定界符」，不能真排出一个句点 */
+    return tk.v === '.' ? '' : (tk.v || '');
+  }
+
+  function parseSeqUntilRight(){
+    var out = '';
+    while (peek()){
+      if (isCmd(peek(), 'right')) break;
+      var before = p;
+      out += parseAtomWithScripts();
+      if (p === before) p++;   /* 防死循环 */
+    }
+    return out;
+  }
+
+  /* 环境：matrix / cases / aligned 等 */
+  function parseEnvironment(){
+    skipSpaceCmds();
+    var envName = '';
+    if (peek() && peek().t === '{'){
+      p++;
+      while (peek() && peek().t !== '}'){ envName += (peek().v || ''); p++; }
+      if (peek()) p++;
+    }
+    /* 收集直到配对的 \end{envName} */
+    var body = [], depth = 1;
+    while (p < n){
+      var tk = tokens[p];
+      if (isCmd(tk, 'begin')){ depth++; body.push(tk); p++; continue; }
+      if (isCmd(tk, 'end')){
+        var save = p;
+        p++;
+        var nm = '';
+        if (peek() && peek().t === '{'){
+          p++;
+          while (peek() && peek().t !== '}'){ nm += (peek().v || ''); p++; }
+          if (peek()) p++;
+        }
+        if (depth === 1 && nm === envName) break;
+        depth--;
+        p = save;
+        body.push(tokens[p]); p++;
+        continue;
+      }
+      body.push(tk); p++;
+    }
+    return renderEnv(envName, body);
+  }
+
+  function renderEnv(envName, body){
+    var open = '', close = '';
+    if (/^pmatrix$|^bmatrix$|^vmatrix$|^Vmatrix$|^matrix\*?$/.test(envName)){
+      if (envName.charAt(0) === 'p'){ open = '('; close = ')'; }
+      else if (envName.charAt(0) === 'b'){ open = '['; close = ']'; }
+      else if (envName.charAt(0) === 'v'){ open = '|'; close = '|'; }
+      else if (envName.charAt(0) === 'V'){ open = '‖'; close = '‖'; }
+    } else if (envName === 'cases'){ open = '{'; close = ''; }
+    else if (envName === 'bmatrix*'){ open = '['; close = ']'; }
+
+    /* 拆行、拆列 */
+    var rows = [];
+    var cells = [[]];
+    for (var i = 0; i < body.length; i++){
+      var tk = body[i];
+      if (tk.t === '&'){ cells.push([]); continue; }
+      if (tk.t === 'cmd' && tk.v === '\\'){ rows.push(cells); cells = [[]]; continue; }
+      cells[cells.length - 1].push(tk);
+    }
+    rows.push(cells);
+
+    var html = '<mtable>';
+    for (var r = 0; r < rows.length; r++){
+      var rowCells = rows[r];
+      /* 丢掉完全空的行（常见于结尾的 \\） */
+      if (rowCells.length === 1 && rowCells[0].length === 0) continue;
+      html += '<mtr>';
+      for (var c = 0; c < rowCells.length; c++){
+        var cellTokens = rowCells[c];
+        var cellHtml = cellTokens.length ? texParseTokens(cellTokens, display) : '';
+        var isText = /^(text|mbox)/.test(envName);
+        html += '<mtd' + (isText ? ' columnalign="left"' : '') + '>' +
+                (isText ? cellHtml : '<mrow>' + cellHtml + '</mrow>') + '</mtd>';
+      }
+      html += '</mtr>';
+    }
+    html += '</mtable>';
+    if (!open && !close) return html;
+    return '<mrow><mo stretchy="true">' + open + '</mo>' + html +
+           (close ? '<mo stretchy="true">' + close + '</mo>' : '') + '</mrow>';
+  }
+
+  /* 原子 + 上下标 */
+  function parseAtomWithScripts(){
+    var base = parseAtom();
+    var sub = null, sup = null, order = [];
+    for (var guard = 0; guard < 4; guard++){
+      skipSpaceBeforeScript();
+      var tk = peek();
+      if (!tk) break;
+      if (tk.t === '_' && sub === null){ p++; sub = readScriptArg(); order.push('_'); }
+      else if (tk.t === '^' && sup === null){ p++; sup = readScriptArg(); order.push('^'); }
+      else break;
+    }
+    if (sub === null && sup === null) return base;
+    /* 上下限放哪儿，照 LaTeX 分三类：
+       - 大算符 ∑∏∐⋃⋂… 用 \displaylimits：display 式里限在正上下，
+         行内式里退到侧边；
+       - 积分 ∫∮∬∭ 用 \nolimits：**永远在侧边**。plain TeX 里
+         \def\int{\intop\nolimits}，所以 \[\int_0^1\] 的 0 和 1 是贴在
+         积分号两侧的，不是上下叠着——原先把 ∫ 归进大算符那一组了；
+       - 极限算子 lim max min … 用 \limits：**永远在正上下**，
+         行内式也一样，$\lim_{x\to 0}$ 的下标就在 lim 底下。 */
+    var displayOp = /^<mo>([∑∏∐⋃⋂⋁⋀⨁⨂⨀⨄⨆])<\/mo>$/.test(base);
+    var alwaysOp = /^<mi mathvariant="normal" style="font-style:normal">(?:lim|limsup|liminf|max|min|sup|inf|det|gcd|arg|Pr)<\/mi>$/.test(base);
+    if (alwaysOp || (displayOp && display)){
+      if (sub !== null && sup !== null) return '<munderover>' + base + sub + sup + '</munderover>';
+      if (sub !== null) return '<munder>' + base + sub + '</munder>';
+      return '<mover>' + base + sup + '</mover>';
+    }
+    if (sub !== null && sup !== null){
+      /* 保持书写顺序：x_i^2 与 x^2_i 都成立 */
+      if (order[0] === '^') return '<msubsup>' + base + sub + sup + '</msubsup>';
+      return '<msubsup>' + base + sub + sup + '</msubsup>';
+    }
+    if (sub !== null) return '<msub>' + base + sub + '</msub>';
+    return '<msup>' + base + sup + '</msup>';
+  }
+
+  function readScriptArg(){
+    skipSpaceCmds();
+    var tk = peek();
+    if (!tk) return '';
+    if (tk.t === '{'){
+      p++;
+      var inner = parseSeq('}');
+      if (peek() && peek().t === '}') p++;
+      return '<mrow>' + inner + '</mrow>';
+    }
+    /* 单 token 上下标：不要把后续的 ^ _ 也吃进来 */
+    var one = parseAtom();
+    return one;
+  }
+
+  function parseSeq(stop){
+    var out = '';
+    while (p < n){
+      var tk = peek();
+      if (!tk) break;
+      if (stop && tk.t === stop) break;
+      if (tk.t === '&') break;
+      var before = p;
+      out += parseAtomWithScripts();
+      if (p === before) p++;
+    }
+    return out;
+  }
+
+  var body = parseSeq(null);
+  return '<math display="' + (display ? 'block' : 'inline') + '"><mrow>' + body + '</mrow></math>';
+}
+
+/* 用 token 数组跑一遍完整解析（给嵌套环境复用）
+   只取 <math><mrow> 里的序列本身——嵌在 <mtd> 里的内容不能再套一层 <math> */
+function texParseTokens(tokens, display){
+  var s = texParse(tokens, display);
+  return s.replace(/^<math\b[^>]*><mrow>/, '').replace(/<\/mrow><\/math>$/, '');
+}
+
+/* 对外入口：失败时返回 null，由调用方决定怎么兜底 */
+function texToMathML(src, display){
+  try {
+    var out = texParse(texTokens(String(src)), !!display);
+    if (!out || out.indexOf('<math') !== 0) return null;
+    /* 解析结果里除了我们自己生成的内容不该有别的标签，简单兜底 */
+    return out;
+  } catch (e){ return null; }
+}
+
+/* =====================================================================
+   代码高亮
+   自己写的词法扫描，不引任何外部库（离线是硬要求，CDN 一个都不能有）。
+   规则按顺序试，先命中的赢；用 sticky(y) 正则从当前位置起步，
+   所以既不回溯也不全文扫描，每条规则最多一次 exec。
+   ===================================================================== */
+var HL_MAX = 16000;      /* 超过这个长度就不高亮了，免得在手机上卡住 */
+
+var HL_RE = {};
+function hlRe(pat, flags){
+  var key = (flags || '') + '\u0000' + pat;
+  var r = HL_RE[key];
+  if (!r){ r = new RegExp(pat, (flags || '') + 'y'); HL_RE[key] = r; }
+  return r;
+}
+function hlKw(words, flags){
+  return hlRe('(?:' + words + ')\\b', flags || '');
+}
+function hlNum(){
+  return hlRe('(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)[a-zA-Z]*');
+}
+/* 收尾规则：空白成串吞、普通标识符整个吞，避免逐字符走主循环 */
+function hlTail(){
+  return [[hlRe('[ \\t]+'), null], [hlRe('[A-Za-z_$][\\w$]*'), null]];
+}
+
+function hlRun(code, rules){
+  var out = '', i = 0, n = code.length, buf = '';
+  while (i < n){
+    var text = null, cls;
+    for (var r = 0; r < rules.length; r++){
+      var re = rules[r][0];
+      re.lastIndex = i;
+      var m = re.exec(code);
+      if (m && m[0]){ text = m[0]; cls = rules[r][1]; break; }
+    }
+    if (text === null){ buf += code.charAt(i); i++; continue; }
+    if (buf){ out += escapeHtml(buf); buf = ''; }
+    if (cls === null || cls === undefined) out += escapeHtml(text);
+    else if (typeof cls === 'function') out += cls(text);
+    else out += '<span class="tok-' + cls + '">' + escapeHtml(text) + '</span>';
+    i += text.length;
+  }
+  if (buf) out += escapeHtml(buf);
+  return out;
+}
+
+var HL_C_KW = 'abstract|as|assert|async|await|break|case|catch|class|const|constructor|continue|debugger|default|delete|do|else|enum|export|extends|final|finally|fn|for|from|func|function|get|go|goto|if|impl|implements|import|in|instanceof|interface|is|lambda|let|loop|match|mod|move|mut|namespace|native|new|of|operator|package|private|protected|pub|public|readonly|ref|return|select|set|static|struct|super|switch|synchronized|this|throw|throws|trait|try|type|typeof|unsafe|use|var|void|volatile|where|while|with|yield|defer|chan|range|fallthrough|signed|unsigned|short|long|register|auto|typedef|sizeof|extern|crate|dyn|self|Self';
+var HL_C_LIT = 'true|false|null|undefined|NaN|Infinity|None';
+var HL_C_TYP = 'Array|Boolean|Date|Error|JSON|Map|Math|Number|Object|Promise|RegExp|Set|String|Symbol|WeakMap|WeakSet|BigInt|globalThis|console|document|window|any|never|unknown|boolean|number|string|symbol|bigint|object|int|char|float|double|bool|byte|rune|error|complex64|complex128|uint|uintptr|usize|isize|i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64|str|Vec|Option|Result|Box|Rc|Arc|HashMap|HashSet|BTreeMap';
+
+function hlRulesC(){
+  return [
+    [hlRe('\\/\\*[\\s\\S]*?(?:\\*\\/|$)'), 'com'],
+    [hlRe('\\/\\/[^\\n]*'), 'com'],
+    [hlRe('`(?:\\\\.|[^`\\\\])*`'), 'str'],
+    [hlRe('"(?:\\\\.|[^"\\\\\\n])*"'), 'str'],
+    [hlRe("'(?:\\\\.|[^'\\\\\\n])*'"), 'str'],
+    [hlKw(HL_C_KW), 'kw'],
+    [hlKw(HL_C_LIT), 'num'],
+    [hlKw(HL_C_TYP), 'typ'],
+    [hlRe('[A-Za-z_$][\\w$]*(?=\\s*\\()'), 'fn'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+var HL_PY_KW = 'and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|match|case';
+var HL_PY_LIT = 'True|False|None|NotImplemented|Ellipsis|self|cls';
+var HL_PY_BI = 'abs|all|any|ascii|bin|bool|bytearray|bytes|callable|chr|classmethod|compile|complex|delattr|dict|dir|divmod|enumerate|eval|exec|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|isinstance|issubclass|iter|len|list|locals|map|max|memoryview|min|next|object|oct|open|ord|pow|print|property|range|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|vars|zip';
+
+function hlRulesPy(){
+  return [
+    [hlRe('#[^\\n]*'), 'com'],
+    [hlRe('"""[\\s\\S]*?"""|\'\'\'[\\s\\S]*?\'\'\''), 'str'],
+    [hlRe('[rRbBfFuU]{0,2}"(?:\\\\.|[^"\\\\\\n])*"'), 'str'],
+    [hlRe("[rRbBfFuU]{0,2}'(?:\\\\.|[^'\\\\\\n])*'"), 'str'],
+    [hlRe('@[\\w.]+'), 'meta'],
+    [hlKw(HL_PY_KW), 'kw'],
+    [hlKw(HL_PY_LIT), 'num'],
+    [hlKw(HL_PY_BI), 'typ'],
+    [hlRe('[A-Za-z_][\\w]*(?=\\s*\\()'), 'fn'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+var HL_SH_KW = 'if|then|else|elif|fi|for|while|until|do|done|case|esac|function|return|local|export|readonly|declare|source|alias|unalias|set|unset|shift|trap|exit|in|select|time|coproc|break|continue|eval|exec|command|builtin';
+var HL_SH_BI = 'echo|printf|read|cd|pwd|ls|cat|head|tail|grep|egrep|fgrep|sed|awk|cut|sort|uniq|wc|tr|find|xargs|tee|curl|wget|git|npm|npx|yarn|pnpm|node|python|python3|pip|go|cargo|rustc|java|javac|docker|kubectl|make|cmake|gcc|g\\+\\+|clang|tar|zip|unzip|gzip|chmod|chown|mkdir|rmdir|rm|cp|mv|ln|touch|df|du|ps|kill|sleep|test|which|whoami|sudo|su|apt|apt-get|pkg|dnf|yum|brew|systemctl|ssh|scp|rsync|date|env|history|man|termux-setup-storage|pkg';
+
+function hlRulesSh(){
+  return [
+    [hlRe('#[^\\n]*'), 'com'],
+    [hlRe('"(?:\\\\.|[^"\\\\])*"'), 'str'],
+    [hlRe("'[^']*'"), 'str'],
+    [hlRe('\\$\\{[^}\\n]*\\}|\\$[\\w@#?*!$-]+'), 'var'],
+    [hlKw(HL_SH_KW), 'kw'],
+    [hlKw(HL_SH_BI), 'fn'],
+    [hlRe('(?<=^|[\\s;|&(])-{1,2}[A-Za-z][\\w-]*'), 'attr'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+/* 标签整体匹配后再在内部标属性：比逐 token 猜状态机简单，也不容易错 */
+function hlTagHtml(text){
+  var m = /^(<\/?)([a-zA-Z][\w:.-]*)([\s\S]*?)(\/?>)$/.exec(text);
+  if (!m) return escapeHtml(text);
+  var attrs = m[3], body = '', last = 0, am;
+  var re = /(\s+)([a-zA-Z_:][\w:.-]*)(\s*=\s*)?("[^"]*"|'[^']*'|[^\s"'>]+)?/g;
+  while ((am = re.exec(attrs))){
+    body += escapeHtml(attrs.slice(last, am.index)) + escapeHtml(am[1]) +
+            '<span class="tok-attr">' + escapeHtml(am[2]) + '</span>';
+    if (am[3]) body += '<span class="tok-pun">' + escapeHtml(am[3]) + '</span>';
+    if (am[4]) body += '<span class="tok-str">' + escapeHtml(am[4]) + '</span>';
+    last = re.lastIndex;
+  }
+  body += escapeHtml(attrs.slice(last));
+  return '<span class="tok-pun">' + escapeHtml(m[1]) + '</span>' +
+         '<span class="tok-tag">' + escapeHtml(m[2]) + '</span>' + body +
+         '<span class="tok-pun">' + escapeHtml(m[4]) + '</span>';
+}
+
+function hlRulesHtml(){
+  return [
+    [hlRe('<!--[\\s\\S]*?(?:-->|$)'), 'com'],
+    [hlRe('<!\\[CDATA\\[[\\s\\S]*?\\]\\]>'), 'meta'],
+    [hlRe('<!DOCTYPE[^>]*>', 'i'), 'meta'],
+    [hlRe('<\\/?[a-zA-Z][^<>]*>'), hlTagHtml],
+    [hlRe('&[a-zA-Z#][\\w]*;'), 'num']
+  ].concat(hlTail());
+}
+
+function hlRulesCss(){
+  return [
+    [hlRe('\\/\\*[\\s\\S]*?(?:\\*\\/|$)'), 'com'],
+    [hlRe('"(?:\\\\.|[^"\\\\\\n])*"|\'[^\'\\n]*\''), 'str'],
+    [hlRe('@[\\w-]+'), 'kw'],
+    [hlRe('--[\\w-]+'), 'var'],
+    [hlRe('#[0-9a-fA-F]{3,8}\\b'), 'num'],
+    [hlRe('(?:\\d*\\.)?\\d+(?:px|em|rem|vh|vw|vmin|vmax|%|s|ms|deg|turn|fr|pt|pc|cm|mm|in|ch|ex|q)?'), 'num'],
+    [hlRe('[a-zA-Z-]+(?=\\s*:)'), 'attr'],
+    [hlRe('\\.-?[_a-zA-Z][\\w-]*|::?[\\w-]+'), 'fn'],
+    [hlRe('[a-zA-Z-]+(?=\\()'), 'fn']
+  ].concat(hlTail());
+}
+
+function hlRulesJson(){
+  return [
+    [hlRe('"(?:\\\\.|[^"\\\\\\n])*"(?=\\s*:)'), 'attr'],
+    [hlRe('"(?:\\\\.|[^"\\\\\\n])*"'), 'str'],
+    [hlKw('true|false|null'), 'kw'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+function hlRulesYaml(){
+  return [
+    [hlRe('#[^\\n]*'), 'com'],
+    [hlRe('[\\w.$/-]+(?=[ \\t]*:(?:[ \\t]|$))'), 'attr'],
+    [hlRe('"(?:\\\\.|[^"\\\\\\n])*"|\'[^\'\\n]*\''), 'str'],
+    [hlKw('true|false|null|yes|no|on|off|True|False|Null|Yes|No|On|Off'), 'kw'],
+    [hlRe('---|\\.\\.\\.'), 'meta'],
+    [hlRe('-{1}(?=\\s)'), 'pun'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+var HL_SQL_KW = 'SELECT|FROM|WHERE|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|INDEX|VIEW|DROP|ALTER|ADD|COLUMN|JOIN|LEFT|RIGHT|INNER|OUTER|FULL|CROSS|ON|USING|GROUP|BY|ORDER|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|AS|AND|OR|NOT|IN|EXISTS|BETWEEN|LIKE|IS|NULL|CASE|WHEN|THEN|ELSE|END|WITH|RECURSIVE|PRIMARY|KEY|FOREIGN|REFERENCES|UNIQUE|CHECK|DEFAULT|CONSTRAINT|CASCADE|ASC|DESC|IF|BEGIN|COMMIT|ROLLBACK|TRANSACTION|GRANT|REVOKE|TRUNCATE|EXPLAIN|ANALYZE|VACUUM|RETURNING|OVER|PARTITION|WINDOW|CAST|INT|INTEGER|BIGINT|SMALLINT|DECIMAL|NUMERIC|FLOAT|REAL|DOUBLE|CHAR|VARCHAR|TEXT|DATE|TIME|TIMESTAMP|BOOLEAN|BLOB|SERIAL';
+var HL_SQL_FN = 'COUNT|SUM|AVG|MIN|MAX|COALESCE|NULLIF|NOW|ROUND|ABS|LENGTH|LOWER|UPPER|TRIM|SUBSTR|GROUP_CONCAT|ROW_NUMBER|RANK|DENSE_RANK';
+
+function hlRulesSql(){
+  return [
+    [hlRe('--[^\\n]*|\\/\\*[\\s\\S]*?(?:\\*\\/|$)'), 'com'],
+    [hlRe("'(?:''|[^'])*'"), 'str'],
+    [hlRe('"(?:[^"]|"")*"'), 'attr'],
+    [hlKw(HL_SQL_KW, 'i'), 'kw'],
+    [hlKw(HL_SQL_FN, 'i'), 'fn'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+function hlRulesDiff(){
+  return [
+    [hlRe('^\\+\\+\\+[^\\n]*|^---[^\\n]*', 'm'), 'meta'],
+    [hlRe('^\\+[^\\n]*', 'm'), 'add'],
+    [hlRe('^-[^\\n]*', 'm'), 'del'],
+    [hlRe('^@@[^\\n]*', 'm'), 'meta'],
+    [hlRe('^diff[^\\n]*|^index[^\\n]*', 'm'), 'meta']
+  ].concat(hlTail());
+}
+
+function hlRulesIni(){
+  return [
+    [hlRe('[#;][^\\n]*'), 'com'],
+    [hlRe('\\[[^\\]\\n]*\\]'), 'kw'],
+    [hlRe('"(?:\\\\.|[^"\\\\\\n])*"|\'[^\'\\n]*\''), 'str'],
+    [hlRe('[\\w.$-]+(?=[ \\t]*=)'), 'attr'],
+    [hlKw('true|false'), 'kw'],
+    [hlNum(), 'num']
+  ].concat(hlTail());
+}
+
+var HL_ALIAS = {
+  js:'js', javascript:'js', jsx:'js', mjs:'js', cjs:'js', node:'js',
+  ts:'js', typescript:'js', tsx:'js',
+  c:'js', h:'js', cpp:'js', 'c++':'js', cc:'js', hpp:'js', cs:'js', csharp:'js',
+  java:'js', kotlin:'js', kt:'js', swift:'js', go:'js', golang:'js',
+  rust:'js', rs:'js', dart:'js', scala:'js', groovy:'js', gradle:'js',
+  py:'py', python:'py', python3:'py',
+  sh:'sh', bash:'sh', shell:'sh', zsh:'sh', console:'sh', fish:'sh', ksh:'sh',
+  html:'html', htm:'html', xml:'html', svg:'html', vue:'html', xhtml:'html',
+  css:'css', scss:'css', less:'css', sass:'css', styl:'css',
+  json:'json', jsonc:'json', json5:'json',
+  yaml:'yaml', yml:'yaml',
+  sql:'sql', mysql:'sql', postgres:'sql', postgresql:'sql', sqlite:'sql',
+  diff:'diff', patch:'diff',
+  ini:'ini', toml:'ini', conf:'ini', cfg:'ini', properties:'ini', env:'ini'
+};
+var HL_BUILD = {
+  js: hlRulesC, py: hlRulesPy, sh: hlRulesSh, html: hlRulesHtml,
+  css: hlRulesCss, json: hlRulesJson, yaml: hlRulesYaml, sql: hlRulesSql,
+  diff: hlRulesDiff, ini: hlRulesIni
+};
+var HL_CACHE = {};
+function hlRulesFor(key){
+  if (!HL_CACHE[key]) HL_CACHE[key] = HL_BUILD[key]();
+  return HL_CACHE[key];
+}
+/* 单块之外还有总量限制：一篇塞了几十段大代码的文档，逐块都合规，
+   加起来却能让手机卡住好几秒。超了预算的块直接退回纯转义——
+   已经高亮好的部分不动，视觉上只是后面几块变素，不会前后不一致。 */
+var HL_BUDGET = 120000;
+var hlBudgetLeft = HL_BUDGET;
+/* 语言不认识、或者代码太长，都返回 null，由调用方退回纯转义 */
+function highlightCode(code, lang){
+  var key = HL_ALIAS[String(lang == null ? '' : lang).toLowerCase().trim()];
+  if (!key || !HL_BUILD[key]) return null;
+  if (code.length > HL_MAX || code.length > hlBudgetLeft) return null;
+  try {
+    var out = hlRun(code, hlRulesFor(key));
+    hlBudgetLeft -= code.length;
+    return out;
+  } catch (e){ return null; }
+}
+
+/* =====================================================================
+   Markdown
+   ===================================================================== */
+
+/* ---------------- HTML 实体 ---------------- */
+/* 流程是「先解实体、再由 escapeHtml 重新编码」：这样 &amp; 显示成 &，
+   而 &nbsp; 这种会变成真字符，而不是原样吐一串 &nbsp; 给人看。
+   注意必须排在 HTML 标签识别之后——否则 &lt;div&gt; 会被当成真标签放行。 */
+var ENTITIES = {
+  amp:'&', lt:'<', gt:'>', quot:'"', apos:"'", nbsp:' ',
+  copy:'©', reg:'®', trade:'™', hellip:'…', mdash:'—', ndash:'–',
+  laquo:'«', raquo:'»', ldquo:'“', rdquo:'”', lsquo:'‘', rsquo:'’',
+  times:'×', divide:'÷', deg:'°', plusmn:'±', minus:'−', middot:'·',
+  bull:'•', dagger:'†', Dagger:'‡', permil:'‰', euro:'€', pound:'£',
+  yen:'¥', cent:'¢', sect:'§', para:'¶', micro:'µ',
+  sup2:'²', sup3:'³', frac12:'½', frac14:'¼', frac34:'¾',
+  larr:'←', rarr:'→', harr:'↔', darr:'↓', uarr:'↑',
+  infin:'∞', ne:'≠', le:'≤', ge:'≥',
+  alpha:'α', beta:'β', gamma:'γ', delta:'δ', pi:'π',
+  sigma:'Σ', omega:'ω', Delta:'Δ', Omega:'Ω',
+  shy:'­', ensp:' ', emsp:' ', thinsp:' ',
+  zwj:'‍', zwnj:'‌', star:'☆', starf:'★', check:'✓', cross:'✗'
+};
+function decodeEntities(s){
+  if (s.indexOf('&') < 0) return s;
+  return s.replace(/&(#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,31});/g,
+    function(m, body){
+      if (body.charAt(0) === '#'){
+        var cp = (body.charAt(1) === 'x' || body.charAt(1) === 'X')
+          ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+        /* 挡掉代理区和越界码点，否则 fromCodePoint 会抛 */
+        if (!isFinite(cp) || cp <= 0 || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff)) return m;
+        try { return String.fromCodePoint(cp); } catch (e){ return m; }
+      }
+      var v = ENTITIES[body];
+      return v === undefined ? m : v;
+    });
+}
+
+/* ---------------- 标题锚点 ---------------- */
+/* 生成 GitHub 风格的 slug，中文原样保留。同名标题自动加 -2 -3 后缀 */
+function slugify(text){
+  var s = String(text)
+    .replace(/<[^>]*>/g, '')
+    .replace(/&[a-zA-Z#][\w]*;/g, '')
+    .toLowerCase().trim()
+    .replace(/[\s　]+/g, '-')
+    .replace(/[^\w一-鿿-]/g, '')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return s || 'section';
+}
+function headingId(counter, text){
+  var base = slugify(text);
+  var n = counter[base] || 0;
+  counter[base] = n + 1;
+  return n ? base + '-' + (n + 1) : base;
+}
+
+function splitRow(line){
+  /* 按竖线切分，但跳过被转义的 \| 和行内代码里的 | */
+  var s = String(line).trim();
+  if (s.charAt(0) === '|') s = s.slice(1);
+  if (s.charAt(s.length - 1) === '|' && s.charAt(s.length - 2) !== '\\') s = s.slice(0, -1);
+  var cells = [], buf = '', tick = 0, i = 0;
+  while (i < s.length){
+    var c = s[i];
+    if (c === '\\' && s[i + 1] === '|'){ buf += '|'; i += 2; continue; }
+    if (c === '`'){
+      var run = 1;
+      while (s[i + run] === '`') run++;
+      if (tick === 0) tick = run;
+      else if (tick === run) tick = 0;
+      buf += s.substr(i, run); i += run; continue;
+    }
+    if (c === '|' && tick === 0){ cells.push(buf); buf = ''; i++; continue; }
+    buf += c; i++;
+  }
+  cells.push(buf);
+  return cells.map(function(x){ return x.trim(); });
+}
+function isTableSep(line){
+  if (!line || line.indexOf('-') < 0) return false;
+  return /^[ \t]*\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/.test(line);
+}
+function isHr(line){ return /^ {0,3}([-*_])[ \t]*(\1[ \t]*){2,}$/.test(line); }
+
+function mdToHtml(src, opts){
+  opts = opts || {};
+  hlBudgetLeft = HL_BUDGET;   /* \u6BCF\u6B21\u6E32\u67D3\u90FD\u91CD\u65B0\u53D1\u4E00\u4EFD\u9AD8\u4EAE\u9884\u7B97 */
+  svgSeq = 0;                 /* SVG \u4F5C\u7528\u57DF\u540D\u4E5F\u6BCF\u6B21\u91CD\u6765\uFF0C\u4FDD\u8BC1\u540C\u6837\u8F93\u5165\u51FA\u540C\u6837\u7ED3\u679C */
+  src = String(src).replace(/\r\n?/g, '\n').replace(/\t/g, '    ').replace(/^\uFEFF/, '');
+
+  var lines0 = src.split('\n');
+  var lines = [], footnoteDefs = {}, refs = {};
+
+  /* 脚注定义：[^id]: 内容（支持缩进续行） */
+  for (var i = 0; i < lines0.length; i++){
+    var fm = lines0[i].match(/^ {0,3}\[\^([^\]\s]+)\]:[ \t]*(.*)$/);
+    if (fm){
+      var body = [fm[2]];
+      /* 缩进行是续行；空行之后如果还是缩进行，那属于同一条脚注的下一段 */
+      for (;;){
+        var j = i + 1;
+        if (j >= lines0.length) break;
+        if (/^ {2,}\S/.test(lines0[j])){ body.push(lines0[j].replace(/^ {2,4}/, '')); i = j; continue; }
+        if (!lines0[j].trim()){
+          var j2 = j;
+          while (j2 < lines0.length && !lines0[j2].trim()) j2++;
+          if (j2 < lines0.length && /^ {2,}\S/.test(lines0[j2])){
+            for (; j < j2; j++) body.push('');   /* j 必须自增，否则这个循环不会停 */
+            body.push(lines0[j2].replace(/^ {2,4}/, ''));
+            i = j2; continue;
+          }
+        }
+        break;
+      }
+      footnoteDefs[fm[1]] = body.join('\n');
+      continue;
+    }
+    lines.push(lines0[i]);
+  }
+  /* 链接引用定义：[id]: url "title" */
+  var kept = [];
+  for (var k = 0; k < lines.length; k++){
+    var rm = lines[k].match(/^ {0,3}\[([^\]^][^\]]*)\]:[ \t]*<?([^\s>]+)>?(?:[ \t]+["'(]([^"')]*)["')])?[ \t]*$/);
+    if (rm){ refs[rm[1].toLowerCase().trim()] = rm[2]; continue; }
+    kept.push(lines[k]);
+  }
+
+  var ctx = { footnoteDefs: footnoteDefs, footnoteOrder: [], refs: refs, opts: opts, slugCount: {} };
+  var inline = makeInline(ctx);
+  var html = parseBlocks(kept, ctx, inline);
+
+  if (ctx.footnoteOrder.length){
+    var fns = '<section class="footnotes"><hr><ol>';
+    for (var f = 0; f < ctx.footnoteOrder.length; f++){
+      var num = f + 1;
+      var back = ' <a class="fn-back" href="#fnref-' + num + '">↩</a>';
+      var fsrc = footnoteDefs[ctx.footnoteOrder[f]];
+      var fbody;
+      if (fsrc.indexOf('\n') < 0){
+        fbody = inline(fsrc) + back;            /* 单段：保持原样，不套 <p> */
+      } else {
+        /* 多段脚注要走块级解析，否则段间会变成 <br><br> */
+        fbody = parseBlocks(fsrc.split('\n'), ctx, inline);
+        fbody = /<\/p>\s*$/.test(fbody) ? fbody.replace(/<\/p>\s*$/, back + '</p>')
+                                       : fbody + back;
+      }
+      fns += '<li id="fn-' + num + '">' + fbody + '</li>';
+    }
+    html += fns + '</ol></section>';
+  }
+  return html;
+}
+
+/* ---------------- 行内 ---------------- */
+/* 下面任何一个字符出现，都可能触发某条行内规则；都没有就是纯文本。
+   反引号/反斜杠/$/尖括号/&/中括号/感叹号/星号/下划线/波浪号/等号/冒号——
+   冒号是为了 http:// 这种裸链接，www. 开头的另外用 indexOf 兜一下。
+   换行不在这里单独算，因为它太常见（段内换行），见下面第二档快速通道。 */
+var INLINE_HOT = /[\\`$<>&\[\]!*_~=:]/;
+
+function makeInline(ctx){
+  var opts = ctx.opts;
+  var mathOn = opts.math !== false;
+  return function inline(text){
+    text = String(text);
+    /* 快速通道：没有能触发行内规则的字符。这一串跑完下面二十来次正则也是原样返回，
+       直接短路——中文散文段落几乎都走这里，是行内解析最大的一笔开销。
+       两档：整串干净 → 原样返回；只有换行 → 只做换行处理。 */
+    if (!INLINE_HOT.test(text) && text.indexOf('www.') < 0){
+      if (text.indexOf('\n') < 0) return text;
+      /* 行尾两个空格是硬换行，那种情况仍然走完整流程 */
+      if (!/ {2,}\n/.test(text)){
+        return opts.softBreak === false ? text.replace(/\n/g, ' ') : text.replace(/\n/g, '<br>');
+      }
+    }
+    var stash = [];
+    function put(html){ stash.push(html); return '\u0000' + (stash.length - 1) + '\u0001'; }
+
+    /* 1. 行内代码（最先，保护内部内容） */
+    text = text.replace(/(`+)([\s\S]*?)\1(?!`)/g, function(m, t, code){
+      if (/^\s$/.test(code)) return m;
+      return put('<code>' + escapeHtml(code.replace(/^ ([\s\S]*) $/, '$1')) + '</code>');
+    });
+    /* 2. LaTeX 公式（放在转义之前，否则 & 会被转成 &amp; 破坏 MathML） */
+    if (mathOn){
+      text = text.replace(/\\\[([\s\S]+?)\\\]/g, function(m, tex){
+        var ml = texToMathML(tex, true);
+        return ml ? put('<span class="math-display">' + ml + '</span>') : m;
+      });
+      text = text.replace(/\\\(([\s\S]+?)\\\)/g, function(m, tex){
+        var ml = texToMathML(tex, false);
+        return ml ? put(ml) : m;
+      });
+      text = text.replace(/\$\$([\s\S]+?)\$\$/g, function(m, tex){
+        var ml = texToMathML(tex, false);
+        return ml ? put(ml) : m;
+      });
+      /* 行内 $...$：采用 Pandoc 的判定规则，避免把价格当成公式
+         1) 开头的 $ 后面不能是空白   2) 结尾的 $ 前面不能是空白
+         3) 结尾的 $ 后面不能紧跟数字（否则 $5-$10 会被误判） */
+      text = text.replace(/\$(?![\s$])((?:\\.|[^\\$\n])+?)(?<![\s\\])\$(?!\d)/g, function(m, tex){
+        var ml = texToMathML(tex, false);
+        return ml ? put(ml) : m;
+      });
+    }
+    /* 2b. 反斜杠转义：\* 排出来就是一个星号。
+       必须赶在自动链接和标签识别之前，否则 \<div> 会先在 '<' 处被当成真标签。
+       结果塞进占位符，免得后面的强调/链接规则又把它当语法吃掉。 */
+    text = text.replace(/\\([!"#$%&'()*+,\-.\/:;<=>?@\[\\\]^_`{|}~])/g, function(m, ch){
+      return put(escapeHtml(ch));
+    });
+    /* 3. <https://…> 自动链接 */
+    text = text.replace(/<((?:https?:\/\/|mailto:)[^\s<>]+)>/g, function(m, u){
+      return put('<a href="' + attr(safeUrl(escapeHtml(u))) + '" target="_blank" rel="noopener">' + escapeHtml(u) + '</a>');
+    });
+    /* 4a. 内嵌 SVG：整段摘出来交给 SVG 自己的消毒器。
+       必须整段处理——逐个标签走下面那条通用通道的话，<style> 的作用域
+       和 <script> 的连带内容都没法正确收拾。 */
+    if (/<svg[\s>\/]/i.test(text)){
+      text = replaceSvgSpans(text, function(svg){ return put(renderSvg(svg, false)); });
+    }
+    /* 4. HTML 注释整段丢掉（放在标签之前，否则 !-- 会被当普通文字排出来） */
+    text = text.replace(/<!--[\s\S]*?(?:-->|$)/g, '');
+    /* 4b. 原始 HTML 标签（过滤后放行） */
+    text = text.replace(/<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[^<>]*?)?\/?>/g, function(m){ return put(sanitizeHtml(m)); });
+    /* 4c. HTML 实体解码——必须在标签识别之后，否则 &lt;div&gt; 会变成真标签 */
+    text = decodeEntities(text);
+    /* 5. 转义 */
+    text = escapeHtml(text);
+    /* 6. 换行：先硬换行，再按设置处理软换行 */
+    text = text.replace(/ {2,}\n/g, function(){ return put('<br>'); });
+    text = text.replace(/\\\n/g, function(){ return put('<br>'); });
+    text = text.replace(/\n/g, function(){ return opts.softBreak === false ? ' ' : put('<br>'); });
+    /* 7. 图片 */
+    text = text.replace(/!\[([^\]]*)\]\(\s*<?([^\s>)]*)>?(?:\s+["']([^"']*)["'])?\s*\)/g,
+      function(m, alt, src, title){
+        /* 本地图片：用「已选文件」按文件名映射成的 blob: 地址替换 */
+        var real = resolveImageSrc(src, opts.fileMap);
+        return put('<img src="' + attr(safeUrl(real)) + '" alt="' + attr(alt) + '"' +
+                   (title ? ' title="' + attr(title) + '"' : '') + '>');
+      });
+    /* 7b. 引用式图片 ![alt][id]：必须赶在引用式链接前面，
+       否则会被当成「!」+ 引用式链接，排出一个孤零零的感叹号 */
+    text = text.replace(/!\[([^\]]*)\]\[([^\]]*)\]/g, function(m, alt, id){
+      var rr = ctx.refs[(id || alt).toLowerCase().trim()];
+      if (!rr) return m;
+      var rreal = resolveImageSrc(rr, opts.fileMap);
+      return put('<img src="' + attr(safeUrl(rreal)) + '" alt="' + attr(alt) + '">');
+    });
+    /* 8. 脚注引用 */
+    text = text.replace(/\[\^([^\]\s]+)\]/g, function(m, id){
+      if (!Object.prototype.hasOwnProperty.call(ctx.footnoteDefs, id)) return m;
+      var n = ctx.footnoteOrder.indexOf(id);
+      if (n < 0){ ctx.footnoteOrder.push(id); n = ctx.footnoteOrder.length - 1; }
+      n++;
+      return '<sup class="fn-ref" id="fnref-' + n + '"><a href="#fn-' + n + '">[' + n + ']</a></sup>';
+    });
+    /* 9. 行内链接 */
+    text = text.replace(/\[([^\]]*)\]\(\s*<?([^\s>)]*)>?(?:\s+["']([^"']*)["'])?\s*\)/g,
+      function(m, txt, href, title){
+        return '<a href="' + attr(safeUrl(href)) + '"' + (title ? ' title="' + attr(title) + '"' : '') +
+               ' target="_blank" rel="noopener">' + txt + '</a>';
+      });
+    /* 10. 引用式链接 */
+    text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, function(m, txt, id){
+      var r = ctx.refs[(id || txt).toLowerCase().trim()];
+      return r ? '<a href="' + attr(safeUrl(r)) + '" target="_blank" rel="noopener">' + txt + '</a>' : m;
+    });
+    /* 11. 裸链接 */
+    text = text.replace(/(?<![\w"'=<>&\/.-])((?:https?:\/\/|www\.)[^\s<>"'）)】\]]+)/g, function(m, url){
+      var trail = '';
+      var tm = url.match(/[.,;:!?，。、；：！？]+$/);
+      if (tm){ trail = tm[0]; url = url.slice(0, -trail.length); }
+      if (!url) return m;
+      var href = url.indexOf('www.') === 0 ? 'http://' + url : url;
+      return put('<a href="' + attr(safeUrl(href)) + '" target="_blank" rel="noopener">' + url + '</a>') + trail;
+    });
+    /* 12. 强调 */
+    text = text.replace(/\*\*\*(?=\S)([\s\S]*?\S)\*\*\*/g, '<strong><em>$1</em></strong>');
+    text = text.replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/(^|[^*\w])\*(?=\S)([^*]*?\S)\*(?!\*)/g, '$1<em>$2</em>');
+    text = text.replace(/__(?=\S)([\s\S]*?\S)__/g, '<strong>$1</strong>');
+    text = text.replace(/(^|[\s(（])_(?=\S)([^_]*?\S)_(?=[\s)）.,!?，。！？]|$)/g, '$1<em>$2</em>');
+    text = text.replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>');
+    text = text.replace(/==(?=\S)([\s\S]*?\S)==/g, '<mark>$1</mark>');
+    /* 13. 还原占位符 */
+    text = text.replace(/\u0000(\d+)\u0001/g, function(m, i){ return stash[+i]; });
+    return text;
+  };
+}
+
+/* ---------------- 块级 ---------------- */
+/* 普通段落行的快速通道：首字符不是这些就一定是段落，省掉一堆正则 */
+var BLOCK_START = {};
+'#$*+-<>\\_`|~'.split('').forEach(function(c){ BLOCK_START[c] = 1; });
+(function(){ for (var d = 0; d <= 9; d++) BLOCK_START[String(d)] = 1; })();
+
+/* tight=true 时顶层段落不加 <p>（紧凑列表项），嵌套块仍按各自规则处理 */
+function parseBlocks(lines, ctx, inline, tight){
+  var out = [], para = [], i = 0, n = lines.length;
+  var mathOn = ctx.opts.math !== false;
+
+  function flush(){
+    if (!para.length) return;
+    var body = inline(para.join('\n'));
+    out.push(tight ? body : '<p>' + body + '</p>');
+    para = [];
+  }
+
+  /* 代码块内容：认识的语言走高亮，其余（或太长）退回纯转义 */
+  function codeBody(code, info){
+    if (ctx.opts.hl !== false && info){
+      var h = highlightCode(code, info);
+      if (h !== null && h !== undefined) return h;
+    }
+    return escapeHtml(code);
+  }
+  function headingHtml(level, raw){
+    return '<h' + level + ' id="' + attr(headingId(ctx.slugCount, raw)) + '">' +
+           inline(raw) + '</h' + level + '>';
+  }
+
+  while (i < n){
+    var line = lines[i], m;
+
+    /* 空行判断：手写扫描比 line.trim() 快，后者每行都要分配一个新字符串 */
+    var blank = true;
+    for (var q = 0, qn = line.length; q < qn; q++){
+      var qc = line.charCodeAt(q);
+      if (qc !== 32 && qc !== 9 && qc !== 13){ blank = false; break; }
+    }
+    if (blank){ flush(); i++; continue; }
+
+    /* ---- 快速通道：绝大多数行是普通段落文字 ---- */
+    var k = 0, len = line.length;
+    while (k < len && line.charCodeAt(k) === 32) k++;
+    var c0 = k < len ? line.charAt(k) : '';
+    /* 缩进 4 格且当前没有未完成的段落时，这一行可能是缩进代码块，得走慢通道 */
+    if (!BLOCK_START[c0] && c0 !== '$' && line.indexOf('|') < 0 && !(k >= 4 && !para.length)){
+      /* 唯一需要留意的例外：下一行可能是 === / --- 形式的 Setext 标题 */
+      if (!para.length && i + 1 < n){
+        var nx = lines[i + 1];
+        if ((nx.indexOf('=') >= 0 || nx.indexOf('-') >= 0) &&
+            /^ {0,3}(=+|-+)[ \t]*$/.test(nx)){
+          var slv0 = nx.trim().charAt(0) === '=' ? 1 : 2;
+          var stxt0 = line.trim();
+          i += 2;
+          out.push(headingHtml(slv0, stxt0));
+          continue;
+        }
+      }
+      para.push(line); i++; continue;
+    }
+
+    /* 围栏代码块 */
+    m = line.match(/^ {0,3}(`{3,}|~{3,})[ \t]*([^`]*)$/);
+    if (m){
+      flush();
+      var ch = m[1].charAt(0), len2 = m[1].length;
+      var closeRe = new RegExp('^ {0,3}' + (ch === '`' ? '`' : '~') + '{' + len2 + ',}[ \\t]*$');
+      var info = m[2].trim().split(/\s+/)[0] || '';
+      var buf = [];
+      i++;
+      while (i < n && !closeRe.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      var _raw = buf.join('\n');
+      var _lang = String(info).toLowerCase();
+      /* 渲染型围栏：svg / css / html / render* —— 不当代码显示，直接渲染 */
+      if (RENDER_LANGS[_lang]){ out.push(renderRawBlock(_lang, _raw)); continue; }
+      out.push('<pre><code' + (info ? ' class="language-' + attr(info) + '"' : '') + '>' +
+               codeBody(buf.join('\n'), info) + '\n</code></pre>');
+      continue;
+    }
+
+    /* 缩进代码块：4 个空格开头。按 CommonMark 的规定它不能打断段落，
+       所以只在段首（para 为空）时成立——上面快速通道已经把这层判断带上了 */
+    if (k >= 4){
+      flush();
+      var ibuf = [];
+      while (i < n){
+        var il = lines[i];
+        if (!il.trim()){ ibuf.push(''); i++; continue; }
+        var ik = 0;
+        while (ik < il.length && il.charCodeAt(ik) === 32) ik++;
+        if (ik < 4) break;
+        ibuf.push(il.slice(4)); i++;
+      }
+      while (ibuf.length && !ibuf[ibuf.length - 1]) ibuf.pop();   /* 去掉尾部空行 */
+      out.push('<pre><code>' + escapeHtml(ibuf.join('\n')) + '\n</code></pre>');
+      continue;
+    }
+
+    /* 块级公式 $$...$$ 或 \[...\] */
+    if (mathOn){
+      var dmath = null;
+      var dm = line.match(/^ {0,3}\$\$[ \t]*(.*?)[ \t]*\$\$[ \t]*$/);
+      /* 内容里还含 $$ 说明这行有多个公式（如 $$a$$ $$b$$），交给行内处理更合适 */
+      if (dm && dm[1].indexOf('$$') < 0){ dmath = dm[1]; i++; }
+      else if (/^ {0,3}\$\$[ \t]*$/.test(line)){
+        var dbuf = [];
+        i++;
+        while (i < n && !/^ {0,3}\$\$[ \t]*$/.test(lines[i])) dbuf.push(lines[i++]);
+        i++;
+        dmath = dbuf.join('\n');
+      } else {
+        var bm = line.match(/^ {0,3}\\\[[ \t]*(.*?)[ \t]*\\\][ \t]*$/);
+        if (bm && bm[1].indexOf('\\]') < 0){ dmath = bm[1]; i++; }
+        else if (/^ {0,3}\\\[[ \t]*$/.test(line)){
+          var bbuf = [];
+          i++;
+          while (i < n && !/^ {0,3}\\\][ \t]*$/.test(lines[i])) bbuf.push(lines[i++]);
+          i++;
+          dmath = bbuf.join('\n');
+        }
+      }
+      if (dmath !== null){
+        flush();
+        var ml = texToMathML(dmath, true);
+        out.push(ml ? '<div class="math-display">' + ml + '</div>'
+                    : '<pre class="math-error"><code>' + escapeHtml(dmath) + '</code></pre>');
+        continue;
+      }
+    }
+
+    /* ATX 标题（允许 #标题 这种没有空格的写法） */
+    m = line.match(/^ {0,3}(#{1,6})(?!#)[ \t]*(.*)$/);
+    if (m){
+      flush();
+      i++;
+      out.push(headingHtml(m[1].length, m[2].replace(/[ \t]+#+[ \t]*$/, '').trim()));
+      continue;
+    }
+
+    /* HTML 注释块：整段丢掉（放在「原始 HTML 块」之前，否则会被当标签转义出来） */
+    if (/^ {0,3}<!--/.test(line)){
+      flush();
+      while (i < n && lines[i].indexOf('-->') < 0) i++;
+      i++;
+      continue;
+    }
+
+    /* 分隔线 */
+    if (isHr(line)){ flush(); out.push('<hr>'); i++; continue; }
+
+    /* 引用 */
+    if (/^ {0,3}>/.test(line)){
+      flush();
+      var qbuf = [];
+      while (i < n){
+        var ql = lines[i];
+        if (/^ {0,3}>/.test(ql)){ qbuf.push(ql.replace(/^ {0,3}> ?/, '')); i++; continue; }
+        if (!ql.trim()){
+          var qj = i; while (qj < n && !lines[qj].trim()) qj++;
+          if (qj < n && /^ {0,3}>/.test(lines[qj])){ qbuf.push(''); i = qj; continue; }
+        }
+        break;
+      }
+      out.push('<blockquote>' + parseBlocks(qbuf, ctx, inline) + '</blockquote>');
+      continue;
+    }
+
+    /* 表格 */
+    if (line.indexOf('|') >= 0 && i + 1 < n && isTableSep(lines[i + 1])){
+      flush();
+      var head = splitRow(line);
+      var aligns = splitRow(lines[i + 1]).map(function(s){
+        var t = s.trim(), l = t.charAt(0) === ':', r = t.charAt(t.length - 1) === ':';
+        return (l && r) ? 'center' : (r ? 'right' : (l ? 'left' : ''));
+      });
+      i += 2;
+      var rows = [];
+      while (i < n && lines[i].trim() && lines[i].indexOf('|') >= 0) rows.push(splitRow(lines[i++]));
+      var t2 = '<div class="table-wrap"><table><thead><tr>';
+      head.forEach(function(c, ci){
+        t2 += '<th' + (aligns[ci] ? ' style="text-align:' + aligns[ci] + '"' : '') + '>' + inline(c.trim()) + '</th>';
+      });
+      t2 += '</tr></thead><tbody>';
+      rows.forEach(function(r){
+        t2 += '<tr>';
+        for (var ci = 0; ci < head.length; ci++){
+          t2 += '<td' + (aligns[ci] ? ' style="text-align:' + aligns[ci] + '"' : '') + '>' +
+                inline((r[ci] || '').trim()) + '</td>';
+        }
+        t2 += '</tr>';
+      });
+      out.push(t2 + '</tbody></table></div>');
+      continue;
+    }
+
+    /* 列表 */
+    if (/^ {0,3}([-*+]|\d{1,9}[.)])([ \t]+|$)/.test(line)){
+      flush();
+      var r = parseList(lines, i, ctx, inline);
+      out.push(r[0]); i = r[1]; continue;
+    }
+
+    /* 内嵌 SVG 块：整段当图形，中间可以有空行。
+       多行 SVG 必须先在这里吃掉——落到下面的「原始 HTML 块」就只能
+       收连续非空行（会被空行截断），落到段落里又会被拆成一个个 <p>。 */
+    if (/^ {0,3}<svg[\s>\/]/i.test(line)){
+      var svgAcc = '', sj = i, svgEnd = -1, svgFrom = -1;
+      while (sj < n && sj - i < 500){
+        svgAcc += (sj > i ? '\n' : '') + lines[sj];
+        if (svgFrom < 0) svgFrom = svgAcc.search(/<svg[\s>\/]/i);
+        if (svgFrom >= 0){
+          svgEnd = svgSpanEnd(svgAcc, svgFrom);
+          if (svgEnd >= 0) break;
+        }
+        sj++;
+      }
+      if (svgEnd >= 0){
+        flush();
+        out.push(renderSvg(svgAcc.slice(0, svgEnd), true));
+        var svgTail = svgAcc.slice(svgEnd).trim();   /* </svg> 后面同一行还有字 */
+        if (svgTail) out.push('<p>' + inline(svgTail) + '</p>');
+        i = sj + 1;
+        continue;
+      }
+      /* 找不到收尾就不当 SVG，往下走普通流程 */
+    }
+
+    /* 原始 HTML 块 */
+    m = line.match(/^ {0,3}<\/?([a-zA-Z][a-zA-Z0-9-]*)(?=[\s/>]|$)/);
+    if (m && !/^(https?|mailto)$/i.test(m[1])){
+      flush();
+      var hbuf = [];
+      while (i < n && lines[i].trim()) hbuf.push(lines[i++]);
+      out.push(sanitizeHtml(hbuf.join('\n')));
+      continue;
+    }
+
+    /* Setext 标题（标题 + ===/---） */
+    if (!para.length && i + 1 < n && line.trim() && /^ {0,3}(=+|-+)[ \t]*$/.test(lines[i + 1])){
+      var slv = lines[i + 1].trim().charAt(0) === '=' ? 1 : 2;
+      var stxt = line.trim();
+      i += 2;
+      out.push(headingHtml(slv, stxt));
+      continue;
+    }
+
+    para.push(line); i++;
+  }
+  flush();
+  return out.join('\n');
+}
+
+function parseList(lines, start, ctx, inline){
+  var n = lines.length;
+  var M = /^([ \t]*)([-*+]|\d{1,9}[.)])([ \t]+)([\s\S]*)$/;
+  var first = lines[start].match(M);
+  var base = first[1].length;
+  var ordered = /\d/.test(first[2].charAt(0));
+  var startNum = ordered ? parseInt(first[2], 10) : 1;
+  var items = [], loose = false, i = start, cur = null;
+
+  function markerAt(l){
+    var mm = l.match(M);
+    return (mm && mm[1].length === base) ? mm : null;
+  }
+
+  while (i < n){
+    var line = lines[i];
+    if (!line.trim()){
+      var j = i; while (j < n && !lines[j].trim()) j++;
+      if (j >= n) break;
+      if (markerAt(lines[j])){ loose = true; i = j; continue; }
+      var ind = lines[j].match(/^[ \t]*/)[0].length;
+      if (cur && ind > base){ loose = true; cur.lines.push(''); i = j; continue; }
+      break;
+    }
+    var mk = markerAt(line);
+    if (mk){
+      cur = { lines: [mk[4]], contentIndent: base + mk[2].length + mk[3].length };
+      items.push(cur); i++; continue;
+    }
+    if (cur){
+      var lead = line.match(/^[ \t]*/)[0].length;
+      if (lead > base){
+        cur.lines.push(line.slice(Math.min(cur.contentIndent, lead)));
+        i++; continue;
+      }
+      /* 懒延续：紧跟在后面的普通文本行仍属于当前项 */
+      if (!/^ {0,3}(#{1,6}(?!#)|>|[-*+][ \t]|\d{1,9}[.)][ \t]|`{3,}|~{3,})/.test(line) && !isHr(line)){
+        cur.lines.push(line); i++; continue;
+      }
+    }
+    break;
+  }
+
+  var tag = ordered ? 'ol' : 'ul';
+  var html = '<' + tag + (ordered && startNum !== 1 ? ' start="' + startNum + '"' : '') + '>';
+  items.forEach(function(it){
+    var task = null;
+    if (!ordered){
+      var tm = it.lines[0].match(/^\[([ xX])\][ \t]+/);
+      if (tm){ task = tm[1].toLowerCase() === 'x'; it.lines[0] = it.lines[0].slice(tm[0].length); }
+    }
+    var inner = parseBlocks(it.lines, ctx, inline, !loose);
+    if (task !== null){
+      var box = '<span class="task-box' + (task ? ' checked' : '') + '"></span>';
+      inner = /^<p>/.test(inner) ? inner.replace(/^<p>/, '<p>' + box) : box + inner;
+    }
+    html += '<li' + (task !== null ? ' class="task"' : '') + '>' + inner + '</li>';
+  });
+  return [html + '</' + tag + '>', i];
+}
+
+/* ---------------- 纯工具 ---------------- */
+
+/* 字数统计：中日韩字符按字算，拉丁按词算 */
+function countStats(text){
+  text = String(text || '');
+  var cjk = (text.match(/[\u3400-\u9fff\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af]/g) || []).length;
+  var words = (text.match(/[A-Za-z0-9_'’-]+/g) || []).length;
+  return {
+    chars: text.replace(/\s/g, '').length,
+    words: cjk + words,
+    lines: text ? text.split('\n').length : 0
+  };
+}
+
+/* 图片路径解析：能在导入的文件里按文件名找到就换成 blob URL */
+function resolveImageSrc(src, fileMap){
+  if (!src || !fileMap) return src;
+  if (/^(https?:|data:|blob:)/i.test(src)) return src;
+  var clean = String(src).split(/[?#]/)[0].replace(/\\/g, '/');
+  var base = clean.slice(clean.lastIndexOf('/') + 1).toLowerCase();
+  if (!base) return src;
+  return fileMap[base] || src;
+}
+
+/* 从文件名猜 MIME，用于导出独立的 HTML */
+function extOf(name){
+  var m = /\.([a-z0-9]+)$/i.exec(String(name || ''));
+  return m ? m[1].toLowerCase() : '';
+}
+function isImageName(name){
+  return /^(png|jpe?g|gif|webp|avif|bmp|svg|ico)$/.test(extOf(name));
+}
+function isDocName(name){
+  return /^(md|markdown|mdown|mkd|txt|text)$/.test(extOf(name));
+}
+
+/* 生成可独立分享的 HTML 文件 */
+function buildStandaloneHtml(o){
+  var fonts = o.fonts || [];
+  var fontCss = fonts.map(function(f){
+    return '@font-face{font-family:"' + f.family.replace(/["\\]/g, '') + '";src:url(' + f.dataUrl +
+           ') format("' + (f.format || 'truetype') + '");font-display:swap}';
+  }).join('\n');
+  return '<!doctype html>\n<html lang="zh-CN">\n<head>\n<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
+    '<title>' + escapeHtml(o.title || '文档') + '</title>\n<style>\n' +
+    (fontCss ? fontCss + '\n' : '') + o.pageRule + '\n' + o.css + '\n</style>\n</head>\n<body>\n' +
+    '<article class="markdown-body">\n' + o.bodyHtml + '\n</article>\n</body>\n</html>\n';
+}
+/*==MD-PARSER-END==*/
+
+/* =====================================================================
+   应用层
+   ===================================================================== */
+(function(){
+  'use strict';
+  var $ = function(s){ return document.querySelector(s); };
+  var editor = $('#editor'), preview = $('#preview'), previewScroll = $('#previewScroll');
+  var pageRule = document.createElement('style');
+  document.head.appendChild(pageRule);
+
+  var LS_DOC = 'md2pdf:doc', LS_CFG = 'md2pdf:cfg';
+  var state = {
+    theme:'light', size:16, paper:'A4', margins:'normal',
+    softBreak:true, toc:true, linkUrl:false, math:true, hl:true,
+    fontBody:'', fontMono:''
+  };
+  var md = '';
+
+  /* 系统字体栈 */
+  var FONT_SANS = '-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","HarmonyOS Sans SC","Noto Sans CJK SC","Source Han Sans SC","Microsoft YaHei",sans-serif';
+  var FONT_SERIF = 'Georgia,"Times New Roman","Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",serif';
+  var FONT_MONO = 'ui-monospace,SFMono-Regular,Menlo,Consolas,"Noto Sans Mono CJK SC","Courier New",monospace';
+
+  /* -------- 设置持久化 -------- */
+  try {
+    var savedCfg = JSON.parse(localStorage.getItem(LS_CFG) || 'null');
+    if (savedCfg) for (var kk in savedCfg) if (kk in state) state[kk] = savedCfg[kk];
+  } catch (e) {}
+  function saveCfg(){ try { localStorage.setItem(LS_CFG, JSON.stringify(state)); } catch (e) {} }
+
+  /* -------- 提示 -------- */
+  var toastTimer = null;
+  function toast(msg){
+    var el = $('#toast');
+    el.textContent = msg; el.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.classList.remove('on'); }, 2100);
+  }
+
+  /* -------- 确认弹窗（比 confirm() 好看，且部分安卓 WebView 里 confirm 会被拦） -------- */
+  var modalResolve = null;
+  function confirmDlg(title, text, okLabel){
+    return new Promise(function(res){
+      modalResolve = res;
+      $('#modalTitle').textContent = title;
+      $('#modalText').textContent = text || '';
+      $('#modalOk').textContent = okLabel || '确定';
+      var mask = $('#modalMask');
+      mask.hidden = false;
+      requestAnimationFrame(function(){ mask.classList.add('on'); });
+    });
+  }
+  function closeModal(val){
+    var mask = $('#modalMask');
+    mask.classList.remove('on');
+    setTimeout(function(){ mask.hidden = true; }, 180);
+    if (modalResolve){ var r = modalResolve; modalResolve = null; r(val); }
+  }
+  $('#modalOk').addEventListener('click', function(){ closeModal(true); });
+  $('#modalCancel').addEventListener('click', function(){ closeModal(false); });
+  $('#modalMask').addEventListener('click', function(e){ if (e.target === this) closeModal(false); });
+
+  /* -------- 下载 -------- */
+  function download(blob, name){
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  }
+  function fmtSize(n){
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
+    return (n / 1024 / 1024).toFixed(1) + ' MB';
+  }
+  function safeName(s){
+    return String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/\s+/g, ' ').trim().slice(0, 80);
+  }
+  /* 文档标题：取第一个 # 标题，没有就用一级标题，再没有就叫 document */
+  function docTitle(){
+    var m = /^ {0,3}#[ \t]+(.+)$/m.exec(md);
+    if (!m) m = /^ {0,3}#{1,6}[ \t]+(.+)$/m.exec(md);
+    if (!m) return 'document';
+    return safeName(m[1].replace(/[ \t]+#+[ \t]*$/, '').trim()) || 'document';
+  }
+
+  /* =====================================================================
+     字体库：IndexedDB 存字体文件，用 FontFace 注册
+     IndexedDB 不可用时降级成内存态（本次会话有效，刷新即失效）
+     ===================================================================== */
+  var DB_NAME = 'md2pdf', DB_STORE = 'fonts', DB_VER = 1;
+  var fontRecs = [];          /* {id, family, name, ext, size, data} */
+  var memOnly = [];           /* 降级存储 */
+  var dbPromise = null, dbWarned = false;
+
+  function openDB(){
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise(function(res){
+      var req;
+      try {
+        if (!window.indexedDB) return res(null);
+        req = indexedDB.open(DB_NAME, DB_VER);
+      } catch (e){ return res(null); }
+      req.onupgradeneeded = function(){
+        var db = req.result;
+        if (!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE, { keyPath:'id' });
+      };
+      req.onsuccess = function(){ res(req.result); };
+      req.onerror = function(){ res(null); };
+      req.onblocked = function(){ res(null); };
+    });
+    return dbPromise;
+  }
+  function dbAll(){
+    return openDB().then(function(db){
+      if (!db) return memOnly.slice();
+      return new Promise(function(res){
+        try {
+          var out = [], tx = db.transaction(DB_STORE, 'readonly');
+          var cur = tx.objectStore(DB_STORE).openCursor();
+          cur.onsuccess = function(){
+            var c = cur.result;
+            if (c){ out.push(c.value); c.continue(); } else res(out);
+          };
+          cur.onerror = function(){ res(out); };
+        } catch (e){ res(memOnly.slice()); }
+      });
+    }).catch(function(){ return memOnly.slice(); });
+  }
+  function dbPut(rec){
+    return openDB().then(function(db){
+      if (!db){
+        if (!dbWarned){ dbWarned = true; toast('浏览器不支持本地数据库，字体只在本次会话有效'); }
+        memOnly.push(rec);
+        return;
+      }
+      return new Promise(function(res){
+        try {
+          var tx = db.transaction(DB_STORE, 'readwrite');
+          tx.objectStore(DB_STORE).put(rec);
+          tx.oncomplete = function(){ res(); };
+          tx.onerror = function(){ res(); };
+        } catch (e){ res(); }
+      });
+    });
+  }
+  function dbDel(id){
+    return openDB().then(function(db){
+      if (!db){ memOnly = memOnly.filter(function(r){ return r.id !== id; }); return; }
+      return new Promise(function(res){
+        try {
+          var tx = db.transaction(DB_STORE, 'readwrite');
+          tx.objectStore(DB_STORE).delete(id);
+          tx.oncomplete = function(){ res(); };
+          tx.onerror = function(){ res(); };
+        } catch (e){ res(); }
+      });
+    });
+  }
+
+  var FONT_MIME = { ttf:'font/ttf', otf:'font/otf', woff:'font/woff', woff2:'font/woff2' };
+  var FONT_FMT  = { ttf:'truetype', otf:'opentype', woff:'woff', woff2:'woff2' };
+
+  function registerFont(rec){
+    try {
+      if (!window.FontFace || !document.fonts) return Promise.resolve(false);
+      var face = new FontFace(rec.family, rec.data);
+      return face.load().then(function(f){
+        document.fonts.add(f);
+        return true;
+      }).catch(function(){ return false; });
+    } catch (e){ return Promise.resolve(false); }
+  }
+  function fontById(id){
+    for (var i = 0; i < fontRecs.length; i++) if (fontRecs[i].id === id) return fontRecs[i];
+    return null;
+  }
+
+  function refreshFontUI(){
+    var bodySel = $('#fontBody'), monoSel = $('#fontMono');
+    var bodyTok = state.fontBody, monoTok = state.fontMono;
+    bodySel.innerHTML = '<option value="">系统默认（无衬线）</option>' +
+                        '<option value="serif">系统衬线（宋体/Georgia）</option>' +
+                        fontRecs.map(function(r){
+                          return '<option value="f:' + attrEsc(r.id) + '">' + escapeHtml(r.name) + '</option>';
+                        }).join('');
+    monoSel.innerHTML = '<option value="">系统等宽</option>' +
+                        '<option value="mono">等宽（Menlo/Consolas）</option>' +
+                        fontRecs.map(function(r){
+                          return '<option value="f:' + attrEsc(r.id) + '">' + escapeHtml(r.name) + '</option>';
+                        }).join('');
+    bodySel.value = fontById(bodyTok.slice(2)) && bodyTok.indexOf('f:') === 0 ? bodyTok : (bodyTok === 'serif' ? 'serif' : '');
+    monoSel.value = fontById(monoTok.slice(2)) && monoTok.indexOf('f:') === 0 ? monoTok : (monoTok === 'mono' ? 'mono' : '');
+
+    var list = $('#fontList');
+    if (!fontRecs.length){
+      list.innerHTML = '<div class="empty">还没有导入字体。支持 .ttf / .otf / .woff / .woff2，导入后会存进浏览器数据库，下次打开还在。</div>';
+      $('#fontHint').textContent = '';
+    } else {
+      list.innerHTML = fontRecs.map(function(r){
+        return '<div class="fontrow"><span class="fname" style="font-family:\'' + attrEsc(r.family) + '\',sans-serif">' +
+               escapeHtml(r.name) + '</span>' +
+               '<span class="fmeta">' + fmtSize(r.size) + '</span>' +
+               '<button class="btn mini danger" data-del="' + attrEsc(r.id) + '">删除</button></div>';
+      }).join('');
+      $('#fontHint').textContent = fontRecs.length + ' 个';
+    }
+  }
+  function attrEsc(s){
+    return String(s).replace(/["'&<>]/g, function(c){
+      return { '"':'&quot;', "'":'&#39;', '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c];
+    });
+  }
+
+  function applyFontVars(){
+    function stack(tok, isMono){
+      if (!tok) return isMono ? FONT_MONO : FONT_SANS;
+      if (tok === 'serif') return FONT_SERIF;
+      if (tok === 'mono' || tok === 'sans') return isMono ? FONT_MONO : FONT_SANS;
+      if (tok.indexOf('f:') === 0){
+        var r = fontById(tok.slice(2));
+        if (r) return '"' + r.family + '",' + (isMono ? FONT_MONO : FONT_SANS);
+      }
+      return isMono ? FONT_MONO : FONT_SANS;
+    }
+    var root = document.documentElement.style;
+    root.setProperty('--doc-font', stack(state.fontBody, false));
+    root.setProperty('--doc-mono', stack(state.fontMono, true));
+  }
+
+  async function importFonts(files){
+    var ok = 0, bad = [];
+    for (var i = 0; i < files.length; i++){
+      var f = files[i];
+      var ext = extOf(f.name);
+      if (!FONT_MIME[ext]){ bad.push(f.name); continue; }
+      try {
+        var buf = await f.arrayBuffer();
+        var id = 'U' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        var name = f.name.replace(/\.[^.]+$/, '');
+        var family = 'mdpdf-' + id;
+        var rec = { id:id, family:family, name:name, ext:ext, size:buf.byteLength, data:buf };
+        var mounted = await registerFont(rec);
+        if (!mounted){ bad.push(f.name + '（不是有效的字体文件）'); continue; }
+        fontRecs.push(rec);
+        await dbPut(rec);
+        ok++;
+      } catch (e){ bad.push(f.name); }
+    }
+    fontRecs.sort(function(a, b){ return a.name.localeCompare(b.name, 'zh'); });
+    refreshFontUI();
+    if (ok) toast('已导入 ' + ok + ' 个字体');
+    if (bad.length) toast('这几个没能导入：' + bad.join('、'));
+  }
+
+  /* =====================================================================
+     图片映射：把选中图片按文件名映射成 blob: 地址
+     ===================================================================== */
+  var imgMap = {};      /* 小写文件名 -> blob:URL */
+  var imgFiles = {};    /* 小写文件名 -> File（导出独立 HTML 时要转成 data:URL） */
+  var imgUrls = [];
+  var imgStamp = 0;
+
+  function addImages(files){
+    for (var i = 0; i < files.length; i++){
+      var f = files[i];
+      if (!isImageName(f.name)) continue;
+      var key = f.name.toLowerCase();
+      if (imgMap[key]){ try { URL.revokeObjectURL(imgMap[key]); } catch (e) {} }
+      else imgUrls.push(key);
+      imgMap[key] = URL.createObjectURL(f);
+      imgFiles[key] = f;
+    }
+    imgStamp++;
+  }
+
+  /* =====================================================================
+     渲染
+     ===================================================================== */
+  function buildToc(){
+    var hs = preview.querySelectorAll('h1,h2,h3,h4,h5,h6');
+    if (!hs.length) return;
+    var html = '<nav class="toc"><div class="toc-title">目录</div><ol>', depth = 0;
+    for (var i = 0; i < hs.length; i++){
+      var h = hs[i], lv = +h.tagName.charAt(1);
+      /* 解析器现在一定会给标题写 id（slug 形式），直接复用——
+         这样目录锚点和正文里的 [x](#锚点) 指的是同一处，不会各写各的 */
+      if (!h.id) h.id = 'h-' + (i + 1);
+      while (depth < lv){ html += '<ol>'; depth++; }
+      while (depth > lv){ html += '</ol>'; depth--; }
+      html += '<li><a href="#' + attrEsc(h.id) + '">' + h.textContent + '</a></li>';
+    }
+    while (depth > 0){ html += '</ol>'; depth--; }
+    html += '</ol></nav>';
+    preview.insertAdjacentHTML('afterbegin', html);
+  }
+
+  function render(){
+    var key = md + '\u0000' + state.softBreak + '\u0000' + state.toc + '\u0000' + state.math + '\u0000' + state.hl + '\u0000' + imgStamp;
+    if (key === render.lastKey){ return; }
+    render.lastKey = key;
+    try {
+      preview.innerHTML = mdToHtml(md, {
+        softBreak: state.softBreak, math: state.math, hl: state.hl, fileMap: imgMap
+      });
+      if (state.toc) buildToc();
+    } catch (err){
+      preview.innerHTML = '<p style="color:#c00">解析出错：' + escapeHtml(err && err.message || err) + '</p>';
+    }
+    var s = countStats(md);
+    $('#stats').textContent = s.words + ' 字 · ' + s.lines + ' 行';
+    render.dirty = false;
+  }
+  render.lastKey = null, render.dirty = true;
+
+  function previewVisible(){
+    return $('#panePreview').classList.contains('on') || window.innerWidth >= 900;
+  }
+  /* 大文档少打扰、小文档跟手 */
+  function debounceDelay(){
+    var n = md.length;
+    return n > 150000 ? 420 : (n > 30000 ? 220 : 130);
+  }
+  var renderTimer = null;
+  function scheduleRender(){
+    if (!previewVisible()){ render.dirty = true; return; }   /* 预览没显示就别白算 */
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(render, debounceDelay());
+  }
+  function flushRender(){
+    clearTimeout(renderTimer);
+    if (!previewVisible()){ render.dirty = true; return; }
+    render();
+  }
+  function renderIfDirty(){
+    if (render.dirty || preview.innerHTML === ''){ clearTimeout(renderTimer); render(); }
+  }
+
+  /* -------- 存储 -------- */
+  var saveTimer = null;
+  function scheduleSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      try { localStorage.setItem(LS_DOC, md); } catch (e) {}
+    }, 600);
+  }
+
+  /* -------- 应用设置 -------- */
+  var MARGINS = { narrow:'12mm 10mm', normal:'18mm 16mm', wide:'24mm 20mm' };
+  function applySettings(){
+    document.documentElement.setAttribute('data-theme', state.theme);
+    var root = document.documentElement.style;
+    root.setProperty('--doc-size', state.size + 'px');
+    root.setProperty('--doc-print-size', (state.size * 0.75).toFixed(2) + 'pt');
+    applyFontVars();
+    pageRule.textContent = '@page{size:' + state.paper + ';margin:' + MARGINS[state.margins] + '}';
+    document.body.classList.toggle('link-url', !!state.linkUrl);
+    document.querySelectorAll('.seg').forEach(function(seg){
+      var k = seg.getAttribute('data-key');
+      seg.querySelectorAll('button').forEach(function(b){
+        b.classList.toggle('on', String(state[k]) === b.getAttribute('data-val'));
+      });
+    });
+    $('#optSoftBreak').checked = !!state.softBreak;
+    $('#optToc').checked = !!state.toc;
+    $('#optLinkUrl').checked = !!state.linkUrl;
+    $('#optMath').checked = state.math !== false;
+    $('#optHl').checked = state.hl !== false;
+    $('#fontBody').value = state.fontBody;
+    $('#fontMono').value = state.fontMono;
+  }
+
+  /* =====================================================================
+     导出独立 HTML：把用到的字体和图片一起塞进去，单文件可分享
+     ===================================================================== */
+  function bufToDataUrl(buf, mime){
+    var bytes = new Uint8Array(buf), parts = [], CH = 0x8000;
+    for (var i = 0; i < bytes.length; i += CH){
+      parts.push(String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + CH, bytes.length))));
+    }
+    return 'data:' + mime + ';base64,' + btoa(parts.join(''));
+  }
+  function blobToDataUrl(url){
+    return fetch(url).then(function(r){ return r.blob(); }).then(function(b){
+      return new Promise(function(res, rej){
+        var fr = new FileReader();
+        fr.onload = function(){ res(fr.result); };
+        fr.onerror = function(){ rej(new Error('读取图片失败')); };
+        fr.readAsDataURL(b);
+      });
+    });
+  }
+  function usedFontRecs(){
+    var out = [], seen = {};
+    [state.fontBody, state.fontMono].forEach(function(tok){
+      if (tok && tok.indexOf('f:') === 0){
+        var r = fontById(tok.slice(2));
+        if (r && !seen[r.id]){ seen[r.id] = 1; out.push(r); }
+      }
+    });
+    return out;
+  }
+
+  async function exportStandalone(){
+    if (!md.trim()){ toast('文档是空的'); return; }
+    var fonts = usedFontRecs();
+    var fontBytes = fonts.reduce(function(a, r){ return a + r.size; }, 0);
+    if (fontBytes > 4 * 1024 * 1024){
+      var goOn = await confirmDlg('字体有点大',
+        '文档用到的 ' + fonts.length + ' 个字体一共 ' + fmtSize(fontBytes) +
+        '，嵌进 HTML 后文件会明显变大（约 ' + fmtSize(fontBytes * 1.37) + '）。要继续吗？',
+        '继续导出');
+      if (!goOn) return;
+    }
+
+    toast('正在打包…');
+    var bodyHtml = preview.innerHTML;
+    /* 图片 blob: 换成 data:，否则导出后图片会打不开 */
+    var blobs = Object.keys(imgMap);
+    for (var i = 0; i < blobs.length; i++){
+      var u = imgMap[blobs[i]];
+      if (bodyHtml.indexOf(u) < 0) continue;
+      try {
+        var dataUrl = await blobToDataUrl(u);
+        bodyHtml = bodyHtml.split(u).join(attrEsc(dataUrl));
+      } catch (e) {}
+    }
+
+    var faces = fonts.map(function(r){
+      return { family:r.family, format:FONT_FMT[r.ext] || 'truetype',
+               dataUrl: bufToDataUrl(r.data, FONT_MIME[r.ext] || 'font/ttf') };
+    });
+
+    /* 必须拼在 docCss 后面：同特异性下后写的赢，否则会被 docCss 自带的 :root 打回默认值 */
+    var override = ':root{--doc-size:' + state.size + 'px;' +
+      '--doc-print-size:' + (state.size * 0.75).toFixed(2) + 'pt;' +
+      '--doc-font:' + (document.documentElement.style.getPropertyValue('--doc-font') || FONT_SANS) + ';' +
+      '--doc-mono:' + (document.documentElement.style.getPropertyValue('--doc-mono') || FONT_MONO) + '}';
+
+    var html = buildStandaloneHtml({
+      title: docTitle(),
+      bodyHtml: bodyHtml,
+      css: document.getElementById('docCss').textContent + '\n' + override,
+      pageRule: pageRule.textContent,
+      fonts: faces
+    });
+    download(new Blob([html], { type:'text/html;charset=utf-8' }), docTitle() + '.html');
+    toast('已导出 ' + docTitle() + '.html');
+  }
+
+  /* -------- 打开文件：UTF-8 失败时回退 GB18030（兼容老的中文 .md） -------- */
+  async function readFileSmart(file){
+    var buf = await file.arrayBuffer();
+    var txt = new TextDecoder('utf-8').decode(buf);
+    if (txt.indexOf('�') >= 0){
+      try {
+        var alt = new TextDecoder('gb18030').decode(buf);
+        if (alt.indexOf('�') < 0) return alt;
+      } catch (e) {}
+    }
+    return txt.replace(/^﻿/, '');
+  }
+
+  async function openFiles(files){
+    if (!files || !files.length) return;
+    var docs = [], imgs = [];
+    for (var i = 0; i < files.length; i++){
+      (isImageName(files[i].name) ? imgs : docs).push(files[i]);
+    }
+    if (imgs.length){
+      addImages(imgs);
+      toast('已载入 ' + imgs.length + ' 张图片，按文件名匹配 ![](…)');
+    }
+    if (!docs.length){ flushRender(); return; }
+    if (docs.length > 1) toast('一次只能打开一个文档，先打开 ' + docs[0].name);
+    var file = docs[0];
+    try {
+      var text = await readFileSmart(file);
+      md = text;
+      editor.value = md;
+      render.lastKey = null;
+      flushRender(); scheduleSave();
+      document.querySelector('.tab[data-pane="preview"]').click();
+      toast('已载入 ' + file.name);
+    } catch (e){ toast('读取失败：' + (e && e.message || e)); }
+  }
+
+  /* -------- 事件 -------- */
+  editor.addEventListener('input', function(){
+    md = editor.value;
+    scheduleRender(); scheduleSave();
+  });
+
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      var pane = t.getAttribute('data-pane');
+      $('#paneEdit').classList.toggle('on', pane === 'edit');
+      $('#panePreview').classList.toggle('on', pane === 'preview');
+      if (pane === 'preview') renderIfDirty();
+    });
+  });
+
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(ev){
+      var b = ev.target.closest('button'); if (!b) return;
+      var key = seg.getAttribute('data-key'), val = b.getAttribute('data-val');
+      state[key] = (key === 'size') ? parseInt(val, 10) : val;
+      saveCfg(); applySettings(); flushRender();
+    });
+  });
+
+  $('#btnSettings').addEventListener('click', function(){
+    var s = $('#settings'); s.hidden = !s.hidden;
+    this.classList.toggle('primary', !s.hidden);
+    if (!s.hidden && s.scrollIntoView) s.scrollIntoView({ block:'nearest' });
+  });
+
+  [['#optSoftBreak','softBreak'], ['#optToc','toc'], ['#optLinkUrl','linkUrl'], ['#optMath','math'], ['#optHl','hl']]
+  .forEach(function(p){
+    $(p[0]).addEventListener('change', function(){
+      state[p[1]] = this.checked; saveCfg(); applySettings();
+      render.lastKey = null; flushRender();
+    });
+  });
+
+  $('#fontBody').addEventListener('change', function(){
+    state.fontBody = this.value; saveCfg(); applyFontVars();
+  });
+  $('#fontMono').addEventListener('change', function(){
+    state.fontMono = this.value; saveCfg(); applyFontVars();
+  });
+  $('#btnFontImport').addEventListener('click', function(){ $('#fontInput').click(); });
+  $('#fontInput').addEventListener('change', function(){
+    var fs = Array.prototype.slice.call(this.files || []);
+    this.value = '';
+    if (fs.length) importFonts(fs);
+  });
+  $('#fontList').addEventListener('click', function(ev){
+    var b = ev.target.closest('button[data-del]'); if (!b) return;
+    var id = b.getAttribute('data-del');
+    var rec = fontById(id);
+    confirmDlg('删除字体', '删除「' + (rec ? rec.name : '') + '」？删掉后如果正文正在用它，会恢复成系统字体。', '删除')
+    .then(function(ok){
+      if (!ok) return;
+      dbDel(id);
+      fontRecs = fontRecs.filter(function(r){ return r.id !== id; });
+      if (state.fontBody === 'f:' + id) state.fontBody = '';
+      if (state.fontMono === 'f:' + id) state.fontMono = '';
+      saveCfg(); refreshFontUI(); applyFontVars(); applySettings();
+      toast('已删除');
+    });
+  });
+
+  /* 打印 —— 浏览器打印引擎生成矢量 PDF，不是截图 */
+  function setPrintTitle(){
+    var old = document.title;
+    document.title = docTitle();
+    return old;
+  }
+  $('#btnPrint').addEventListener('click', function(){
+    if (!previewVisible()) document.querySelector('.tab[data-pane="preview"]').click();
+    flushRender();
+    if (typeof window.print !== 'function'){ toast('当前浏览器不支持打印，请用 Chrome / Edge 打开'); return; }
+    var old = setPrintTitle();
+    try { window.print(); }   /* 同步调用，保住用户手势（部分安卓浏览器要求） */
+    finally { setTimeout(function(){ document.title = old; }, 1500); }
+  });
+  /* Ctrl+P 绕过按钮时也要让文件名跟着文档标题走 */
+  window.addEventListener('beforeprint', function(){ if (document.title !== docTitle()) setPrintTitle(); });
+
+  $('#btnHtml').addEventListener('click', function(){
+    exportStandalone().catch(function(e){ toast('导出失败：' + (e && e.message || e)); });
+  });
+
+  $('#btnOpen').addEventListener('click', function(){ $('#fileInput').click(); });
+  $('#fileInput').addEventListener('change', function(){
+    var fs = Array.prototype.slice.call(this.files || []);
+    this.value = '';
+    openFiles(fs);
+  });
+
+  ['dragenter','dragover'].forEach(function(t){
+    document.addEventListener(t, function(e){ e.preventDefault(); });
+  });
+  document.addEventListener('drop', function(e){
+    e.preventDefault();
+    var fs = e.dataTransfer && e.dataTransfer.files;
+    if (fs && fs.length) openFiles(Array.prototype.slice.call(fs));
+  });
+
+  $('#btnSave').addEventListener('click', function(){
+    download(new Blob([md], { type:'text/markdown;charset=utf-8' }), docTitle() + '.md');
+    /* 网页没法自己写出 PDF 文件（这是浏览器的限制，不是没做），
+       真 PDF 只能走系统打印——所以这里明确把人指过去，免得以为下错了 */
+    toast('已存 ' + docTitle() + '.md（Markdown 源码）。要 PDF 请点「打印 / 存 PDF」');
+  });
+
+  /* 载入示例会覆盖当前内容，先问一声 */
+  async function loadSample(){
+    var cur = editor.value;
+    var sample = $('#sampleDoc').textContent.replace(/^\n/, '');
+    if (cur.trim() && cur !== sample){
+      var ok = await confirmDlg('载入示例？', '当前内容会被示例替换掉。想留着的话先点「存 .md」存一份。', '替换');
+      if (!ok) return;
+    }
+    md = sample;
+    editor.value = md;
+    render.lastKey = null;
+    flushRender(); scheduleSave();
+    document.querySelector('.tab[data-pane="preview"]').click();
+    toast('已载入示例');
+  }
+  $('#btnSample').addEventListener('click', function(){ loadSample(); });
+
+  /* 快捷键：Ctrl/Cmd+S 下载，Ctrl/Cmd+O 打开（Ctrl+P 交给浏览器打印） */
+  document.addEventListener('keydown', function(e){
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    var k = (e.key || '').toLowerCase();
+    if (k === 's'){ e.preventDefault(); $('#btnSave').click(); }
+    else if (k === 'o'){ e.preventDefault(); $('#btnOpen').click(); }
+  });
+
+  /* -------- 初始化 -------- */
+  (async function init(){
+    refreshFontUI();
+    applySettings();
+
+    var savedDoc = null;
+    try { savedDoc = localStorage.getItem(LS_DOC); } catch (e) {}
+    md = (savedDoc && savedDoc.trim()) ? savedDoc : $('#sampleDoc').textContent.replace(/^\n/, '');
+    editor.value = md;
+    render();
+    $('#paneEdit').classList.add('on');
+
+    /* 字体库恢复：读出来重新注册 */
+    try {
+      var recs = await dbAll();
+      var mounted = [];
+      for (var i = 0; i < recs.length; i++){
+        if (await registerFont(recs[i])) mounted.push(recs[i]);
+      }
+      fontRecs = mounted.sort(function(a, b){ return a.name.localeCompare(b.name, 'zh'); });
+      refreshFontUI();
+      applySettings();
+    } catch (e) {}
+  })();
+
+  /* 宽屏时编辑即预览 */
+  window.addEventListener('resize', function(){ if (window.innerWidth >= 900) renderIfDirty(); });
+  window.addEventListener('pagehide', function(){
+    imgUrls.forEach(function(k){ if (imgMap[k]) try { URL.revokeObjectURL(imgMap[k]); } catch (e) {} });
+  });
+})();
+</script>
+</body>
+</html>
