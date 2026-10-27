@@ -23,7 +23,8 @@ not follow you between entries — pick one and stick with it.
 
 ## Features
 
-- **Markdown rendering** — headings, lists, tables, quotes, footnotes, task lists, strikethrough, `==highlight==`.
+- **Markdown rendering** — headings, lists, tables, quotes, footnotes, task lists, strikethrough, `==highlight==`,
+  code blocks with syntax highlighting, and CJK soft wrapping.
 - **Print typesetting** — A4 / Letter / A5, three margin presets. **Print / Save PDF** → system dialog → *Save as PDF*.
 - **Math** — the inlined [Temml](https://temml.org) 0.14 engine (MIT) converts LaTeX to MathML:
   - covers most of amsmath / amssymb: `\lesssim` `\geqslant` `\boxed` `\cancel` `\overrightarrow` `\operatorname` `\color` `\begin{aligned}` …
@@ -33,12 +34,41 @@ not follow you between entries — pick one and stick with it.
   `\ce{2H2 + O2 -> 2H2O}`, `\ce{N2(g) + 3H2(g) <=> 2NH3(g)}`, `\ce{2H2O2 ->[MnO2] 2H2O + O2}`,
   `\ce{CuSO4.5H2O}`, `\ce{SO4^2-}`, `\pu{1.0e-3 mol/L}`.
 - **Table of contents** — optional, depth H1 … all levels.
-- **Accent colour** — seven presets, a wheel you can drag anywhere, or a typed hex value. It drives links,
-  the quote bar and tint, table header tint, heading rules, table borders, `==highlight==`, task boxes and the
-  UI's own buttons / focus rings. Printing converts it to a print-safe shade automatically.
+- **Accent colour** — seven presets, a wheel you can drag anywhere, a typed hex value or the brightness slider.
+  It drives links, the quote bar and tint, table header tint, heading rules, table borders, `==highlight==`, task
+  boxes and the UI's own buttons / focus rings. Printing converts it to a print-safe shade automatically.
+- **Page background** — upload an image or pick one from the thumbnail history, then crop it in the built-in
+  frosted-glass cropper: A4 / square / circle, drag to move, wheel or pinch to zoom, rendered at device pixel ratio,
+  plus **Keep original** to skip cropping. Two sliders set the opacity of the image itself and of the tinted content
+  surfaces on top of it (tables, code blocks, quotes, TOC). Printing paints the background as a fixed overlay
+  (Chromium repeats fixed-position elements on each page) — tick **Background graphics** in the print dialog.
+  The image never leaves the browser.
+- **Colour from an image** — sample an accent straight out of the current page background, or from any image chosen
+  for the session: a crosshair and a 13×13 pixel magnifier follow the pointer, and on Chromium the system EyeDropper
+  can pick from anywhere on screen (the button is greyed out elsewhere). The last 24 colours are kept in a swatch
+  strip — click to reuse, ✕ to remove — and survive a reload.
 - **Render fences** — content inside a `svg` / `css` / `html` / `render` fence is **rendered**, not shown as code.
   Tag a fence `text` to show the code instead.
-- **Export** — a self-contained HTML file (fonts and images embedded), or just the `.md`.
+- **Inline SVG** — an `<svg>` written straight into the Markdown stays vector in the PDF; scripts, event attributes
+  and external URLs are stripped.
+- **Author card and footer bar** — an optional avatar plus one line of text, placed above or below the document; the
+  footer info bar with the tool name and repository link sits at the bottom and can be switched off. The styles live
+  in the document stylesheet, so preview, print and export match.
+- **Footnote placement** — three modes: all notes at the end (default), each note right after the paragraph that
+  cites it, or both at once.
+- **Local images stay attached** — images picked together with a `.md` are copied into the browser database on open,
+  so reloading the page or reopening the document from History no longer leaves broken images.
+- **JSON extensions** — one JSON file can rewrite the text before parsing (`preProcess`), add inline syntax and new
+  fences (`customSyntax`), add toolbar buttons that insert a fixed snippet (`uiInjection`), and add CSS for the
+  document only (`cssInjection`). The output passes the same sanitiser as render fences; a malformed file disables
+  the whole extension with an error instead of half-applying it; the extension is stored locally and survives a reload.
+- **Settings** — five tabs: Appearance / Background & images / Smart extensions / Print & export / Data & fonts.
+  Settings are saved to the browser database and restored on reload, with a one-click reset to defaults; the Data &
+  fonts tab also holds font import and the font library. If the database is unavailable (private browsing), the UI
+  says so instead of pretending to save.
+- **Settings export / import** — packs the settings and the extension JSON into one file for moving to another
+  machine. Background, avatar, document images and fonts are deliberately left out.
+- **Export** — a self-contained HTML file (fonts, images and the page background embedded), or just the `.md`.
 - **History** — the **🗂 History** button lists documents written here (title, last edit, word count, size).
   Open, delete one entry, or clear all. Autosaves ~2.6 s after you stop typing, keeps the newest 50.
   Everything sits in the browser's IndexedDB; nothing is uploaded.
@@ -53,16 +83,19 @@ not follow you between entries — pick one and stick with it.
 
 1. Open `index.html` in Chrome or Edge (double-clicking the file works — no server needed).
 2. Click **Open** and pick a `.md`. If the document references local images, select the `.md` **and** the images
-   together; they are matched by file name.
+   together; they are matched by file name and copied into the browser database, so a reload will not break them.
 3. Check the preview, then click **Print / Save PDF** and choose *Save as PDF* in the system dialog.
    - A web page cannot write a PDF file by itself; this route is the only one, and it is what yields vector text.
    - Want page numbers? Turn on *Headers and footers* in the print dialog.
 
 ## Safety
 
-Raw HTML and render fences are sanitised: `<script>`, event attributes (`onclick` …), external `url()` and
-`@import` are stripped. Nothing is fetched at runtime — the math engine is inlined, not pulled from a CDN.
-Intended for documents you trust.
+Raw HTML and render fences are sanitised: `<script>`, event attributes (`onclick` …), `javascript:` / `data:text/html`
+protocols, external `url()` and `@import` are stripped. JSON extensions go through the same filters: generated HTML is
+sanitised, placeholders are inserted as data (escaped) rather than raw HTML, and extension CSS reaches the document
+stylesheet only, with `@import`, `javascript:` and external `url()` removed. The tool itself fetches nothing at
+runtime — the math engine is inlined, not pulled from a CDN — but a document that embeds **remote images** will still
+make the browser load them, so keep untrusted documents offline. Intended for documents you trust.
 
 ## Third-party
 
