@@ -76,6 +76,13 @@
   没有 Skill 机制的软件（网页版 ChatGPT / 豆包 / Kimi 等）直接把 `SKILL.md` 当文件发过去，
   或把全文贴进系统提示词、甚至只在开头贴一句「公式一律 LaTeX、化学式用 \ce…」也能用。
 
+- **[md2pdf-ext-rules](https://github.com/w32394045-dotcom/md2pdf-ext-rules)** —— 第二个配套 AI Skill（通用），
+  专管「扩展 JSON」（设置 → 智能扩展）：教 AI 写对 `preProcess`、`customSyntax`（行内 + 围栏）、
+  `cssInjection`、`uiInjection`——`$content` 只能在标签外、围栏名与样式类必须命名空间化、
+  替换串里的 `$` 有哪些坑、哪些写法会被静默跳过。
+  附 `check_ext.py` 自检脚本和 16 个反例（每一种要么让整份扩展禁用，要么安安静静不生效）。
+  装法同上：把该仓库 README 的提示词整段给 agent，或把 `SKILL.md` 发给没有 Skill 机制的软件。
+
 ## 许可证
 
 [MIT](LICENSE) © 2026 w32394045-dotcom

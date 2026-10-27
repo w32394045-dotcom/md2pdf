@@ -103,13 +103,19 @@ make the browser load them, so keep untrusted documents offline. Intended for do
   See [THIRD-PARTY.md](THIRD-PARTY.md) for the notice, why KaTeX / MathJax / mhchem were not used, and what
   changed (only the `@font-face` rule was dropped, since the single-file build ships no font binaries).
 
-## Related project
+## Related projects
 
 - **[md2pdf-authoring](https://github.com/w32394045-dotcom/md2pdf-authoring)** — a companion AI skill (generic).
   It teaches an agent how to drive this tool and how to write Markdown whose maths, chemistry, figures and tables
   survive rendering and printing, and ships a `check_md.py` linter to run before delivery.
   Installing is one copy-paste: the skill repo's README has a ready-made prompt for Claude Code / Codex / DSH / Cursor,
   plus a file-drop route for chat-only assistants (ChatGPT, Kimi, Doubao …).
+- **[md2pdf-ext-rules](https://github.com/w32394045-dotcom/md2pdf-ext-rules)** — the second companion AI skill,
+  for the **JSON extension system** (Settings → Smart extensions). It teaches an agent to write `preProcess`,
+  `customSyntax` (inline + block), `cssInjection` and `uiInjection` correctly: `$content` only outside tags,
+  namespaced fences and CSS, the `$` traps in replacement strings, and what gets silently skipped.
+  It ships a `check_ext.py` linter and sixteen counter-examples of mistakes that either disable the whole
+  extension or fail quietly. Same install routes as above.
 
 ## Licence
 
