@@ -116,6 +116,11 @@ make the browser load them, so keep untrusted documents offline. Intended for do
   namespaced fences and CSS, the `$` traps in replacement strings, and what gets silently skipped.
   It ships a `check_ext.py` linter and sixteen counter-examples of mistakes that either disable the whole
   extension or fail quietly. Same install routes as above.
+- **[imgprint](https://github.com/w32394045-dotcom/imgprint)** — [imgprint.xszx.cc.cd](https://imgprint.xszx.cc.cd/) ·
+  the single-file image printer for the same ecosystem: drop in several photos, choose paper size, margins
+  and 1-2-4 images per page, print. It warns about effective DPI and non-sRGB colour spaces, runs fully
+  offline in 7 languages, and carries the same switchable footer watermark. Use it when the thing to print
+  is images rather than Markdown.
 
 ## Licence
 

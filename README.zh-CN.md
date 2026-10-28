@@ -82,6 +82,10 @@
   替换串里的 `$` 有哪些坑、哪些写法会被静默跳过。
   附 `check_ext.py` 自检脚本和 16 个反例（每一种要么让整份扩展禁用，要么安安静静不生效）。
   装法同上：把该仓库 README 的提示词整段给 agent，或把 `SKILL.md` 发给没有 Skill 机制的软件。
+- **[imgprint](https://github.com/w32394045-dotcom/imgprint)** —— [imgprint.xszx.cc.cd](https://imgprint.xszx.cc.cd/) ·
+  同系列的单文件图片打印器：拖入多张照片，选纸张、边距、每页 1/2/4 张，直接打印。
+  会提示有效 DPI 与「非 sRGB」色彩空间，纯本地离线、7 种语言，也带同样可关闭的页脚水印。
+  要打的是图片而不是 Markdown 时用它。
 
 ## 许可证
 
