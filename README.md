@@ -56,7 +56,10 @@ not follow you between entries — pick one and stick with it.
   **repeated at the top / bottom of every printed page**. The avatar can be uploaded or picked from the avatar
   history; the footer info bar with the tool name and repository link can be switched off, or shown **once per page**
   with its own switch (off = a single bar at the end). The styles live in the document stylesheet, so preview, print
-  and export match.
+  and export match. The avatar and the text each have their **own opacity slider**, and the strip behind the
+  per-page decorations has a separate **background opacity** — 100 keeps the solid paper colour (the default, so
+  body text at the page edge stays hidden); lower it and the page background image shows through, at the cost of
+  page-edge body text becoming visible behind the strip.
 - **Footnote placement** — three modes: all notes at the end (default), each note right after the paragraph that
   cites it, or both at once.
 - **Local images stay attached** — images picked together with a `.md` are copied into the browser database on open,
