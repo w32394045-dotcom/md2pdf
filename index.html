@@ -1367,24 +1367,27 @@ body {
 <script type="text/plain" id="sampleDoc">
 # Markdown 排版与 PDF 导出
 
-这是一个**完全离线**的 Markdown 阅读 / 排版工具：单个 HTML 文件，不联网、不装依赖，手机上打开就能用。
+这是一个**完全离线**的 Markdown 阅读 / 排版工具：单个 HTML 文件，不联网、不装依赖，手机上打开就能用。界面本身支持 7 种语言（顶栏 🌐），和文档写什么语言互不影响。
 
-## 一、怎么用
+> 下面每一节都是**活的示例**：正文里这么写，预览里就是它排出来的样子。
+
+## 怎么用
 
 1. 点「📂 打开」选一个 `.md` 文件，或者直接在「编辑」页里打字 / 粘贴。
 2. 切到「预览」看排版效果（屏幕宽的时候左右分栏，边写边看）。
 3. 点「🖨 打印 / PDF」，在系统打印界面把目标改成 **另存为 PDF** 保存。
-4. 想看之前写过的？点顶栏「🗂 历史」，里面是自动存下来的本地副本，可以打开或删除。
+4. 想留底或发给别人：顶栏「🗂 历史」是自动存下来的本地副本，「📄 导出 HTML」能打包成一个独立 HTML 文件。
+5. 把这份示例改乱了？点顶栏「示例」就能调回当前语言的原版。
 
-> 导出的是真正的矢量文字 PDF：文字可以选中、搜索、复制，放大不会糊，体积也小。不是截图拼出来的。
+> 导出的是真正的矢量文字 PDF：文字可以选中、搜索、复制，放大不会糊，体积也小——不是截图拼出来的。
 
-## 二、支持的语法
+## 文字与块级语法
 
 ### 文字样式
 
-**加粗**、*斜体*、***加粗斜体***、~~删除线~~、==高亮==、`行内代码`、上标脚注[^1]。
+**加粗**、*斜体*、***加粗斜体***、~~删除线~~、==高亮==、`行内代码`、脚注[^1]。
 
-### 列表
+### 列表与任务
 
 - 无序列表
 - 支持嵌套：
@@ -1396,7 +1399,7 @@ body {
 
 ### 表格
 
-表格单元格里的 `|` 只要写在反引号里就不会把列切断：
+表格单元格里的 `|` 只要写在反引号里，就不会把列切断：
 
 | 功能 | 写法 | 状态 |
 |:-----|:----:|-----:|
@@ -1412,11 +1415,28 @@ function hello(name) {
 }
 ```
 
-长代码行在纸上也会自动折行，不会被裁掉：
+长代码行在纸上会自动折行，不会被裁掉：
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags,attachments
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
+
+### 引用与分隔线
+
+> 这是一段引用。
+> 可以写成多行，会自动合并成一个引用块。
+
+---
+
+### 链接与脚注
+
+[Claude Code](https://claude.com/claude-code) 是一个命令行工具；裸链接也认：https://claude.com
+
+脚注用 `[^1]` 定义，编号自动排。脚注放文末、紧跟引用它的那一段、还是两处都放，在「设置 → 智能扩展 → 脚注位置」里选——「就近」打印时和正文同页，题包、答案页最实用。
+
+[^1]: 脚注会自动编号，并按设置的「脚注位置」统一排列。
+
+## 公式与化学式
 
 ### 数学公式
 
@@ -1441,25 +1461,17 @@ f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
 \lim_{x \to 0} \frac{\sin x}{x} = 1
 $$
 
-$$
-\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} = 0
-\qquad
-\Omega = \{ x \in \mathbb{R}^n : \|x\| \le 1 \}
-$$
-
 常用符号：$\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$，关系符 $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$。
 
-进阶写法基本都有（公式由**内联的 Temml** 解析，覆盖 amsmath / amssymb 的绝大多数命令）：
-$\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$，
-$\boxed{x^2}$、$\overrightarrow{AB}$、$\cancel{(x+1)}$、$\overbrace{a+b}^{n}$、$\operatorname{rank}(A)$、$\color{red}{x}$、$\mathbf{v} \cdot \nabla f$。
+进阶写法基本都有：$\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$，$\boxed{x^2}$、$\overrightarrow{AB}$、$\cancel{(x+1)}$、$\overbrace{a+b}^{n}$、$\operatorname{rank}(A)$、$\color{red}{x}$。
 
-### 化学式（\ce）
+### 化学式与单位
 
-化学式用 `\ce{…}`，不用自己拼下标和上下标：
+化学式用 `\ce{…}`，不用自己拼上下标：
 
 $$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
 
-箭头可以写反应条件，可逆反应用 `<=>`：
+箭头上可以写反应条件，可逆反应用 `<=>`：
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
@@ -1470,7 +1482,9 @@ $$\ce{Fe2O3 + 3CO ->[高温] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 > 公式渲染成 MathML，同样是**矢量文字**，能选中、能搜索、打印不糊。
 > 价格不会被误判成公式：$5-$10、$100 和 $200 都保持原样。
 
-### 内嵌图形（SVG）
+## 画图：SVG 与渲染型围栏
+
+### 直接写 SVG
 
 正文里可以直接写 `<svg>`。画出来是**真矢量**——放大不糊，打印走的是矢量路径，不是位图。
 
@@ -1498,12 +1512,11 @@ $$\ce{Fe2O3 + 3CO ->[高温] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
   <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
 
-图里那段 `<style>` 是这张图自己的配色，程序会给它加上作用域——只作用于这一张图，
-不会串到别的图或者界面本身上去。上面的箭头用的是图内 `<defs>` 里定义的 marker。
+图里那段 `<style>` 是这张图自己的配色，程序会给它加上作用域——只作用于这一张图，不会串到别的图或者界面本身上去。
 
-### 渲染型代码块（```svg / ```css / ```html）
+### 渲染型围栏
 
-围栏里写的内容**不会当代码显示**，而是直接渲染出来。适合画结构图、做版式、给整份文档加自定义样式。
+围栏里写的内容**不会当代码显示**，而是直接渲染出来，适合画结构图、堆版式、给整份文档加自定义样式。
 
 ```css
 .note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
@@ -1525,218 +1538,388 @@ $$\ce{Fe2O3 + 3CO ->[高温] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
 规则：
 
-- 标 `css`：整段当样式表，作用于**整份文档**；它本身不产生可见内容，只负责给后面的 HTML 上样式。
+- 标 `css`：整段当样式表，作用于**整份文档**；本身不产生可见内容，只给后面的 HTML 上样式。
 - 标 `html`：渲染成 HTML；里面若有 `<style>` 会被抽出并生效。
 - 标 `svg`：渲染成矢量图形。
 - 标 `render`：按内容自动判断成上面哪一种。
-- **只想显示代码、不想渲染**：把语言标成 `text`（或 `plain`）。
+- 只想显示代码、不想渲染：把语言标成 `text`（或 `plain`）。
 - 安全边界：脚本、`onclick` 之类事件属性、外链 `url()`、`@import` 都会被去掉。
 
-### 引用与分隔线
+## 排版留白、答题横线与分页
 
-> 这是一段引用。
-> 可以写成多行，会自动合并成一个引用块。
+三种「独占一行」的内置指令，直接控制纸面节奏；写错了会原样显示，不会被吞掉。
 
----
+- `[[gap:3]]`：空 3 行（1 行 = 正文行高，随字号变化）
+- `[[gap:20mm]]`：空 20 毫米，打印对齐更精确
+- `[[rules:3]]`：画 3 条答题横线，行距 1.9em
 
-### 链接与脚注
+在两道题之间留点余地：
 
-[Claude Code](https://claude.com/claude-code) 是一个命令行工具，也可以直接写裸链接：https://claude.com
+[[gap:2]]
 
-[^1]: 脚注会自动编号，并在文末统一排列。
+需要手写作答的地方：
 
-### 分页控制
+[[rules:3]]
 
-<div class="page-break"></div>
+### 强制分页
 
-上面那行 HTML 会让后面的内容从新的一页开始（只在导出 PDF 时生效）。
+`[[pagebreak]]` 会让后面的内容从新的一页开始，只在打印 / 导出 PDF 时生效；屏幕上是虚线标记，不占空白。
 
-## 三、打印与个性化
+[[pagebreak]]
 
-在「⚙️ 设置」里可以调：
+> 旧写法 `<div class="page-break"></div>` 仍然有效，只是现在有更短的 `[[pagebreak]]`。
+> 指令必须独占一行；`[[gap:]]`、`[[gap:3px]]`、`[[rules:abc]]` 这类写错的形式会按普通文字显示。
 
-- **排版**：主题、字号、单个换行就换行（中文习惯）、代码块语法高亮
-- **目录**：是否生成目录，以及目录收录到第几级标题（H1 / H1–H2 / H1–H3 / 全部）
-- **主题色**：上面一排预设点一下就换；想自己调就拖色环（可拖到任意位置），或直接输入 `#RRGGBB` 色值，另有明度滑块；「↺ 重置主题色」回到默认蓝。
-  它控制引用块左侧竖杠、引用块背景、链接、表头底色、标题下划线、目录高亮、任务框勾选等强调色，导出 HTML 时一并带上
-- **打印**：纸张 A4 / Letter / A5、页边距、链接后附网址
-- **字体**：正文和代码都能换成自己导入的字体
-- **公式**：可以整体关掉 LaTeX 解析
-- **数据**：设置和历史文件都存在浏览器本地数据库里；可以「＋ 存一份到历史」，也可以「↺ 恢复全部默认设置」
+## 打印与个性化
 
-### 历史文件（存在本机数据库）
+设置（⚙️）分五个标签页：
 
-顶栏「🗂 历史」会列出你在这个浏览器里写过的文档：标题、最后修改时间、字数、占用空间。点一张卡片直接打开继续写，卡片上的「删除」只删那一条，「清空」会删掉全部（删之前都会先确认）。
+### 外观
 
-文档不用手动存：打字停下约两秒就会自动更新当前这一条的快照，所以关掉页面再回来，历史里还是最新的。最多保留 50 条，超了自动丢最旧的。
+- **主题 / 字号**：浅色 / 深色，小 / 中 / 大。
+- **目录**：自动生成，可限定 H1 / H1–H2 / H1–H3 / 全部。
+- **主题色**：7 套预设（默认蓝、墨黑、朱砂、青碧、松绿、琥珀、靛紫）；拖色环任意位置、直接填 `#RRGGBB`，或用「🎨 从图片提取主题色」从图片里吸一个；最近用过的颜色留在「历史配色」里，点一下就换回来。
+- **制作者信息**：头像 + 文字描述。头像既可以从上传过的里面挑，也可以重新上传，并裁剪成 A4 / A5 / Letter / 正方形 / 圆形比例；位置可选「顶部 / 底部 / 每页顶部 / 每页底部」。
+- **页面信息栏**：文末显示一次工具信息，或打开「每页都显示宣传」让每页都带上（两者可以分开关）。
 
-> 数据只存在这台设备的浏览器里（IndexedDB），不上传、不联网。换浏览器、换设备、清空站点数据都看不到；无痕窗口里通常直接不可用，此时界面会明确提示，而不是假装存上了。
+### 背景与图片
 
-### 导入自己的字体
+选一张图当页面背景，可裁剪、可换、可清除；「背景不透明度」调背景本身浓淡，「内容底色不透明度」控制表格 / 代码块 / 引用块底下透出多少。打印时记得在打印界面勾上「背景图形」，否则纸上不会有背景。
 
-点「＋ 导入字体」选 `.ttf` / `.otf` / `.woff` / `.woff2` 文件，字体文件会存进浏览器的本地数据库，**下次打开还在**，不用重复导入。导入后在「正文」「代码」下拉框里选用。
+### 智能扩展
 
-### 导出成独立 HTML
+- 「单个换行就换行」按中文习惯断行；「代码块语法高亮」可关。
+- 「脚注位置」：文末 / 就近 / 就近 + 文末汇总。
+- 「解析 LaTeX 公式」总开关，关掉公式就变回源码。
+- 「自定义扩展」：用一段 JSON 加自己的行内语法、渲染围栏、文档样式和顶栏按钮。
 
-点「📄 导出 HTML」会把当前排版（含用到的字体和图片）打包成**一个 HTML 文件**，发给别人直接打开就是这个样子，不依赖任何外部文件。
+### 打印与导出
 
-### 文档里有本地图片
+纸张 A4 / Letter / A5，页边距 窄 / 常规 / 宽，打印时是否在链接后附网址。导出 PDF 走系统打印，**网页自己写不出 PDF 文件**；要页码就在打印界面打开「页眉和页脚」。
 
-点「📂 打开」时把 `.md` 和图片**一起选中**，程序按文件名自动对应 `![](图片名.png)`，不用改 Markdown 里的路径。
+### 数据与字体
 
-## 四、已知边界
+设置和历史都存在浏览器本地数据库（IndexedDB），不上传、不联网。字体可以导入 `.ttf` / `.otf` / `.woff` / `.woff2`，存在浏览器里，下次打开还在。设置能导出 / 导入成 JSON，换设备时不用重配。界面语言在顶栏 🌐 切换，共 7 种。
+
+## 历史文件
+
+顶栏「🗂 历史」列出你在这个浏览器里写过的文档：标题、修改时间、字数、占用空间。点卡片直接打开继续写；卡片上的「删除」只删那一条，右上角的「清空」删全部（都会先确认）。
+
+不用手动存：打字停下约 2.6 秒就会更新当前这一条的快照，关掉页面再回来，历史里还是最新的。最多保留 50 条，超了自动丢最旧的。
+
+> 数据只存在这台设备的浏览器里（IndexedDB），不上传、不联网。换浏览器、换设备、清空站点数据都看不到；无痕窗口里通常直接用不了，此时界面会明确提示，而不是假装存上了。
+
+## 文档里的本地图片
+
+点「📂 打开」时把 `.md` 和图片**一起选中**，程序按文件名自动对应 `![](图片名.png)`，不用改 Markdown 里的路径。选过一次之后图片会存进本地数据库，下次打开同一份文档不用再选。
+
+## 已知边界
 
 1. 公式由**内联的 Temml**（MIT，已押进本文件，运行时不联网）解析，覆盖 amsmath / amssymb 的绝大多数命令。它认不出的写法会自动退回内置的简易解析器，最差是原样显示命令名，不会整段丢内容。
 2. 化学式 `\ce{…}` 是本文件自带的轻量转换（不是 mhchem）：支持元素、下标、电荷、`->` `<-` `<=>`（可在箭头上写 `->[条件]`）、`(g)/(l)/(s)/(aq)` 状态、水合物中点、配位方括号。mhchem 里比较冷门的语法不保证。单位 `\pu{…}` 同理。
 3. 公式要在能显示 MathML 的浏览器里才有效（Chrome 109+ / Safari 16.4+ / Firefox 全系），这也是本工具一直以来的前提。
-4. 图片用 `https://` 网址最稳；本地图片请在「打开」时连图片一起选中。
-5. 原始 HTML 与渲染型围栏（`html` / `css` / `svg`）都会做安全过滤：脚本、事件属性、外链 `url()`、`@import` 一律去掉。
-6. 页码由浏览器打印界面控制：在打印预览里把「页眉和页脚」打开即可。
+4. 原始 HTML 与渲染型围栏（`html` / `css` / `svg`）都会做安全过滤：脚本、事件属性、外链 `url()`、`@import` 一律去掉。
+5. 页码由浏览器打印界面控制：在打印预览里把「页眉和页脚」打开即可。
 </script>
 <script type="text/plain" id="sampleDoc-fr">
-# Markdown → PDF (exemple)
+# Mise en page Markdown et export PDF
 
-Cet outil tient dans **un seul fichier HTML hors ligne** : sans réseau, sans installation, sans compte. Tout ce qui suit est un exemple vivant de ce que md2pdf comprend.
+Un outil de lecture et de mise en page Markdown **entièrement hors ligne** : un seul fichier HTML, sans réseau ni installation, même sur un téléphone. L’interface existe en 7 langues (🌐 en haut), indépendamment de la langue du document.
 
-## Démarrage rapide
+> Chaque section est un **exemple vivant** : ce qui est écrit ici s’affiche comme cela dans l’aperçu.
 
-1. Clique sur **Ouvrir** et choisis un fichier `.md` — ou tape directement dans l'éditeur.
-2. Passe en **Aperçu** (sur un écran large, les deux volets s'affichent côte à côte).
-3. Clique sur **Imprimer / Enregistrer en PDF**, puis choisis **Enregistrer au format PDF** dans la boîte d'impression système.
-   Le résultat est un **PDF texte vectoriel** : sélectionnable, recherchable, net à tout zoom — pas une capture d'écran.
+## Mode d’emploi
 
-## Texte
+1. « 📂 Ouvrir » pour choisir un `.md`, ou taper / coller dans « Édition ».
+2. « Aperçu » pour juger la mise en page (écran large : les deux volets côte à côte).
+3. « 🖨 Imprimer / Enregistrer en PDF », puis **Enregistrer au format PDF** dans la boîte d’impression du système.
+4. « 🗂 Historique » contient les copies locales automatiques ; « 📄 Exporter en HTML » produit un fichier autonome.
+5. Exemple abîmé ? « Exemple » recharge l’original dans la langue courante.
 
-**gras**, *italique*, ***gras italique***, ~~barré~~, ==surligné==, `code en ligne`, une note[^1].
+> Au final, un **vrai PDF vectoriel** : texte sélectionnable, recherchable, copiable, net à tout zoom et léger — pas une capture d’écran.
 
-## Listes
+## Texte et syntaxe de blocs
 
-- à puces
-  - imbriquée
-    1. les listes numérotées s'imbriquent aussi
-- [ ] tâche (à faire)
-- [x] tâche (faite)
+### Styles de texte
 
-## Tableau
+**Gras**, *italique*, ***gras italique***, ~~barré~~, ==surligné==, `code en ligne`, une note[^1].
+
+### Listes et tâches
+
+- liste à puces, imbrication possible :
+  - deuxième niveau
+    1. listes numérotées incluses
+    2. deuxième élément
+- [ ] tâche à faire
+- [x] tâche terminée
+
+### Tableau
+
+Un `|` entre accents graves ne coupe pas la colonne :
 
 | Fonction | Comment | État |
-|:---------|:-------:|-----:|
-| Aperçu en direct | pendant la frappe | ✅ |
-| Impression | PDF texte vectoriel | ✅ |
+|:-----|:----:|-----:|
+| Aperçu en direct | on écrit en voyant le résultat | ✅ |
+| Export et impression | PDF texte vectoriel | ✅ |
+| Barre verticale échappée | `` `a|b` `` tient dans une cellule | ✅ |
 
-## Code
+### Code
 
 ```js
 function hello(name) {
-  console.log(`salut, ${name}`);
+  console.log(`Bonjour, ${name}`);
 }
 ```
 
-Les lignes trop longues sont renvoyées à la ligne sur le papier au lieu d'être coupées :
+Les lignes trop longues sont renvoyées à la ligne sur le papier, pas rognées :
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
 
-## Mathématiques
+### Citations et séparateur
 
-En ligne : $E = mc^2$, $e^{i\pi} + 1 = 0$, $\vec{v} = (v_1, v_2, v_3)$.
+> Voici une citation.
+> Sur plusieurs lignes, elle est réunie en un seul bloc.
+
+---
+
+### Liens et notes de bas de page
+
+[Claude Code](https://claude.com/claude-code) est un outil en ligne de commande ; les liens bruts passent aussi : https://claude.com
+
+Les notes se définissent avec `[^1]` et se numérotent seules. Leur place — fin du document, juste après l’appel, ou les deux — se choisit dans « Paramètres → Extensions intelligentes → Position des notes » ; « Près de l’appel » les garde sur la même page imprimée, ce qui convient aux fiches d’exercices et aux corrigés.
+
+[^1]: Les notes sont numérotées automatiquement et placées selon la « Position des notes » choisie.
+
+## Formules et chimie
+
+### Formules mathématiques
+
+En ligne avec `$…$` : l’équation d’Einstein $E = mc^2$, l’identité d’Euler $e^{i\pi} + 1 = 0$, le vecteur $\vec{v} = (v_1, v_2, v_3)$.
+
+Sur sa propre ligne avec `$$…$$` :
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-\qquad
-\lim_{x \to 0}\frac{\sin x}{x} = 1
 $$
 
-Au-delà des bases : $a \lesssim b$, $x \geqslant 0$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\operatorname{rank}(A)$.
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
 
-## Chimie
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
 
-$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-}$$
+Symboles courants : $\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$, relations $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$.
+
+Presque tout passe : $\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\cancel{(x+1)}$, $\overbrace{a+b}^{n}$, $\operatorname{rank}(A)$, $\color{red}{x}$.
+
+### Chimie et unités
+
+`\ce{…}` évite de composer indices et exposants à la main :
+
+$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
+
+Conditions sur la flèche, équilibres avec `<=>` :
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
-## Dessiner avec un bloc
+$$\ce{Fe2O3 + 3CO ->[chauffage] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
-Un bloc marqué `svg` est **rendu comme une image**, pas affiché comme du code :
+Unités avec `\pu{…}` : $\pu{9.8 m/s^2}$, $\pu{1.0e-3 mol/L}$.
 
-```svg
-<svg width="560" height="120" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="34" width="120" height="52" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
-  <line x1="140" y1="60" x2="250" y2="60" stroke="#2f6fed" stroke-width="2"/>
-  <rect x="250" y="34" width="120" height="52" rx="8" fill="#fdf0f0" stroke="#d64545"/>
-  <text x="80" y="65" font-size="14" text-anchor="middle">source</text>
-  <text x="310" y="65" font-size="14" text-anchor="middle">PDF</text>
+> Formules en MathML, donc en **texte vectoriel** elles aussi : sélectionnables, cherchables, nettes à l’impression.
+> Les prix ne sont pas des formules : $5–$10, $100 et $200 restent intacts.
+
+## Dessiner : SVG et blocs de rendu
+
+### SVG écrit à la main
+
+Un `<svg>` s’écrit directement dans le texte ; le dessin est **du vrai vectoriel** : net à tout zoom, imprimé en tracés, pas en bitmap.
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">Aperçu</text>
+  <text class="flow-lbl" x="409" y="65">Impression</text>
+  <text class="flow-lbl" x="551" y="65">PDF vectoriel</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
-```
 
-`css` définit des styles, `html` les utilise. Pour montrer le code lui-même, marque le bloc `text`.
+Le `<style>` de la figure ne vaut que pour elle : l’outil le limite à cette image, sans effet sur les autres figures ni sur l’interface.
+
+### Blocs de rendu
+
+Le contenu d’un bloc balisé **n’est pas affiché comme du code** : il est rendu directement — schémas, mise en page, styles du document entier.
 
 ```css
-.sample-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
 ```
 
 ```html
-<div class="sample-box"><b>Astuce</b> : ce cadre est du vrai HTML, rendu depuis un bloc de code.</div>
+<div class="note-box">Ceci est du HTML rendu : <b>gras</b>, <span style="color:#d64545">rouge</span>, et aussi du <code>code en ligne</code>.</div>
 ```
 
-<div class="page-break"></div>
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">SVG dans un bloc</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">Toujours vectoriel</text>
+</svg>
+```
 
-## Réglages à connaître
+Règles :
 
-- **Mise en page** — thème, taille du texte, césure CJK, coloration syntaxique.
-- **Sommaire** — généré automatiquement, limitable au H1 ou à tous les niveaux.
-- **Couleur d'accent** — sept préréglages, glisser n'importe où sur la roue, ou saisir un code hexadécimal.
-- **Impression** — format du papier, marges, et ajout ou non de l'URL après les liens.
-- **Polices** — importe des `.ttf / .otf / .woff / .woff2` ; elles restent dans le navigateur après rechargement.
-- **Données** — réglages et historique vivent dans l'IndexedDB de ce navigateur. Rien n'est envoyé.
+- `css` : feuille de style pour **tout le document**, sans contenu visible.
+- `html` : rendu HTML ; un `<style>` interne est extrait et appliqué.
+- `svg` : image vectorielle.
+- `render` : choisit seul le mode selon le contenu.
+- Code affiché tel quel : baliser `text` (ou `plain`).
+- Sécurité : scripts, attributs d’événement, `url()` externes, `@import` retirés.
+
+## Espacements, lignes de réponse et pagination
+
+Trois directives, seules sur leur ligne, règlent le rythme de la page ; mal écrites, elles s’affichent telles quelles.
+
+- `[[gap:3]]` : 3 lignes vides (1 ligne = hauteur de ligne du texte, selon la taille de police)
+- `[[gap:20mm]]` : 20 millimètres de blanc, alignement plus précis à l’impression
+- `[[rules:3]]` : 3 lignes de réponse, interligne 1,9 em
+
+Entre deux exercices :
+
+[[gap:2]]
+
+Pour écrire à la main :
+
+[[rules:3]]
+
+### Saut de page forcé
+
+`[[pagebreak]]` ouvre une nouvelle page, à l’impression / à l’export PDF seulement ; à l’écran, un trait pointillé sans blanc.
+
+[[pagebreak]]
+
+> L’ancienne forme `<div class="page-break"></div>` marche encore ; `[[pagebreak]]` est plus court.
+> La directive doit être seule sur sa ligne ; `[[gap:]]`, `[[gap:3px]]`, `[[rules:abc]]` s’affichent comme du texte.
+
+## Impression et personnalisation
+
+Les réglages (⚙️) tiennent en cinq onglets :
+
+### Apparence
+
+- **Thème / Taille du texte** : clair / sombre, S / M / L.
+- **Sommaire** : automatique, limité à H1 / H1–H2 / H1–H3 / Tout.
+- **Couleur d’accent** : 7 préréglages (Bleu par défaut, Noir d’encre, Vermillon, Bleu-vert, Vert sapin, Ambre, Indigo) ; glisser le point sur le cercle chromatique, saisir un `#RRGGBB`, ou « 🎨 Prélever la couleur d’accent dans une image » ; « Couleurs récemment utilisées » rappelle les dernières d’un clic.
+- **Informations sur l’auteur** : photo de profil + texte ; photo choisie parmi les images importées ou rechargée, recadrée en A4 / A5 / Letter / carré / cercle ; position « Haut / Bas / Haut de chaque page / Bas de chaque page ».
+- **Bandeau d’informations** : infos de l’outil une fois en bas, ou « Afficher le bandeau sur chaque page » (réglages indépendants).
+
+### Fond et images
+
+Une image en fond, recadrable, remplaçable, effaçable. « Opacité du fond » règle son intensité ; « Opacité des fonds de contenu » la transparence des tableaux, blocs de code et citations. À l’impression, cocher « Graphiques d’arrière-plan », sinon le papier reste nu.
+
+### Extensions intelligentes
+
+- « Un seul saut de ligne suffit (usage CJK) » coupe les lignes à la mode CJK ; « Coloration syntaxique des blocs de code » se désactive.
+- « Position des notes » : Fin du document / Près de l’appel / Appel + récapitulatif.
+- « Analyser les formules LaTeX » est l’interrupteur général ; coupé, les formules redeviennent du texte source.
+- « Extensions personnalisées » : un JSON pour sa syntaxe en ligne, ses blocs de rendu, ses styles et un bouton dans la barre du haut.
+
+### Impression et export
+
+Papier A4 / Letter / A5, marges Étroit / Normal / Large, URL après les liens à l’impression ou non. L’export PDF passe par l’impression du système : **une page web ne sait pas écrire un PDF elle-même**. Pour les numéros de page, activer « En-têtes et pieds de page » dans la boîte d’impression.
+
+### Données et polices
+
+Réglages et historique dans la base locale du navigateur (IndexedDB) : rien n’est envoyé. Polices importées en `.ttf` / `.otf` / `.woff` / `.woff2`, conservées d’une session à l’autre. Réglages exportables / importables en JSON, donc pas de reconfiguration au changement d’appareil. Langue de l’interface via 🌐 en haut, 7 langues.
 
 ## Historique
 
-Le bouton **🗂 Historique** liste les documents écrits ici : rouvrir, supprimer une entrée ou tout effacer.
-L'enregistrement est automatique, environ 2,6 secondes après la dernière frappe. 50 entrées au maximum, la plus ancienne disparaît d'abord.
+« 🗂 Historique » liste les documents écrits dans ce navigateur : titre, date de modification, nombre de mots, espace occupé. Un clic sur une carte rouvre le document ; « Supprimer » n’enlève que cette entrée, « Effacer » en haut à droite tout le reste (confirmation demandée).
+
+Pas d’enregistrement manuel : environ 2,6 secondes après la dernière frappe, l’instantané est à jour ; on ferme, on revient, l’historique est là. 50 entrées au maximum, la plus ancienne saute au-delà.
+
+> Les données restent dans le navigateur de cette machine (IndexedDB) : rien n’est envoyé. Autre navigateur, autre appareil, données du site effacées : illisibles. En navigation privée, ça ne marche généralement pas — l’interface le dit clairement au lieu de faire semblant d’avoir enregistré.
+
+## Images locales dans le document
+
+Avec « 📂 Ouvrir », sélectionnez le `.md` **et les images ensemble** : elles sont associées par nom de fichier à `![](nom-image.png)`, sans toucher aux chemins du Markdown. Chargées une fois, elles restent dans la base locale ; inutile de les resélectionner.
 
 ## Limites connues
 
-1. Les formules sont composées par le moteur **Temml** embarqué (l'essentiel d'amsmath / amssymb). Ce qu'il ne reconnaît pas repart vers l'analyseur intégré et s'affiche littéralement — rien n'est perdu.
-2. `\ce{}` couvre la chimie scolaire courante ; les syntaxes mhchem exotiques ne sont pas garanties.
-3. Un navigateur compatible MathML est nécessaire (Chrome 109+, Safari 16.4+, Firefox).
-4. Le HTML brut et les blocs de rendu sont nettoyés : `<script>`, attributs d'événement, `url()` externes et `@import` sont retirés.
-
-[^1]: Le texte de la note se met à la fin du document.
+1. Formules analysées par **Temml embarqué** (MIT, présent dans le fichier, sans réseau à l’exécution) : la majorité d’amsmath / amssymb. Ce qu’il ignore repart vers l’analyseur simplifié ; au pire le nom de la commande s’affiche tel quel, rien n’est perdu.
+2. `\ce{…}` : conversion légère intégrée (pas mhchem) — éléments, indices, charges, `->` `<-` `<=>` (conditions via `->[condition]`), états `(g)/(l)/(s)/(aq)`, point des hydrates, crochets de coordination. Les syntaxes mhchem exotiques ne sont pas garanties. Idem pour `\pu{…}`.
+3. Formules visibles seulement dans un navigateur à MathML (Chrome 109+ / Safari 16.4+ / Firefox toutes versions) : prérequis de l’outil depuis toujours.
+4. HTML brut et blocs de rendu (`html` / `css` / `svg`) filtrés : scripts, attributs d’événement, `url()` externes et `@import` retirés.
+5. Numéros de page gérés par la boîte d’impression du navigateur : activer « En-têtes et pieds de page » dans l’aperçu avant impression.
 </script>
 <script type="text/plain" id="sampleDoc-de">
-# Markdown → PDF (Beispiel)
+# Markdown-Layout und PDF-Export
 
-Dieses Werkzeug ist **eine einzige Offline-HTML-Datei**: kein Netz, keine Installation, kein Konto. Alles hier ist ein lauffähiges Beispiel für das, was md2pdf versteht.
+Ein **komplett offline** arbeitendes Werkzeug zum Lesen und Setzen von Markdown: eine einzige HTML-Datei, ohne Netz, ohne Installation, selbst auf dem Handy nutzbar. Die Oberfläche gibt es in 7 Sprachen (🌐 oben in der Leiste) – in welcher Sprache das Dokument geschrieben ist, spielt keine Rolle.
 
-## Schnellstart
+> Jeder Abschnitt ist ein **lauffähiges Beispiel**: So geschrieben, erscheint er in der Vorschau genauso gesetzt.
 
-1. Auf **Öffnen** klicken und eine `.md`-Datei wählen — oder direkt im Editor tippen.
-2. Auf **Vorschau** wechseln (auf breiten Bildschirmen stehen beide Bereiche nebeneinander).
-3. Auf **Drucken / PDF speichern** klicken und im Systemdialog **Als PDF speichern** wählen.
-   Das Ergebnis ist ein **Vektor-Text-PDF**: markierbar, durchsuchbar, bei jedem Zoom scharf — kein Screenshot.
+## So funktioniert es
 
-## Text
+1. Klicke auf „📂 Öffnen“ und wähle eine `.md`-Datei – oder tippe bzw. füge direkt im Reiter „Bearbeiten“ ein.
+2. Wechsle zu „Vorschau“, um den Satz zu beurteilen (auf breiten Bildschirmen stehen beide Bereiche nebeneinander).
+3. Klicke auf „🖨 Drucken / als PDF speichern“ und wähle im Druckdialog des Systems **Als PDF speichern**.
+4. „🗂 Verlauf“ enthält automatische lokale Kopien; „📄 HTML exportieren“ erzeugt eine eigenständige HTML-Datei.
+5. Beispiel verstellt? „Beispiel“ lädt die Originalfassung in der aktuellen Sprache zurück.
 
-**fett**, *kursiv*, ***fett kursiv***, ~~durchgestrichen~~, ==markiert==, `Inline-Code`, eine Fußnote[^1].
+> Das Ergebnis ist ein **echtes Vektor-PDF**: Text markierbar, durchsuchbar, kopierbar, in jeder Zoomstufe scharf und klein – kein Screenshot.
 
-## Listen
+## Text und Block-Syntax
 
-- ungeordnet
-  - verschachtelt
-    1. nummeriert geht auch verschachtelt
+### Textauszeichnung
+
+**Fett**, *kursiv*, ***fett kursiv***, ~~durchgestrichen~~, ==markiert==, `Inline-Code`, eine Fußnote[^1].
+
+### Listen und Aufgaben
+
+- ungeordnete Liste, verschachtelbar:
+  - zweite Ebene
+    1. nummerierte Listen passen hinein
+    2. zweiter Punkt
 - [ ] Aufgabe (offen)
 - [x] Aufgabe (erledigt)
 
-## Tabelle
+### Tabelle
 
-| Funktion | Wie | Status |
-|:---------|:---:|-------:|
-| Live-Vorschau | beim Tippen | ✅ |
-| Drucken | Vektor-Text-PDF | ✅ |
+Ein `|` zwischen Backticks schneidet die Spalte nicht ab:
 
-## Code
+| Funktion | Schreibweise | Status |
+|:-----|:----:|-----:|
+| Live-Vorschau | beim Tippen zusehen | ✅ |
+| Druck und Export | Vektor-Text-PDF | ✅ |
+| Maskierter Strich | `` `a|b` `` bleibt eine Zelle | ✅ |
+
+### Code
 
 ```js
 function hello(name) {
@@ -1744,111 +1927,256 @@ function hello(name) {
 }
 ```
 
-Lange Zeilen brechen auf Papier um, statt abgeschnitten zu werden:
+Zu lange Zeilen brechen auf dem Papier um, statt abgeschnitten zu werden:
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
 
-## Formeln
+### Zitate und Trennlinie
 
-Inline: $E = mc^2$, $e^{i\pi} + 1 = 0$, $\vec{v} = (v_1, v_2, v_3)$.
+> Das ist ein Zitat.
+> Über mehrere Zeilen wird daraus ein einziger Zitatblock.
+
+---
+
+### Links und Fußnoten
+
+[Claude Code](https://claude.com/claude-code) ist ein Kommandozeilenwerkzeug; nackte Links funktionieren ebenfalls: https://claude.com
+
+Fußnoten definiert man mit `[^1]`, nummeriert wird automatisch. Wo sie stehen – Dokumentende, direkt hinter dem zitierenden Absatz oder beides –, wählst du unter „Einstellungen → Intelligente Erweiterungen → Fußnoten-Position“; „Bei der Fundstelle“ hält die Notiz auf derselben Druckseite, praktisch für Aufgabenblätter und Lösungsseiten.
+
+[^1]: Fußnoten werden automatisch nummeriert und nach der gewählten „Fußnoten-Position“ gesetzt.
+
+## Formeln und Chemie
+
+### Mathematik
+
+Inline mit `$…$`: die Einsteinsche Gleichung $E = mc^2$, die Eulersche Identität $e^{i\pi} + 1 = 0$, der Vektor $\vec{v} = (v_1, v_2, v_3)$.
+
+Auf eigener Zeile mit `$$…$$`:
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-\qquad
-\lim_{x \to 0}\frac{\sin x}{x} = 1
 $$
 
-Mehr als die Grundlagen: $a \lesssim b$, $x \geqslant 0$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\operatorname{rank}(A)$.
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
 
-## Chemie
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
 
-$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-}$$
+Gängige Symbole: $\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$, Beziehungen $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$.
+
+Fast alles geht: $\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\cancel{(x+1)}$, $\overbrace{a+b}^{n}$, $\operatorname{rank}(A)$, $\color{red}{x}$.
+
+### Chemie und Einheiten
+
+`\ce{…}` erspart dir Indizes und Hochzahlen von Hand:
+
+$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
+
+Reaktionsbedingungen stehen am Pfeil, Gleichgewichte schreibt man mit `<=>`:
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
-## Zeichnen mit einem Fence
+$$\ce{Fe2O3 + 3CO ->[Erhitzen] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
-Ein mit `svg` markierter Fence wird **als Bild gerendert**, nicht als Code gezeigt:
+Einheiten mit `\pu{…}`: $\pu{9.8 m/s^2}$, $\pu{1.0e-3 mol/L}$.
 
-```svg
-<svg width="560" height="120" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="34" width="120" height="52" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
-  <line x1="140" y1="60" x2="250" y2="60" stroke="#2f6fed" stroke-width="2"/>
-  <rect x="250" y="34" width="120" height="52" rx="8" fill="#fdf0f0" stroke="#d64545"/>
-  <text x="80" y="65" font-size="14" text-anchor="middle">Quelle</text>
-  <text x="310" y="65" font-size="14" text-anchor="middle">PDF</text>
+> Formeln werden als MathML gesetzt, also ebenfalls als **Vektortext**: markierbar, durchsuchbar, im Druck scharf.
+> Preise werden nicht als Formeln gelesen: $5–$10, $100 und $200 bleiben unverändert.
+
+## Zeichnen: SVG und Render-Blöcke
+
+### SVG direkt schreiben
+
+Ein `<svg>` steht direkt im Text; gezeichnet wird **echter Vektor** – in jeder Zoomstufe scharf, gedruckt über Vektorpfade statt Bitmap.
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">Vorschau</text>
+  <text class="flow-lbl" x="409" y="65">Druck</text>
+  <text class="flow-lbl" x="551" y="65">Vektor-PDF</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
-```
 
-`css` definiert Stile, `html` verwendet sie. Wer den Code selbst sehen will, taggt den Fence mit `text`.
+Der `<style>`-Block der Grafik gilt nur für sie: Das Werkzeug begrenzt ihn auf dieses Bild, ohne Wirkung auf andere Grafiken oder die Oberfläche.
+
+### Render-Blöcke
+
+Inhalt in einem markierten Block wird **nicht als Code angezeigt**, sondern direkt gerendert – für Schaubilder, Layout und Stile fürs ganze Dokument.
 
 ```css
-.sample-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
 ```
 
 ```html
-<div class="sample-box"><b>Tipp</b>: Dieser Kasten ist echtes HTML aus einem Fence und wird gerendert.</div>
+<div class="note-box">Das hier ist gerendertes HTML: <b>fett</b>, <span style="color:#d64545">rot</span> und <code>Inline-Code</code>.</div>
 ```
 
-<div class="page-break"></div>
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">SVG im Block</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">Bleibt Vektor</text>
+</svg>
+```
 
-## Einstellungen, die man kennen sollte
+Regeln:
 
-- **Layout** — Theme, Schriftgröße, CJK-Zeilenumbruch, Syntaxhervorhebung.
-- **Inhaltsverzeichnis** — automatisch erzeugt, wahlweise nur H1 oder alle Ebenen.
-- **Akzentfarbe** — sieben Voreinstellungen, Farbrad an beliebiger Stelle ziehen oder Hex-Wert eintippen.
-- **Drucken** — Papierformat, Ränder und ob URLs hinter Links angehängt werden.
-- **Schriften** — `.ttf / .otf / .woff / .woff2` importieren; sie liegen im Browser und bleiben nach dem Neuladen erhalten.
-- **Daten** — Einstellungen und Verlauf liegen in der IndexedDB dieses Browsers. Nichts wird hochgeladen.
+- `css`: Stylesheet fürs **gesamte Dokument**, ohne sichtbaren Inhalt.
+- `html`: als HTML gerendert; ein `<style>` darin wird herausgezogen und angewendet.
+- `svg`: als Vektorgrafik gerendert.
+- `render`: wählt anhand des Inhalts selbst den passenden Modus.
+- Code nur anzeigen: Block mit `text` (oder `plain`) markieren.
+- Sicherheit: Skripte, Ereignisattribute, externe `url()` und `@import` werden entfernt.
+
+## Abstände, Antwortlinien und Seitenumbrüche
+
+Drei Direktiven, jede allein auf ihrer Zeile, geben dem Papier seinen Rhythmus; falsch geschrieben erscheinen sie wörtlich, statt verschluckt zu werden.
+
+- `[[gap:3]]`: 3 Leerzeilen (1 Zeile = Zeilenhöhe des Fließtexts, je nach Schriftgröße)
+- `[[gap:20mm]]`: 20 Millimeter Leerraum, genauer beim Ausrichten auf dem Papier
+- `[[rules:3]]`: 3 Antwortlinien mit 1,9 em Zeilenabstand
+
+Etwas Luft zwischen zwei Aufgaben:
+
+[[gap:2]]
+
+Wo von Hand geschrieben wird:
+
+[[rules:3]]
+
+### Seitenumbruch erzwingen
+
+`[[pagebreak]]` beginnt eine neue Seite – nur beim Drucken / PDF-Export wirksam; am Bildschirm eine gestrichelte Markierung ohne Leerraum.
+
+[[pagebreak]]
+
+> Die alte Form `<div class="page-break"></div>` wirkt weiter; `[[pagebreak]]` ist kürzer.
+> Die Direktive muss allein auf ihrer Zeile stehen; `[[gap:]]`, `[[gap:3px]]`, `[[rules:abc]]` erscheinen als normaler Text.
+
+## Drucken und Anpassen
+
+Die Einstellungen (⚙️) verteilen sich auf fünf Reiter:
+
+### Darstellung
+
+- **Design / Schriftgröße**: Hell / Dunkel, S / M / L.
+- **Inhaltsverzeichnis**: automatisch, begrenzbar auf H1 / H1–H2 / H1–H3 / Alle.
+- **Akzentfarbe**: 7 Voreinstellungen (Standardblau, Tintenschwarz, Zinnober, Türkisgrün, Tannengrün, Bernstein, Indigo); Punkt irgendwo auf dem Farbkreis ziehen, `#RRGGBB` direkt eingeben oder „🎨 Designfarbe aus Bild übernehmen“; „Zuletzt verwendete Farben“ holt die letzten per Klick zurück.
+- **Autorangaben**: Profilbild + Text; Bild aus den bereits importierten wählen oder neu hochladen, auf A4 / A5 / Letter / Quadrat / Kreis zugeschnitten; Position „Oben / Unten / Oben auf jeder Seite / Unten auf jeder Seite“.
+- **Fußzeilen-Infoleiste**: Werkzeuginfo einmal am Dokumentende, oder „Infoleiste auf jeder Seite anzeigen“ für jede Seite (Schalter unabhängig).
+
+### Hintergrund & Bilder
+
+Ein Bild als Seitenhintergrund, zuschneidbar, austauschbar, löschbar. „Hintergrunddeckkraft“ regelt die Stärke des Hintergrunds; „Deckkraft der Inhaltsflächen“ bestimmt, wie stark Tabellen, Codeblöcke und Zitate durchscheinen. Schalte beim Drucken im Druckdialog „Hintergrundgrafiken“ ein, sonst bleibt das Papier weiß.
+
+### Intelligente Erweiterungen
+
+- „Einzelne Zeilenumbrüche als neue Zeile behandeln (CJK-Konvention)“ bricht nach CJK-Gepflogenheit um; „Syntaxhervorhebung für Codeblöcke“ lässt sich abschalten.
+- „Fußnoten-Position“: Dokumentende / Bei der Fundstelle / Fundstelle + Übersicht am Ende.
+- „LaTeX-Formeln parsen“ ist der Hauptschalter; ausgeschaltet erscheinen Formeln wieder als Quelltext.
+- „Eigene Erweiterungen“: ein JSON für eigene Inline-Syntax, Render-Blöcke, Dokumentstile und einen Knopf oben in der Leiste.
+
+### Drucken & Exportieren
+
+Papier A4 / Letter / A5, Seitenränder Schmal / Normal / Breit, URL hinter Links beim Drucken oder nicht. Der PDF-Export läuft über den Systemdruck: **eine Webseite kann selbst keine PDF-Datei schreiben**. Für Seitenzahlen schaltest du im Druckdialog „Kopf- und Fußzeilen“ ein.
+
+### Daten & Schriften
+
+Einstellungen und Verlauf liegen in der lokalen Browser-Datenbank (IndexedDB): nichts wird gesendet. Schriften lassen sich als `.ttf` / `.otf` / `.woff` / `.woff2` importieren und bleiben über Sitzungen hinweg erhalten. Einstellungen lassen sich als JSON exportieren und importieren, also keine Neueinrichtung beim Gerätewechsel. Oberflächensprache über 🌐 oben, 7 Sprachen.
 
 ## Verlauf
 
-Der Knopf **🗂 Verlauf** listet die hier geschriebenen Dokumente. Öffnen, einzeln löschen oder alles löschen.
-Gespeichert wird automatisch, etwa 2,6 Sekunden nachdem du aufhörst zu tippen. Maximal 50 Einträge, danach fällt der älteste heraus.
+„🗂 Verlauf“ listet die Dokumente dieses Browsers: Titel, Änderungszeit, Wortzahl, belegter Speicher. Ein Klick auf eine Karte öffnet das Dokument; „Löschen“ entfernt nur diesen Eintrag, „Leeren“ oben rechts alles (mit Rückfrage).
+
+Kein manuelles Speichern nötig: etwa 2,6 Sekunden nach dem letzten Tastendruck ist der Schnappschuss aktuell; Seite schließen, später zurückkommen – der Verlauf ist da. Höchstens 50 Einträge, der älteste fällt darüber hinaus heraus.
+
+> Die Daten bleiben im Browser dieses Geräts (IndexedDB): nichts wird gesendet. Anderer Browser, anderes Gerät, gelöschte Website-Daten: nicht mehr sichtbar. Im privaten Fenster funktioniert das meist gar nicht – die Oberfläche sagt es klar, statt so zu tun, als wäre gespeichert worden.
+
+## Lokale Bilder im Dokument
+
+Wähle bei „📂 Öffnen“ die `.md`-Datei **und die Bilder zusammen** aus: Sie werden über den Dateinamen `![](bildname.png)` zugeordnet, ohne Pfade im Markdown zu ändern. Einmal geladen, bleiben sie in der lokalen Datenbank – kein erneutes Auswählen nötig.
 
 ## Bekannte Grenzen
 
-1. Formeln setzt die eingebettete **Temml**-Engine (der Großteil von amsmath / amssymb). Was sie nicht kennt, geht an den eingebauten Parser und wird wörtlich angezeigt — nichts verschwindet.
-2. `\ce{}` deckt die übliche Schulchemie ab; seltene mhchem-Syntax ist nicht garantiert.
-3. Ein MathML-fähiger Browser ist nötig (Chrome 109+, Safari 16.4+, Firefox).
-4. Rohes HTML und Render-Fences werden bereinigt: `<script>`, Event-Attribute, externes `url()` und `@import` werden entfernt.
-
-[^1]: Der Fußnotentext steht am Ende des Dokuments.
+1. Formeln setzt das **eingebettete Temml** (MIT, fest in der Datei, zur Laufzeit ohne Netz) und deckt den Großteil von amsmath / amssymb ab. Was es nicht kennt, geht an den eingebauten einfachen Parser; schlimmstenfalls steht der Befehlsname wörtlich da, verloren geht nichts.
+2. `\ce{…}`: eingebaute, leichte Umwandlung (kein mhchem) – Elemente, Indizes, Ladungen, `->` `<-` `<=>` (Bedingungen über `->[Bedingung]`), Zustände `(g)/(l)/(s)/(aq)`, Hydratpunkt, Koordinationsklammern. Ausgefallenere mhchem-Syntax ist nicht garantiert. Dasselbe gilt für `\pu{…}`.
+3. Formeln brauchen einen Browser mit MathML (Chrome 109+ / Safari 16.4+ / alle Firefox-Versionen): Grundvoraussetzung des Werkzeugs von Anfang an.
+4. Rohes HTML und Render-Blöcke (`html` / `css` / `svg`) laufen durch den Sicherheitsfilter: Skripte, Ereignisattribute, externe `url()` und `@import` werden entfernt.
+5. Seitenzahlen steuert der Druckdialog des Browsers: in der Druckvorschau „Kopf- und Fußzeilen“ einschalten.
 </script>
 <script type="text/plain" id="sampleDoc-ko">
-# Markdown → PDF (예시)
+# Markdown 조판과 PDF 내보내기
 
-이 도구는 **오프라인 HTML 파일 하나**입니다. 네트워크도, 설치도, 계정도 필요 없습니다. 아래 내용은 md2pdf가 해석하는 문법을 실제로 보여 주는 예시입니다.
+이 도구는 **완전 오프라인** Markdown 읽기·조판 도구입니다. HTML 파일 하나로 동작하며 네트워크에 연결하지 않습니다. 의존성을 설치할 필요도 없고, 휴대폰에서도 그대로 열 수 있습니다. 화면 표시 언어는 7가지이며(상단 바의 🌐), 문서를 어떤 언어로 작성하든 상관없이 따로 바꿀 수 있습니다.
 
-## 빠르게 시작하기
+> 이 문서 자체가 **살아 있는 예시**입니다. 본문에 이렇게 쓰면 미리보기에서도 그대로 조판됩니다.
 
-1. **파일 열기**로 `.md`를 고르거나, 편집 영역에 바로 입력합니다.
-2. **미리보기**로 전환합니다(넓은 화면에서는 양쪽에 나란히 보입니다).
-3. **인쇄 / PDF 저장**을 누르고, 시스템 인쇄 창에서 **PDF로 저장**을 선택합니다.
-   결과물은 **벡터 텍스트 PDF**입니다. 선택·검색이 되고 확대해도 흐려지지 않으며, 스크린샷이 아닙니다.
+## 사용법
 
-## 글자
+1. 「📂 열기」를 눌러 `.md` 파일을 고르거나, 「편집」 화면에 바로 입력하거나 붙여 넣습니다.
+2. 「미리보기」로 전환해 결과를 확인합니다(화면이 넓으면 좌우로 나란히 표시되어 쓰면서 바로 볼 수 있습니다).
+3. 「🖨 인쇄 / PDF 저장」을 누르고, 시스템 인쇄 창에서 대상을 **PDF로 저장**으로 지정해 저장합니다.
+4. 남겨 두거나 다른 사람에게 보내려면 상단 바의 「🗂 기록」에 자동 저장된 로컬 사본이 남습니다. 「📄 HTML 내보내기」를 쓰면 독립된 HTML 파일 하나로 묶을 수 있습니다.
+5. 예시를 잘못 고쳐도 괜찮습니다. 상단 바의 「예시」를 누르면 해당 언어의 원래 내용으로 되돌아갑니다.
+
+> 내보내는 결과물은 진짜 벡터 텍스트 PDF입니다. 텍스트를 선택·검색·복사할 수 있고 확대해도 흐려지지 않으며 파일도 가볍습니다. 스크린샷을 이어 붙인 것이 아닙니다.
+
+## 텍스트와 블록 문법
+
+### 텍스트 스타일
 
 **굵게**, *기울임*, ***굵은 기울임***, ~~취소선~~, ==형광 표시==, `인라인 코드`, 각주[^1].
 
-## 목록
+### 목록과 작업
 
 - 순서 없는 목록
-  - 중첩
-    1. 순서 있는 목록도 중첩 가능
-- [ ] 할 일 (미완료)
-- [x] 할 일 (완료)
+- 중첩도 됩니다:
+  - 둘째 단계
+    1. 번호 있는 목록도 중첩할 수 있습니다
+    2. 두 번째 항목
+- [ ] 할 일(미완료)
+- [x] 할 일(완료)
 
-## 표
+### 표
 
-| 기능 | 방법 | 상태 |
+표 셀 안에서 `|`를 써야 할 때는 백틱으로 감싸면 열이 잘리지 않습니다:
+
+| 기능 | 표기 | 상태 |
 |:-----|:----:|-----:|
-| 실시간 미리보기 | 입력하는 대로 | ✅ |
-| 인쇄 | 벡터 텍스트 PDF | ✅ |
+| 실시간 미리보기 | 쓰면서 확인 | ✅ |
+| 인쇄·내보내기 | 벡터 텍스트 PDF | ✅ |
+| 세로줄 이스케이프 | `` `a|b` `` 도 한 셀 | ✅ |
 
-## 코드
+### 코드
 
 ```js
 function hello(name) {
@@ -1856,111 +2184,256 @@ function hello(name) {
 }
 ```
 
-긴 줄은 종이에서 잘리지 않고 자동으로 줄바꿈됩니다:
+긴 코드 줄은 종이 위에서 자동으로 접혀 잘리지 않습니다:
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
 
-## 수식
+### 인용과 구분선
 
-인라인: $E = mc^2$, $e^{i\pi} + 1 = 0$, $\vec{v} = (v_1, v_2, v_3)$.
+> 이것은 인용입니다.
+> 여러 줄로 써도 하나의 인용 블록으로 합쳐집니다.
+
+---
+
+### 링크와 각주
+
+[Claude Code](https://claude.com/claude-code)는 명령줄 도구입니다. URL을 그대로 써도 링크로 인식합니다: https://claude.com
+
+각주는 `[^1]`로 정의하고 번호는 자동으로 매겨집니다. 각주를 문서 끝에 모을지, 인용한 문단 바로 뒤에 둘지, 양쪽에 둘지는 「설정 → 스마트 확장 → 각주 위치」에서 고릅니다. 「인용문 바로 아래」를 고르면 인쇄할 때 본문과 같은 페이지에 들어가므로 문제집이나 해설 페이지에서 특히 유용합니다.
+
+[^1]: 각주는 자동으로 번호가 매겨지고, 「각주 위치」 설정에 따라 한데 모여 배치됩니다.
+
+## 수식과 화학식
+
+### 수식
+
+인라인 수식은 `$…$`로 씁니다: 질량과 에너지의 등가 관계를 나타내는 $E = mc^2$, 오일러 항등식 $e^{i\pi} + 1 = 0$, 벡터 $\vec{v} = (v_1, v_2, v_3)$.
+
+독립된 줄에 놓는 수식은 `$$…$$`입니다:
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-\qquad
-\lim_{x \to 0}\frac{\sin x}{x} = 1
 $$
 
-응용 문법: $a \lesssim b$, $x \geqslant 0$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\operatorname{rank}(A)$.
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
 
-## 화학식
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
 
-$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-}$$
+자주 쓰는 기호: $\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$, 관계 연산자 $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$.
+
+조금 더 고급 표기법도 대부분 지원합니다: $\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\cancel{(x+1)}$, $\overbrace{a+b}^{n}$, $\operatorname{rank}(A)$, $\color{red}{x}$.
+
+### 화학식과 단위
+
+화학식은 `\ce{…}`로 쓰면 아래첨자·위첨자를 직접 조립하지 않아도 됩니다:
+
+$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
+
+화살표 위에 반응 조건을 쓸 수 있고, 가역 반응은 `<=>`입니다:
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
-## 울타리로 그림 그리기
+$$\ce{Fe2O3 + 3CO ->[고온] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
-`svg`로 표시한 울타리는 코드가 아니라 **그림으로 그려집니다**:
+단위는 `\pu{…}`: $\pu{9.8 m/s^2}$, $\pu{1.0e-3 mol/L}$.
 
-```svg
-<svg width="560" height="120" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="34" width="120" height="52" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
-  <line x1="140" y1="60" x2="250" y2="60" stroke="#2f6fed" stroke-width="2"/>
-  <rect x="250" y="34" width="120" height="52" rx="8" fill="#fdf0f0" stroke="#d64545"/>
-  <text x="80" y="65" font-size="14" text-anchor="middle">원본</text>
-  <text x="310" y="65" font-size="14" text-anchor="middle">PDF</text>
+> 수식은 MathML로 렌더링되므로 이 역시 **벡터 텍스트**입니다. 선택과 검색이 되고 인쇄해도 흐려지지 않습니다.
+> 금액이 수식으로 잘못 인식되는 일은 없습니다. $5-$10, $100, $200 같은 표기는 그대로 표시됩니다.
+
+## 그림 그리기: SVG와 렌더링 펜스
+
+### SVG 직접 쓰기
+
+본문에 `<svg>`를 직접 쓸 수 있습니다. 결과물은 **진짜 벡터**입니다. 확대해도 흐려지지 않고, 인쇄할 때도 비트맵이 아니라 벡터 경로로 출력됩니다.
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">미리보기</text>
+  <text class="flow-lbl" x="409" y="65">시스템 인쇄</text>
+  <text class="flow-lbl" x="551" y="65">벡터 PDF</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
-```
 
-`css`로 스타일을 정의하고 `html`에서 사용합니다. 코드 자체를 보여 주고 싶으면 `text`로 표시하세요.
+그림 안의 `<style>`은 그 그림만의 색상입니다. 프로그램이 범위를 지정해 주므로 다른 그림이나 화면 UI로 번지지 않습니다.
+
+### 렌더링 펜스
+
+펜스 안의 내용은 **코드로 표시되지 않고 그대로 렌더링**됩니다. 구조도를 그리거나, 레이아웃을 짜거나, 문서 전체에 사용자 스타일을 더할 때 알맞습니다.
 
 ```css
-.sample-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
 ```
 
 ```html
-<div class="sample-box"><b>도움말</b>: 이 상자는 울타리 안의 실제 HTML이며 그대로 렌더링됩니다.</div>
+<div class="note-box">이 부분은 HTML로 렌더링됩니다: <b>굵게</b>, <span style="color:#d64545">빨간 글자</span>, 그리고 <code>인라인 코드</code>.</div>
 ```
 
-<div class="page-break"></div>
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">펜스 안 SVG</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">인쇄해도 벡터</text>
+</svg>
+```
 
-## 알아 두면 좋은 설정
+규칙:
 
-- **레이아웃** — 테마, 글자 크기, 한중일 줄바꿈 처리, 구문 강조.
-- **목차** — 자동 생성. H1만 또는 전체 깊이까지 선택할 수 있습니다.
-- **테마 색상** — 프리셋 7가지, 색상환 어디든 드래그, 색상 코드 직접 입력.
-- **인쇄** — 용지, 여백, 인쇄할 때 링크 뒤에 주소를 붙일지 여부.
-- **글꼴** — `.ttf / .otf / .woff / .woff2` 가져오기. 브라우저에 저장되어 다시 열어도 남습니다.
-- **데이터** — 설정과 기록은 이 브라우저의 IndexedDB에 저장되며 어디에도 전송되지 않습니다.
+- `css`: 전체를 스타일시트로 취급해 **문서 전체**에 적용합니다. 그 자체로는 아무것도 표시하지 않고, 뒤따르는 HTML에 스타일만 줍니다.
+- `html`: HTML로 렌더링합니다. 안에 `<style>`이 있으면 꺼내서 적용합니다.
+- `svg`: 벡터 그림으로 렌더링합니다.
+- `render`: 내용을 보고 위 셋 중 무엇인지 자동으로 판단합니다.
+- 코드만 보여 주고 렌더링하고 싶지 않으면 언어를 `text`(또는 `plain`)로 지정합니다.
+- 보안 경계: 스크립트, `onclick` 같은 이벤트 속성, 외부 `url()`, `@import`는 모두 제거됩니다.
+
+## 여백, 답안 가로줄, 페이지 나눔
+
+종이 위의 흐름을 직접 다루는, 「한 줄에 하나만 쓰는」 기본 명령이 세 가지 있습니다. 잘못 쓰면 그대로 글자로 표시되며 사라지지 않습니다.
+
+- `[[gap:3]]`: 3줄만큼 비움(1줄 = 본문 행 높이, 글자 크기에 따라 달라집니다)
+- `[[gap:20mm]]`: 20밀리미터 비움. 인쇄에서 위치를 정확히 맞출 때 좋습니다
+- `[[rules:3]]`: 답안 가로줄 3개. 줄 간격은 1.9em
+
+두 문제 사이에 약간 여유를 둡니다:
+
+[[gap:2]]
+
+손으로 답을 쓸 자리:
+
+[[rules:3]]
+
+### 강제 페이지 나눔
+
+`[[pagebreak]]`를 쓰면 그 뒤 내용이 새 페이지에서 시작됩니다. 인쇄·PDF 내보내기에서만 동작하며, 화면에서는 점선 표시만 나오고 빈 여백을 차지하지 않습니다.
+
+[[pagebreak]]
+
+> 예전 표기 `<div class="page-break"></div>`도 여전히 동작하지만, 지금은 `[[pagebreak]]` 쪽이 더 짧습니다.
+> 명령은 반드시 한 줄에 하나만 씁니다. `[[gap:]]`, `[[gap:3px]]`, `[[rules:abc]]`처럼 잘못 쓰면 일반 글자로 표시됩니다.
+
+## 인쇄와 개인 설정
+
+설정(⚙️)은 다섯 개 탭으로 나뉩니다.
+
+### 모양
+
+- **테마 / 글자 크기**: 라이트 / 다크, 소 / 중 / 대.
+- **목차**: 자동으로 생성됩니다. H1만 / H1–H2 / H1–H3 / 전체 중에서 고를 수 있습니다.
+- **테마 색상**: 7가지 프리셋(기본 파랑, 먹빛, 주사, 청벽, 송록, 호박, 남보라)을 제공합니다. 색상환의 어디로든 핸들을 끌 수 있고, `#RRGGBB`를 직접 입력하거나 「🎨 이미지에서 테마 색 추출」로 이미지에서 색을 뽑을 수도 있습니다. 최근 사용한 색은 「최근 색상」에 남아 누르면 바로 되돌아갑니다.
+- **작성자 정보**: 프로필 사진과 설명 문구. 프로필 사진은 업로드한 것 중에서 고르거나 새로 올려 A4 / A5 / Letter / 정사각형 / 원형 비율로 자를 수 있습니다. 위치는 「위쪽 / 아래쪽 / 매 페이지 상단 / 매 페이지 하단」 중에서 고릅니다.
+- **하단 정보 표시줄**: 문서 끝에 도구 정보를 한 번 보여 줄지, 「매 페이지에 정보 표시」로 모든 페이지에 붙일지 고릅니다(둘은 따로 켜고 끌 수 있습니다).
+
+### 배경 및 이미지
+
+이미지 하나를 골라 페이지 배경으로 쓸 수 있습니다. 자를 수 있고, 교체하거나 삭제할 수도 있습니다. 「배경 불투명도」는 배경 자체의 진하기를, 「내용 배경 불투명도」는 표·코드 블록·인용의 배경에서 그림이 얼마나 비칠지를 조절합니다. 인쇄할 때는 인쇄 창에서 「배경 그래픽」을 켜지 않으면 종이에 배경이 나오지 않습니다.
+
+### 스마트 확장
+
+- 「줄바꿈 한 번이면 줄바꿈(중국어 표기 습관)」은 한 번의 줄바꿈을 그대로 줄 구분으로 다루는 설정입니다. 「코드 블록 구문 강조」는 끌 수 있습니다.
+- 「각주 위치」: 문서 끝 / 인용문 바로 아래 / 인용문 아래 + 문서 끝 요약.
+- 「LaTeX 수식 해석」은 전체 켜기/끄기 스위치입니다. 끄면 수식이 소스 그대로 표시됩니다.
+- 「사용자 확장」: JSON 하나로 자체 인라인 문법, 렌더링 펜스, 문서 스타일, 상단 바 버튼을 더할 수 있습니다.
+
+### 인쇄 및 내보내기
+
+용지는 A4 / Letter / A5, 여백은 좁게 / 보통 / 넓게 중에서 고릅니다. 「인쇄 시 링크 뒤에 주소 표시」 여부도 설정할 수 있습니다. PDF 내보내기는 시스템 인쇄를 거칩니다. **웹 페이지 자체는 PDF 파일을 만들 수 없습니다.** 페이지 번호가 필요하면 인쇄 창에서 「머리글 및 바닥글」을 켜면 됩니다.
+
+### 데이터 및 글꼴
+
+설정과 기록은 브라우저 로컬 데이터베이스(IndexedDB)에 저장되며 업로드나 통신을 하지 않습니다. 글꼴은 `.ttf` / `.otf` / `.woff` / `.woff2`를 가져올 수 있고 브라우저에 저장되므로 다음에 열어도 그대로 남습니다. 설정은 JSON으로 내보내고 가져올 수 있어 기기를 바꿔도 처음부터 다시 설정하지 않아도 됩니다. 표시 언어는 상단 바의 🌐에서 바꿀 수 있으며 모두 7가지입니다.
 
 ## 기록
 
-**🗂 기록**에는 여기서 작성한 문서가 나열됩니다. 다시 열기, 한 건 삭제, 전체 지우기가 가능합니다.
-입력을 멈추고 약 2.6초 뒤 자동 저장되며, 최대 50건까지 보관하고 넘으면 오래된 것부터 지웁니다.
+상단 바의 「🗂 기록」에는 이 브라우저에서 쓴 문서가 나열됩니다. 제목, 수정 시각, 글자 수, 사용 공간을 볼 수 있습니다. 카드를 누르면 그대로 이어서 쓸 수 있고, 카드의 「삭제」는 그 한 건만, 오른쪽 위의 「지우기」는 전부 삭제합니다(둘 다 먼저 확인을 거칩니다).
+
+직접 저장할 필요는 없습니다. 입력이 멈추고 약 2.6초가 지나면 현재 건의 스냅샷이 갱신됩니다. 페이지를 닫았다가 돌아와도 기록은 최신 상태입니다. 보관할 수 있는 것은 최대 50건이고, 넘으면 오래된 것부터 자동으로 버려집니다.
+
+> 데이터는 이 기기의 브라우저(IndexedDB)에만 저장되며 업로드나 통신을 하지 않습니다. 브라우저를 바꾸거나 기기를 바꾸거나 사이트 데이터를 지우면 기록을 볼 수 없습니다. 시크릿 창에서는 보통 그대로 쓸 수 없는데, 그때는 화면에 분명히 알려 주며 저장한 척하지 않습니다.
+
+## 문서 속 로컬 이미지
+
+「📂 열기」를 누를 때 `.md`와 이미지를 **함께 선택하면**, 프로그램이 파일 이름으로 `![](이미지이름.png)`을 자동 대응시킵니다. Markdown 쪽 경로를 고칠 필요가 없습니다. 한 번 불러온 이미지는 로컬 데이터베이스에 저장되므로 같은 문서를 다음에 열 때 다시 고르지 않아도 됩니다.
 
 ## 알려진 제한
 
-1. 수식은 내장된 **Temml** 엔진이 조판합니다(amsmath / amssymb 대부분). 인식하지 못하는 문법은 내장 파서로 넘어가 명령을 그대로 보여 줍니다(내용이 사라지지는 않습니다).
-2. `\ce{}`는 중·고등학교에서 흔한 화학 표기만 지원합니다. mhchem의 특수 문법은 보장하지 않습니다.
-3. MathML을 지원하는 브라우저가 필요합니다(Chrome 109+, Safari 16.4+, Firefox).
-4. 원본 HTML과 그림용 울타리는 정화됩니다: `<script>`, 이벤트 속성, 외부 `url()`, `@import`는 제거됩니다.
-
-[^1]: 각주 내용은 문서 끝에 작성합니다.
+1. 수식은 **파일에 내장된 Temml**(MIT, 이 파일에 동봉되어 있으며 실행 시 통신하지 않습니다)이 해석하고 amsmath / amssymb의 대부분 명령을 지원합니다. 알아보지 못하는 표기는 내장 간이 파서가 대신 처리하며, 최악의 경우 명령 이름이 그대로 표시될 뿐 내용이 통째로 사라지지는 않습니다.
+2. 화학식 `\ce{…}`는 이 파일에 들어 있는 가벼운 변환기입니다(mhchem이 아닙니다). 원소, 아래첨자, 전하, `->` `<-` `<=>`(화살표 위에 `->[조건]`을 쓸 수 있습니다), `(g)/(l)/(s)/(aq)` 상태, 수화물 가운뎃점, 배위 대괄호를 지원합니다. mhchem에서도 드문 문법은 보장하지 않습니다. 단위 `\pu{…}`도 마찬가지입니다.
+3. 수식은 MathML을 표시할 수 있는 브라우저에서만 제대로 보입니다(Chrome 109+ / Safari 16.4+ / Firefox 전 계열). 이 도구가 처음부터 전제해 온 조건입니다.
+4. 원본 HTML과 렌더링 펜스(`html` / `css` / `svg`)는 보안 필터를 거칩니다. 스크립트, 이벤트 속성, 외부 `url()`, `@import`는 모두 제거됩니다.
+5. 페이지 번호는 브라우저 인쇄 창에서 관리합니다. 인쇄 미리보기에서 「머리글 및 바닥글」을 켜면 됩니다.
 </script>
 <script type="text/plain" id="sampleDoc-ja">
-# Markdown → PDF（サンプル）
+# Markdown の組版と PDF 書き出し
 
-このツールは**オフラインの HTML ファイル 1 枚**です。ネットワーク不要、インストール不要、アカウント不要。以下はすべて md2pdf が解釈できる記法の実例です。
+これは**完全オフライン**の Markdown 閲覧・組版ツールです。HTML ファイル 1 枚だけで動き、ネットワークにもつながりません。依存パッケージのインストールも要らず、スマートフォンでもそのまま開けます。画面の表示言語は 7 種類あり（上部バーの 🌐 で切り替え）、文書をどの言語で書くかとは関係なく選べます。
 
-## はじめかた
+> この文書は**そのまま動く見本**です。本文にこう書けば、プレビューでもそのとおりに組まれます。
 
-1. 「**開く**」から `.md` を選ぶか、そのまま編集欄に入力します。
-2. 「**プレビュー**」に切り替えます（広い画面では左右に並んで表示されます）。
-3. 「**印刷 / PDF 保存**」を押し、システムの印刷画面で「**PDF として保存**」を選びます。
-   できるのは**ベクター文字の PDF**：選択・検索でき、拡大してもぼやけません。スクリーンショットではありません。
+## 使い方
 
-## 文字
+1. 「📂 開く」を押して `.md` ファイルを選ぶか、「編集」画面に直接入力するか貼り付けます。
+2. 「プレビュー」に切り替えて仕上がりを確かめます（画面が広いときは左右に並び、書きながら確認できます）。
+3. 「🖨 印刷 / PDF 保存」を押し、システムの印刷画面で送信先を **PDF に保存** に選んで保存します。
+4. 手元に残したいときや人に渡したいときは、上部バーの「🗂 履歴」に自動保存されたローカルコピーが残ります。「📄 HTML をエクスポート」なら、1 つの独立した HTML ファイルにまとめられます。
+5. このサンプルを書き換えてしまっても大丈夫です。上部バーの「サンプル」を押せば、その言語の元の内容に戻せます。
+
+> 書き出されるのは本物のベクター文字 PDF です。文字は選択・検索・コピーでき、拡大してもぼやけず、ファイルも軽い——スクリーンショットを貼り合わせたものではありません。
+
+## 文字とブロックの記法
+
+### 文字スタイル
 
 **太字**、*斜体*、***太字斜体***、~~取り消し線~~、==ハイライト==、`インラインコード`、脚注[^1]。
 
-## リスト
+### リストとタスク
 
-- 番号なし
-  - 入れ子
-    1. 番号付きも入れ子可
-- [ ] 未完了のタスク
-- [x] 完了したタスク
+- 箇条書き
+- 入れ子もできます：
+  - 2 段目
+    1. 番号付きリストも入れ子にできる
+    2. 2 項目目
+- [ ] タスク（未完了）
+- [x] タスク（完了）
 
-## 表
+### 表
 
-| 機能 | 方法 | 状態 |
+表のセルの中で `|` を書いても、バッククォートで囲んでおけば列が切れません：
+
+| 機能 | 書き方 | 状態 |
 |:-----|:----:|-----:|
-| リアルタイム表示 | 書くそばから | ✅ |
-| 印刷 | ベクター文字 PDF | ✅ |
+| リアルタイムプレビュー | 書きながら確認 | ✅ |
+| 印刷・書き出し | ベクター文字 PDF | ✅ |
+| 縦棒のエスケープ | `` `a|b` `` も 1 セル | ✅ |
 
-## コード
+### コード
 
 ```js
 function hello(name) {
@@ -1968,302 +2441,727 @@ function hello(name) {
 }
 ```
 
-長い行は紙の上で折り返され、切れません：
+長いコード行は紙の上で自動的に折り返され、切れません：
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
 
-## 数式
+### 引用と区切り線
 
-インライン：$E = mc^2$、$e^{i\pi} + 1 = 0$、$\vec{v} = (v_1, v_2, v_3)$。
+> これは引用です。
+> 複数行に書いても、1 つの引用ブロックにまとまります。
+
+---
+
+### リンクと脚注
+
+[Claude Code](https://claude.com/claude-code) はコマンドラインツールです。URL をそのまま書いてもリンクになります：https://claude.com
+
+脚注は `[^1]` で定義し、番号は自動で振られます。文末にまとめるか、引用した段落のすぐ後ろに置くか、両方に置くかは「設定 → スマート拡張 → 脚注の位置」で選べます。「引用の直後」なら印刷時に本文と同じページに収まるので、問題集や解答ページでは重宝します。
+
+[^1]: 脚注は自動で番号が振られ、「脚注の位置」の設定に従ってまとめて配置されます。
+
+## 数式と化学式
+
+### 数式
+
+インラインは `$…$` で書きます：質量とエネルギーの等価性を表す $E = mc^2$、オイラーの等式 $e^{i\pi} + 1 = 0$、ベクトル $\vec{v} = (v_1, v_2, v_3)$。
+
+独立した行に置く数式は `$$…$$` です：
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-\qquad
-\lim_{x \to 0}\frac{\sin x}{x} = 1
 $$
 
-応用記法：$a \lesssim b$、$x \geqslant 0$、$\boxed{x^2}$、$\overrightarrow{AB}$、$\operatorname{rank}(A)$。
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
 
-## 化学式
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
 
-$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-}$$
+よく使う記号：$\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$、関係演算子 $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$。
+
+少し高度な記法もほぼそろっています：$\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$、$\boxed{x^2}$、$\overrightarrow{AB}$、$\cancel{(x+1)}$、$\overbrace{a+b}^{n}$、$\operatorname{rank}(A)$、$\color{red}{x}$。
+
+### 化学式と単位
+
+化学式は `\ce{…}` で書けば、下付き・上付きを自分で組み立てなくて済みます：
+
+$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
+
+矢印の上には反応条件が書け、可逆反応は `<=>` です：
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
-## 囲みブロックで図を描く
+$$\ce{Fe2O3 + 3CO ->[高温] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
-`svg` を指定した囲みは**図として描画**されます（コード表示ではありません）：
+単位は `\pu{…}`：$\pu{9.8 m/s^2}$、$\pu{1.0e-3 mol/L}$。
 
-```svg
-<svg width="560" height="120" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="34" width="120" height="52" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
-  <line x1="140" y1="60" x2="250" y2="60" stroke="#2f6fed" stroke-width="2"/>
-  <rect x="250" y="34" width="120" height="52" rx="8" fill="#fdf0f0" stroke="#d64545"/>
-  <text x="80" y="65" font-size="14" text-anchor="middle">原稿</text>
-  <text x="310" y="65" font-size="14" text-anchor="middle">PDF</text>
+> 数式は MathML として描画されるので、こちらも**ベクター文字**です。選択も検索もでき、印刷してもぼやけません。
+> 金額が数式と誤認されることはありません。$5-$10 や $100、$200 はそのまま表示されます。
+
+## 図を描く：SVG と描画用の囲み
+
+### SVG を直接書く
+
+本文に `<svg>` を直接書けます。描き上がりは**本物のベクター**です。拡大してもぼやけず、印刷でもビットマップではなくベクターのパスとして出力されます。
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">プレビュー</text>
+  <text class="flow-lbl" x="409" y="65">システム印刷</text>
+  <text class="flow-lbl" x="551" y="65">ベクター PDF</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
-```
 
-`css` で様式を定義し、`html` で使います。コード自体を見せたいときは `text` を指定してください。
+図の中の `<style>` は、その図だけの配色です。プログラムがスコープを付けてくれるので、他の図や画面の UI にまで影響することはありません。
+
+### 描画用の囲み
+
+囲みの中身は**コードとして表示されず、そのまま描画**されます。構造図を描いたり、レイアウトを組んだり、文書全体に独自のスタイルを足したりするのに向いています。
 
 ```css
-.sample-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
 ```
 
 ```html
-<div class="sample-box"><b>ヒント</b>：この囲みは実際の HTML で、ちゃんと描画されます。</div>
+<div class="note-box">この部分は HTML として描画されています：<b>太字</b>、<span style="color:#d64545">赤い文字</span>、そして <code>インラインコード</code>。</div>
 ```
 
-<div class="page-break"></div>
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">囲みの中の SVG</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">印刷してもベクター</text>
+</svg>
+```
 
-## 覚えておきたい設定
+ルール：
 
-- **レイアウト**——テーマ、文字サイズ、日本語の改行処理、構文ハイライト。
-- **目次**——自動生成。H1 のみ／全階層まで選べます。
-- **テーマカラー**——プリセット 7 色、色相環のどこでもドラッグ、色コードの直接入力。
-- **印刷**——用紙、余白、リンクの後ろに URL を付けるかどうか。
-- **フォント**——`.ttf / .otf / .woff / .woff2` を取り込み。ブラウザに保存され、次回も残ります。
-- **データ**——設定と履歴はこのブラウザの IndexedDB に保存。どこにも送信しません。
+- `css`：全体をスタイルシートとして扱い、**文書全体**に効きます。それ自体は何も表示せず、後ろに続く HTML にスタイルを与えるだけです。
+- `html`：HTML として描画します。中に `<style>` があれば取り出して有効にします。
+- `svg`：ベクター図として描画します。
+- `render`：中身から上のどれかを自動で判定します。
+- コードを見せたいだけで描画したくないときは、言語を `text`（または `plain`）にします。
+- 安全上の境界：スクリプト、`onclick` などのイベント属性、外部 `url()`、`@import` は取り除かれます。
+
+## 余白・解答用の横線・改ページ
+
+紙面のリズムを直接操る「1 行に 1 つだけ書く」組み込み命令が 3 つあります。書き間違えた場合はそのままの文字として表示され、消えてしまうことはありません。
+
+- `[[gap:3]]`：3 行分の空き（1 行 = 本文の行高。文字サイズに応じて変わります）
+- `[[gap:20mm]]`：20 ミリの空き。印刷で位置をぴったり合わせたいときに効きます
+- `[[rules:3]]`：解答用の横線を 3 本。行間は 1.9em
+
+2 問の間に少し余白を入れます：
+
+[[gap:2]]
+
+手書きで解答する場所には：
+
+[[rules:3]]
+
+### 強制改ページ
+
+`[[pagebreak]]` を書くと、以降の内容が新しいページから始まります。効くのは印刷・PDF 書き出しのときだけで、画面上では点線の印が出るだけで余白は取りません。
+
+[[pagebreak]]
+
+> 以前の書き方 `<div class="page-break"></div>` もまだ使えますが、今は `[[pagebreak]]` のほうが短く済みます。
+> 命令は必ず 1 行に 1 つだけ書きます。`[[gap:]]`、`[[gap:3px]]`、`[[rules:abc]]` のように書き間違えると、普通の文字として表示されます。
+
+## 印刷とカスタマイズ
+
+設定（⚙️）は 5 つのタブに分かれています。
+
+### 外観
+
+- **テーマ / 文字サイズ**：ライト / ダーク、小 / 中 / 大。
+- **目次**：自動で生成されます。H1 のみ / H1–H2 / H1–H3 / すべてから選べます。
+- **テーマカラー**：7 種類のプリセット（デフォルトブルー、墨黒、朱砂、青碧、松葉色、琥珀、藍紫）。カラーホイールのどこへでもハンドルをドラッグでき、`#RRGGBB` を直接入力するか、「🎨 画像からテーマカラーを取る」で画像から色を拾うこともできます。最近使った色は「履歴の配色」に残り、クリックすれば元に戻せます。
+- **作成者情報**：アイコンと説明文。アイコンはアップロード済みのものから選ぶことも、新しくアップロードして A4 / A5 / Letter / 正方形 / 円形の比率にトリミングすることもできます。位置は「上部 / 下部 / 各ページ上部 / 各ページ下部」から選べます。
+- **フッター情報**：文書の末尾にツール情報を 1 回だけ出すか、「各ページに情報バーを表示」で毎ページに付けるかを選べます（2 つは別々にオン・オフできます）。
+
+### 背景と画像
+
+画像を 1 枚選んでページ背景にできます。トリミング、差し替え、削除が可能です。「背景の不透明度」は背景そのものの濃さを、「内容の下地の不透明度」は表・コードブロック・引用の下地から背景がどれだけ透けるかを調節します。印刷するときは、印刷画面で「背景グラフィック」をオンにしないと紙に背景は出ません。
+
+### スマート拡張
+
+- 「改行 1 つで改行（中国語の慣習）」は、1 回の改行をそのまま行の区切りとして扱う設定です。「コードブロックのシンタックスハイライト」はオフにできます。
+- 「脚注の位置」：文末 / 引用の直後 / 引用直後 + 文末に一覧。
+- 「LaTeX 数式を解析」は、数式を扱うかどうかの全体スイッチです。オフにすると数式はソースのまま表示されます。
+- 「カスタム拡張」：ひとつの JSON で、独自のインライン記法、描画用の囲み、文書スタイル、上部バーのボタンを追加できます。
+
+### 印刷と書き出し
+
+用紙は A4 / Letter / A5、余白は狭 / 標準 / 広 から選べます。印刷時にリンクの後ろへ URL を付けるかどうかも設定できます。PDF の書き出しはシステムの印刷機能を使います。**Web ページ自身が PDF ファイルを書き出すことはできません**。ページ番号が必要なら、印刷画面で「ヘッダーとフッター」をオンにしてください。
+
+### データとフォント
+
+設定と履歴はブラウザのローカルデータベース（IndexedDB）に保存され、アップロードも通信も行いません。フォントは `.ttf` / `.otf` / `.woff` / `.woff2` をインポートでき、ブラウザに保存されるので次に開いたときも残っています。設定は JSON に書き出したり読み込んだりできるので、端末を替えても一から設定し直さずに済みます。表示言語は上部バーの 🌐 で切り替えられ、全部で 7 種類あります。
 
 ## 履歴
 
-「**🗂 履歴**」にここで書いた文書が並びます。開き直す・1 件削除・全部消すができます。
-入力が止まって約 2.6 秒で自動保存。最大 50 件で、超えると古いものから消えます。
+上部バーの「🗂 履歴」に、このブラウザで書いた文書が並びます。タイトル、更新日時、文字数、使用容量が表示されます。カードをクリックすればそのまま続きを書けます。カード上の「削除」はその 1 件だけ、右上の「クリア」はすべてを削除します（どちらも事前に確認が出ます）。
+
+手動で保存する必要はありません。入力が止まっておよそ 2.6 秒で、いまの 1 件のスナップショットが更新されます。ページを閉じても、戻ってくれば履歴は最新のままです。保持できるのは最大 50 件で、超えると古いものから自動的に捨てられます。
+
+> データはこの端末のブラウザ（IndexedDB）にだけ保存され、アップロードも通信も行いません。ブラウザや端末を替えたり、サイトデータを消したりすると見えなくなります。シークレットウィンドウでは通常そのまま使えませんが、その場合は画面ではっきりと表示され、保存したふりをすることはありません。
+
+## 文書内のローカル画像
+
+「📂 開く」を押したときに `.md` と画像を**まとめて選択**してください。プログラムがファイル名から `![](画像名.png)` を自動で対応付けます。Markdown 側のパスを書き換える必要はありません。一度読み込めば画像はローカルデータベースに保存され、次に同じ文書を開くときは選び直さずに済みます。
 
 ## 既知の制限
 
-1. 数式は内蔵の **Temml** が組版します（amsmath / amssymb の大半）。解釈できない記法は内蔵の簡易パーサーに戻り、コマンドをそのまま表示します（内容が消えることはありません）。
-2. `\ce{}` は中学・高校でよく使う化学記法のみ。mhchem の珍しい構文は保証しません。
-3. MathML に対応したブラウザが必要です（Chrome 109+、Safari 16.4+、Firefox）。
-4. 生の HTML と描画用の囲みは無害化されます：`<script>`、イベント属性、外部 `url()`、`@import` は取り除かれます。
-
-[^1]: 脚注の本文は文末に書きます。
+1. 数式は**内部に埋め込まれた Temml**（MIT、このファイルに同梱済み。実行時に通信しません）が解析し、amsmath / amssymb のほとんどの命令をカバーします。解釈できない記法は内蔵の簡易パーサーに自動で切り替わり、最悪でも命令名がそのまま表示されるだけで、内容まるごとが消えることはありません。
+2. 化学式 `\ce{…}` はこのファイル独自の軽量な変換機能です（mhchem ではありません）。元素、下付き、電荷、`->` `<-` `<=>`（矢印の上に `->[条件]` と書けます）、`(g)/(l)/(s)/(aq)` の状態、水和物の中黒（・）、錯体の角かっこに対応します。mhchem でもあまり使われない記法は保証できません。単位 `\pu{…}` も同様です。
+3. 数式は MathML を表示できるブラウザでないと正しく表示されません（Chrome 109+ / Safari 16.4+ / Firefox 全系）。これはこのツールが以前から掲げている前提条件です。
+4. 生の HTML と描画用の囲み（`html` / `css` / `svg`）は安全のためにフィルターされます。スクリプト、イベント属性、外部 `url()`、`@import` は一律で取り除かれます。
+5. ページ番号はブラウザの印刷画面が管理します。印刷プレビューで「ヘッダーとフッター」をオンにしてください。
 </script>
 <script type="text/plain" id="sampleDoc-zh-TW">
-# Markdown → PDF（範例）
+# Markdown 排版與 PDF 匯出
 
-整個工具就是**一個離線 HTML 檔**：不連網、不用安裝、不用帳號。下面每一段都是 md2pdf 支援的東西。
+這是一個**完全離線**的 Markdown 閱讀與排版工具：單一 HTML 檔案，不連網、不用安裝，手機打開就能用。介面本身支援 7 種語言（頂端工具列的 🌐），和檔案用什麼語言書寫互不影響。
 
-## 快速上手
+> 下面每一節都是**活的範例**：正文這樣寫，預覽就會排成這樣。
 
-1. 點「**開啟**」選一個 `.md`，或直接在編輯區打字。
-2. 切到「**預覽**」（寬螢幕會左右並排顯示）。
-3. 點「**列印 / 存 PDF**」，在系統列印視窗把目標選成「**另存為 PDF**」再存檔。
-   產出的是**向量文字 PDF**：可選取、可搜尋、放大不模糊，不是截圖。
+## 怎麼用
 
-## 文字
+1. 點「📂 開啟」選一個 `.md` 檔案，或直接在「編輯」頁打字、貼上。
+2. 切到「預覽」看排版結果（螢幕夠寬時左右分欄，邊寫邊看）。
+3. 點「🖨 列印 / 儲存 PDF」，在系統列印視窗把目標改成 **另存為 PDF** 儲存。
+4. 想留底或傳給別人：頂端工具列的「🗂 歷史」是自動存下來的本機副本，「📄 匯出 HTML」能把整份內容打包成一個獨立的 HTML 檔案。
+5. 把這份範例改亂了？點頂端工具列的「範例」，就會換回目前語言的原始版本。
 
-**粗體**、*斜體*、***粗斜體***、~~刪除線~~、==螢光標記==、`行內程式碼`、腳註[^1]。
+> 匯出的是真正的向量文字 PDF：文字可以選取、搜尋、複製，放大不會模糊，檔案也小——不是截圖拼出來的。
 
-## 清單
+## 文字與區塊語法
 
-- 無序
-  - 可巢狀
-    1. 有序也能巢狀
-- [ ] 待辦（未完成）
-- [x] 待辦（已完成）
+### 文字外觀
 
-## 表格
+**粗體**、*斜體*、***粗斜體***、~~刪除線~~、==螢光標記==、`行內原始碼`、腳註[^1]。
 
-| 功能 | 怎麼用 | 狀態 |
-|:-----|:------:|-----:|
-| 即時預覽 | 邊打邊看 | ✅ |
-| 列印 | 向量文字 PDF | ✅ |
+### 清單與待辦事項
 
-## 程式碼
+- 無序清單
+- 支援巢狀：
+  - 第二層
+    1. 有序清單也能巢狀
+    2. 第二項
+- [ ] 待辦事項（未完成）
+- [x] 待辦事項（已完成）
+
+### 表格
+
+表格儲存格裡的 `|` 只要寫在反引號裡，就不會把欄位切斷：
+
+| 功能 | 寫法 | 狀態 |
+|:-----|:----:|-----:|
+| 即時預覽 | 邊寫邊看 | ✅ |
+| 列印匯出 | 向量文字 PDF | ✅ |
+| 跳脫直線 | `` `a|b` `` 算一格 | ✅ |
+
+### 原始碼
 
 ```js
 function hello(name) {
-  console.log(`嗨，${name}`);
+  console.log(`哈囉，${name}`);
 }
 ```
 
-太長的行在紙上會自動折行，不會被切掉：
+太長的原始碼行在紙上會自動折行，不會被裁掉：
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
 
-## 數學
+### 引用與分隔線
 
-行內：$E = mc^2$、$e^{i\pi} + 1 = 0$、$\vec{v} = (v_1, v_2, v_3)$。
+> 這是一段引用。
+> 可以寫成好幾行，會自動合併成同一個引用區塊。
+
+---
+
+### 連結與腳註
+
+[Claude Code](https://claude.com/claude-code) 是命令列工具；裸連結也認得：https://claude.com
+
+腳註用 `[^1]` 定義，編號會自動排。腳註要放在文末、緊接引用它的那一段，還是兩處都放，在「設定 → 智慧擴充 → 腳註位置」裡選——「就近顯示」列印時和正文同頁，題組、答案頁最實用。
+
+[^1]: 腳註會自動編號，並依「腳註位置」的設定統一排列。
+
+## 數學與化學
+
+### 數學
+
+行內數學用 `$…$`：質能互換 $E = mc^2$、歐拉的 $e^{i\pi} + 1 = 0$、向量 $\vec{v} = (v_1, v_2, v_3)$。
+
+獨立成行的數學用 `$$…$$`：
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-\qquad
-\lim_{x \to 0}\frac{\sin x}{x} = 1
 $$
 
-進階寫法：$a \lesssim b$、$x \geqslant 0$、$\boxed{x^2}$、$\overrightarrow{AB}$、$\operatorname{rank}(A)$。
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
 
-## 化學式
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
 
-$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-}$$
+常用符號：$\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$；關係符 $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$。
+
+進階寫法大多都有：$\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$，還有 $\boxed{x^2}$、$\overrightarrow{AB}$、$\cancel{(x+1)}$、$\overbrace{a+b}^{n}$、$\operatorname{rank}(A)$、$\color{red}{x}$。
+
+### 化學與單位
+
+化學符號用 `\ce{…}`，不必自己拼上下標：
+
+$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
+
+箭頭上可以標反應環境，可逆反應改用 `<=>`：
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
-## 用圍欄畫圖
+$$\ce{Fe2O3 + 3CO ->[高溫] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
-標成 `svg` 的圍欄會**畫成圖**，不是顯示程式碼：
+單位用 `\pu{…}`：$\pu{9.8 m/s^2}$、$\pu{1.0e-3 mol/L}$。
 
-```svg
-<svg width="560" height="120" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="34" width="120" height="52" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
-  <line x1="140" y1="60" x2="250" y2="60" stroke="#2f6fed" stroke-width="2"/>
-  <rect x="250" y="34" width="120" height="52" rx="8" fill="#fdf0f0" stroke="#d64545"/>
-  <text x="80" y="65" font-size="14" text-anchor="middle">原稿</text>
-  <text x="310" y="65" font-size="14" text-anchor="middle">PDF</text>
+> 數學標記會排成 MathML，同樣是**向量文字**，可以選取、搜尋，列印不會模糊。
+> 價格不會被誤判成數學：$5-$10、$100 和 $200 都保持原樣。
+
+## 畫圖：SVG 與渲染型圍欄
+
+### 直接寫 SVG
+
+正文裡可以直接寫 `<svg>`。畫出來是**真向量**——放大不模糊，列印走的是向量路徑，不是點陣圖。
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">預覽</text>
+  <text class="flow-lbl" x="409" y="65">系統列印</text>
+  <text class="flow-lbl" x="551" y="65">向量 PDF</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
-```
 
-`css` 定義樣式、`html` 套用樣式。想看程式碼本身而不是執行它，就把圍欄標成 `text`。
+圖裡那段 `<style>` 是這張圖自己的配色，工具會幫它加上作用範圍——只作用於這一張圖，不會串到別的圖或介面本身。
+
+### 渲染型圍欄
+
+圍欄裡寫的內容**不會當原始碼顯示**，而是直接渲染出來，適合畫結構圖、堆版面、幫整份檔案加上自訂外觀。
 
 ```css
-.sample-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
 ```
 
 ```html
-<div class="sample-box"><b>提示</b>：這個方塊是圍欄裡的真的 HTML，會實際渲染出來。</div>
+<div class="note-box">這段是 HTML 渲染出來的：<b>粗體</b>、<span style="color:#d64545">紅色</span>，還有 <code>行內原始碼</code>。</div>
 ```
 
-<div class="page-break"></div>
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">圍欄裡的 SVG</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">列印仍是向量</text>
+</svg>
+```
 
-## 值得注意的設定
+規則：
 
-- **版面配置**——主題、字級、中文單換行就換行、語法高亮。
-- **目次**——自動產生目次，可選只收 H1 或收到全部層級。
-- **主題色**——七組預設色，也可以拖動色環任何位置，或直接輸入色碼。
-- **列印**——紙張、邊界，以及列印時是否在連結後附上網址。
-- **字型**——匯入 `.ttf / .otf / .woff / .woff2`，存在瀏覽器裡，重開還在。
-- **資料**——設定與歷史都存在這個瀏覽器的 IndexedDB，不會上傳。
+- 標 `css`：整段是一份 CSS，作用於**整份檔案**；本身不產生可見內容，只幫後面的 HTML 套上外觀。
+- 標 `html`：渲染成 HTML；裡面若有 `<style>` 會被抽出並生效。
+- 標 `svg`：渲染成向量圖形。
+- 標 `render`：依內容自動判斷成上面哪一種。
+- 只想顯示原始碼、不想渲染：把語言標成 `text`（或 `plain`）。
+- 安全邊界：腳本、`onclick` 這類屬性、外部 `url()`、`@import` 都會被移除。
 
-## 歷史
+## 排版留白、答題橫線與分頁
 
-「**🗂 歷史**」列出在這裡寫過的檔案，可以重新開啟、單筆刪除、或全部清空。
-停止打字約 2.6 秒會自動存一次；最多保留 50 筆，滿了先丟最舊的。
+三種「獨占一行」的內建指令，直接決定紙面上的節奏；寫錯了會原樣顯示，不會被吞掉。
 
-## 已知限制
+- `[[gap:3]]`：空 3 行（1 行 = 1.78em，隨字級一起變）
+- `[[gap:20mm]]`：空 20 毫米，列印對位更精確
+- `[[rules:3]]`：畫 3 條答題橫線，行距 1.9em
 
-1. 數學由內嵌的 **Temml** 引擎排版（涵蓋大部分 amsmath / amssymb）。它不認得的寫法會退回內建解析器，把指令原樣顯示出來，不會整段消失。
-2. `\ce{}` 只涵蓋國高中常見化學寫法，mhchem 的冷門語法不保證。
-3. 需要支援 MathML 的瀏覽器（Chrome 109+、Safari 16.4+、Firefox）。
-4. 原始 HTML 與渲染型圍欄都會過濾：`<script>`、事件屬性、外部 `url()`、`@import` 一律移除。
+數值有上限（200 行、500 毫米），超過就停在最大值，不會把版面撐爆。
 
-[^1]: 腳註內容寫在文件最後。
+在兩道題目之間留點餘地：
+
+[[gap:2]]
+
+需要手寫作答的地方：
+
+[[rules:3]]
+
+### 另起新頁
+
+`[[pagebreak]]` 會讓後面的內容從新的一頁開始，只在列印 / 匯出 PDF 時生效；螢幕上是虛線標記，不佔空白。
+
+[[pagebreak]]
+
+> 舊寫法 `<div class="page-break"></div>` 仍然有效，只是現在有更短的 `[[pagebreak]]`。
+> 指令必須獨占一行；`[[gap:]]`、`[[gap:3px]]`、`[[rules:abc]]` 這類拼錯的寫法會當成普通文字顯示。
+
+## 列印與個人化
+
+設定（⚙️）分成五個分頁：
+
+### 外觀
+
+- **主題 / 字級**：淺色 / 深色，小 / 中 / 大。
+- **目錄**：自動產生，可限定 H1 / H1–H2 / H1–H3 / 全部。
+- **主題色**：7 組預設（預設藍、墨黑、硃砂、青碧、松綠、琥珀、靛紫）；拖曳色環任何位置、直接填 `#RRGGBB`，或用「🎨 從圖片擷取主題色」從圖片裡取一個；最近用過的 24 個顏色留在「歷史配色」裡，點一下就換回來。
+- **作者資訊**：頭像加文字說明。頭像可以從上傳過的裡面挑，也能重新上傳，並裁切成 A4 / A5 / Letter / 正方形 / 圓形；位置可選「頂部 / 底部 / 每頁頂部 / 每頁底部」。
+- **頁面資訊列**：文末顯示一次工具資訊，或打開「每頁都顯示宣傳」讓每頁都帶上（兩個開關互相獨立）。
+
+### 背景與圖片
+
+選一張圖當頁面背景，可以裁切、更換、清除；「背景不透明度」調整背景本身的濃淡，「內容底色不透明度」決定表格 / 原始碼區塊 / 引用區塊底下透出多少。列印時記得在列印介面勾選「背景圖形」，否則紙上不會有背景。
+
+### 智慧擴充
+
+- 「單一換行就另起新行」依中文習慣斷行；「語法醒目提示」可以關掉。
+- 「腳註位置」：文末 / 就近顯示 / 就近 + 文末彙總。
+- 「解析 LaTeX 數學」總開關，關掉就變回原始碼。
+- 「自訂擴充功能」：用一段 JSON 加上自己的行內語法、渲染圍欄、版面外觀和頂端工具列按鈕。
+
+### 列印與匯出
+
+紙張 A4 / Letter / A5，頁面邊界 窄 / 標準 / 寬，列印時是否在連結後附上網址。匯出 PDF 走系統列印，**網頁本身寫不出 PDF 檔案**；要頁碼就在列印介面打開「頁首和頁尾」。
+
+### 資料與字型
+
+設定和歷史都存在瀏覽器本機資料庫（IndexedDB），不上傳、不連網。字型可以匯入 `.ttf` / `.otf` / `.woff` / `.woff2`，存在瀏覽器裡，下次打開還在。設定可以匯出 / 匯入成 JSON，換裝置時不用重配。介面語言在頂端工具列 🌐 切換，共 7 種。
+
+## 歷史檔案
+
+頂端工具列「🗂 歷史」列出你在這個瀏覽器裡寫過的檔案：標題、修改時間、字數、佔用空間。點卡片直接打開繼續寫；卡片上的「刪除」只刪那一筆，右上角的「清空」刪全部（都會先確認）。
+
+不用手動儲存：打字停下約 2.6 秒就會更新目前這一筆的快照，關掉頁面再回來，歷史裡還是最新的。最多保留 50 筆，超過就自動丟掉最舊的。
+
+> 資料只存在這台裝置的瀏覽器裡（IndexedDB），不上傳、不連網。換瀏覽器、換裝置、清掉網站資料都看不到；無痕視窗裡通常直接不能用，這時介面會明確提示，而不是假裝存好了。
+
+## 檔案裡的本機圖片
+
+點「📂 開啟」時把 `.md` 和圖片**一起選取**，就會依檔名自動對應 `![](圖片名.png)`，不用改 Markdown 裡的路徑。選過一次之後圖片會存進本機資料庫，下次打開同一份檔案不用再選。
+
+## 已知邊界
+
+1. 數學由**內嵌的 Temml**（MIT，已壓進本檔，執行時不連網）解析，涵蓋 amsmath / amssymb 的絕大多數指令。它認不出來的寫法會自動退回內建的簡易解析器，最差是原樣顯示指令名稱，不會整段丟內容。
+2. 化學符號 `\ce{…}` 是本檔自帶的輕量轉換（不是 mhchem）：支援元素、下標、電荷、`->` `<-` `<=>`（可在箭頭上寫 `->[高溫]`）、`(g)/(l)/(s)/(aq)` 狀態、水合物中點、配位方括號。mhchem 裡比較冷門的語法不保證。單位 `\pu{…}` 同理。
+3. 數學要在能顯示 MathML 的瀏覽器裡才有效（Chrome 109+ / Safari 16.4+ / Firefox 全系列），這也是本工具一直以來的前提。
+4. 原始 HTML 與渲染型圍欄（`html` / `css` / `svg`）都會做安全過濾：腳本、`onclick` 這類屬性、外部 `url()`、`@import` 一律移除。
+5. 頁碼由瀏覽器的列印介面決定：在列印預覽裡把「頁首和頁尾」打開即可。
 </script>
 <script type="text/plain" id="sampleDoc-en">
-# Markdown → PDF (sample)
+# Markdown Layout and PDF Export
 
-This whole thing is **one offline HTML file**: no network, no install, no account. Everything below is a live demo of what md2pdf understands.
+A **fully offline** Markdown reader and typesetter in one HTML file: no network, no installs, and it opens on a phone. The interface itself comes in 7 languages (🌐 in the top bar) regardless of the language you write in.
 
-## Quick start
+> Every section below is **a live example**: the text you are reading is also the source, and this is exactly how the preview renders it.
 
-1. Click **Open** and pick a `.md` file — or just start typing in the editor.
-2. Switch to **Preview** (on a wide screen both panes show side by side).
-3. Click **Print / Save PDF**, then choose **Save as PDF** in the system dialog.
-   You get a **vector-text PDF**: selectable, searchable, sharp at any zoom — not a screenshot.
+## Getting started
 
-## Text
+1. "📂 Open" takes a `.md` file; you can also type and paste into "Edit".
+2. "Preview" shows the layout — on a wide screen, side by side with the editor.
+3. "🖨 Print / Save PDF" → choose **Save as PDF** in the system print dialog.
+4. Keep a copy: "🗂 History" takes automatic local snapshots, "📄 Export HTML" packs everything into one standalone file.
+5. Wrecked this sample? "Sample" reloads the original for the current language.
 
-**bold**, *italic*, ***bold italic***, ~~strikethrough~~, ==highlight==, `inline code`, a footnote[^1].
+> The export is a genuine vector-text PDF: selectable, searchable, copyable, sharp at any zoom, small — not screenshots.
 
-## Lists
+## Text and block syntax
 
-- unordered
-  - nested
-    1. ordered nests too
-- [ ] todo (open)
-- [x] todo (done)
+### Text styles
 
-## Table
+**Bold**, *italic*, ***bold italic***, ~~strikethrough~~, ==highlight==, `inline code`, a footnote[^1].
 
-| Feature | How | Status |
-|:--------|:---:|-------:|
-| Live preview | as you type | ✅ |
-| Print | vector text PDF | ✅ |
+### Lists and tasks
 
-## Code
+- An unordered list
+- Nesting works:
+  - Second level
+    1. Ordered lists nest too
+    2. A second item
+- [ ] A to-do (open)
+- [x] A to-do (done)
+
+### Tables
+
+A `|` in a cell won't split the column as long as it stays in backticks:
+
+| Feature | How you write it | Status |
+|:--------|:----------------:|-------:|
+| Live preview | watch it as you type | ✅ |
+| Print and export | vector-text PDF | ✅ |
+| Escaped pipe | `` `a|b` `` stays in one cell | ✅ |
+
+### Code
 
 ```js
 function hello(name) {
-  console.log(`hi, ${name}`);
+  console.log(`Hello, ${name}`);
 }
 ```
 
-Long lines wrap on paper instead of being cut off:
+Long lines wrap on paper instead of being clipped:
 
 ```text
-GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc
+GET https://example.com/api/v1/documents?page=1&size=50&sort=created_at&order=desc&include=author,tags
 ```
 
-## Math
+### Quotes and dividers
 
-Inline: $E = mc^2$, $e^{i\pi} + 1 = 0$, $\vec{v} = (v_1, v_2, v_3)$.
+> This is a quote.
+> It can span several lines; they merge into one block.
+
+---
+
+### Links and footnotes
+
+[Claude Code](https://claude.com/claude-code) is a command-line tool; a bare URL works too: https://claude.com
+
+A footnote is defined with `[^1]` and numbered automatically. Notes can go at the end, right after the citing paragraph, or both — see "Settings → Smart extensions → Footnote placement". "Next to the reference" keeps them on the same printed page, which is what problem sets and answer keys want.
+
+[^1]: Footnotes are numbered automatically and arranged by the "Footnote placement" setting.
+
+## Math and chemistry
+
+### Math
+
+Inline, in `$…$`: mass–energy $E = mc^2$, Euler's identity $e^{i\pi} + 1 = 0$, a vector $\vec{v} = (v_1, v_2, v_3)$.
+
+On its own lines, in `$$…$$`:
 
 $$
 \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-\qquad
-\lim_{x \to 0}\frac{\sin x}{x} = 1
 $$
 
-Beyond the basics: $a \lesssim b$, $x \geqslant 0$, $\boxed{x^2}$, $\overrightarrow{AB}$, $\operatorname{rank}(A)$.
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} ax + by \\ cx + dy \end{pmatrix}
+$$
 
-## Chemistry
+$$
+f(x) = \sum_{n=0}^{\infty} \frac{f^{(n)}(0)}{n!}\,x^n
+\qquad
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
 
-$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-}$$
+Common symbols $\alpha, \beta, \gamma, \theta, \lambda, \mu, \pi, \sigma, \omega$; relations $\le, \ge, \ne, \approx, \equiv, \to, \Rightarrow$.
+
+Most advanced notation is there too: $\lesssim, \geqslant, \nleq, \twoheadrightarrow, \leadsto, \oslash, \therefore, \because$, plus $\boxed{x^2}$, $\overrightarrow{AB}$, $\cancel{(x+1)}$, $\overbrace{a+b}^{n}$, $\operatorname{rank}(A)$, $\color{red}{x}$.
+
+### Chemical formulas and units
+
+`\ce{…}` handles the subscripts and superscripts:
+
+$$\ce{2H2 + O2 -> 2H2O} \qquad \ce{Ca(OH)2} \qquad \ce{SO4^2-} \qquad \ce{NH4+}$$
+
+Conditions go above the arrow; `<=>` makes it reversible:
 
 $$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} \qquad \ce{2H2O2 ->[MnO2] 2H2O + O2}$$
 
-## Drawn with a fence
+$$\ce{Fe2O3 + 3CO ->[heat] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
-A fence tagged `svg` is rendered as a picture, not shown as code:
+Units in `\pu{…}`: $\pu{9.8 m/s^2}$, $\pu{1.0e-3 mol/L}$.
 
-```svg
-<svg width="560" height="120" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="34" width="120" height="52" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
-  <line x1="140" y1="60" x2="250" y2="60" stroke="#2f6fed" stroke-width="2"/>
-  <rect x="250" y="34" width="120" height="52" rx="8" fill="#fdf0f0" stroke="#d64545"/>
-  <text x="80" y="65" font-size="14" text-anchor="middle">source</text>
-  <text x="310" y="65" font-size="14" text-anchor="middle">PDF</text>
+> Formulas become MathML, also **vector text** — selectable, searchable, sharp on paper.
+> Prices are not mistaken for math: $5-$10, $100 and $200 stay exactly as typed.
+
+## Drawing: inline SVG and render fences
+
+### Inline SVG
+
+`<svg>` goes straight into the document as **true vector** — sharp at any zoom, printed as vector paths rather than a bitmap.
+
+<svg width="620" height="120" viewBox="0 0 620 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="mdsvg-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/>
+    </marker>
+  </defs>
+  <style>
+    .flow-box{fill:#eef3ff;stroke:#2f6fed;stroke-width:1.5}
+    .flow-lbl{font:13px sans-serif;fill:#1b1d21;text-anchor:middle}
+    .flow-arw{stroke:#2f6fed;stroke-width:1.5;fill:none;marker-end:url(#mdsvg-ah)}
+  </style>
+  <rect class="flow-box" x="8"   y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="178" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="348" y="34" width="122" height="52" rx="8"/>
+  <rect class="flow-box" x="490" y="34" width="122" height="52" rx="8"/>
+  <text class="flow-lbl" x="69"  y="65">Markdown</text>
+  <text class="flow-lbl" x="239" y="65">Preview</text>
+  <text class="flow-lbl" x="409" y="65">System print</text>
+  <text class="flow-lbl" x="551" y="65">Vector PDF</text>
+  <path class="flow-arw" d="M134,60 L174,60"/>
+  <path class="flow-arw" d="M304,60 L344,60"/>
+  <path class="flow-arw" d="M474,60 L486,60"/>
 </svg>
-```
 
-`css` defines styles, `html` uses them. Tag a fence `text` to show the code instead of running it.
+The `<style>` inside belongs to that one picture: md2pdf scopes it, so it never bleeds into another drawing or into the interface.
+
+### Render fences
+
+These fences **render instead of showing code** — good for diagrams, layout experiments, or styling the whole document.
 
 ```css
-.sample-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
+.note-box{border-left:4px solid #2f6fed;background:#eef3ff;padding:10px 14px;border-radius:6px}
 ```
 
 ```html
-<div class="sample-box"><b>Tip</b>: this box is real HTML, rendered from a fence.</div>
+<div class="note-box">This paragraph is rendered HTML: <b>bold</b>, <span style="color:#d64545">red</span>, and <code>inline code</code>.</div>
 ```
 
-<div class="page-break"></div>
+```svg
+<svg width="420" height="86" viewBox="0 0 420 86" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="rf-ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#2f6fed"/></marker></defs>
+  <rect x="4" y="20" width="128" height="46" rx="8" fill="#eef3ff" stroke="#2f6fed"/>
+  <text x="68" y="49" font-size="14" text-anchor="middle">SVG in a fence</text>
+  <path d="M140,43 L214,43" stroke="#2f6fed" stroke-width="1.5" fill="none" marker-end="url(#rf-ah)"/>
+  <text x="310" y="49" font-size="14" text-anchor="middle">still vector in print</text>
+</svg>
+```
 
-## Settings worth knowing
+- `css`: a stylesheet for the **whole document**; it shows nothing itself, it styles the HTML that follows.
+- `html`: rendered as HTML; a `<style>` inside is pulled out and applied.
+- `svg`: rendered as vector graphics.
+- `render`: lets the content decide which of the three it is.
+- Want the code rather than the result? Tag the fence `text` (or `plain`).
+- Safety: scripts, event attributes such as `onclick`, external `url()` and `@import` are stripped.
 
-- **Layout** — theme, text size, CJK soft line breaks, syntax highlighting.
-- **Contents** — a generated table of contents, with depth H1 … all levels.
-- **Accent color** — seven presets, or drag the wheel anywhere, or type a hex value.
-- **Print** — paper size, margins, and whether to append URLs after links.
-- **Fonts** — import `.ttf / .otf / .woff / .woff2`; they are stored in the browser and survive reloads.
-- **Data** — settings and history live in this browser's IndexedDB. Nothing is uploaded.
+## Spacing, answer lines and page breaks
+
+Three directives, each on a line of its own, set the rhythm of the page; get one wrong and it shows as ordinary text, never silently swallowed.
+
+- `[[gap:3]]` — three blank lines (1 line = 1.78em of body line height, following the font size)
+- `[[gap:20mm]]` — 20 mm of white space, for precise alignment on paper
+- `[[rules:3]]` — three answer lines, 1.9em apart
+
+Ceilings: 200 lines, 500 mm — beyond that the value clamps instead of running off the page.
+
+Room to breathe between two questions:
+
+[[gap:2]]
+
+Where students write by hand:
+
+[[rules:3]]
+
+### Forced page breaks
+
+`[[pagebreak]]` starts what follows on a fresh page — print and PDF export only; on screen it is a dashed marker that takes up no space.
+
+[[pagebreak]]
+
+> The older `<div class="page-break"></div>` still works, it is just longer than `[[pagebreak]]`.
+> A directive must sit on its own line; malformed `[[gap:]]`, `[[gap:3px]]` or `[[rules:abc]]` print as ordinary text.
+
+## Printing and personalization
+
+Settings (⚙️) has five tabs:
+
+### Appearance
+
+- **Theme / Text size**: Light / Dark; S / M / L.
+- **Contents**: automatic — H1 / H1–H2 / H1–H3 / all levels.
+- **Accent color**: 7 presets (Default blue, Ink black, Vermilion, Teal, Pine green, Amber, Indigo); drag anywhere on the wheel, type a `#RRGGBB` value, or use "🎨 Pick accent color from image". The last 24 colors stay in "Recent colors".
+- **Author info**: "Show author info" adds an avatar and a description. The avatar is chosen from what you have uploaded before, or uploaded fresh, and cropped to A4 / A5 / Letter / square / circle; position Top / Bottom / Top of every page / Bottom of every page.
+- **Footer info bar**: "Show tool info at the bottom of the document" prints it once at the end; "Show the info bar on every page" repeats it on every printed page (independent switches).
+
+### Background & images
+
+An image behind the page — crop it, replace it, remove it. "Background opacity" is the image itself; "Content surface opacity" is how much of it shows through tables, code blocks and quotes. Tick "Background graphics" in the print dialog, or the paper comes out blank.
+
+### Smart extensions
+
+- "Treat a single line break as a new line (CJK convention)"; "Syntax highlighting for code blocks" can be switched off.
+- "Footnote placement": End of document / Next to the reference / Nearby + summary.
+- "Parse LaTeX math" is the master switch — off, and you see the source instead.
+- "Custom extensions": JSON for your own inline syntax, render fences, document styles and toolbar buttons.
+
+### Print & export
+
+Paper A4 / Letter / A5, margins Narrow / Normal / Wide, and whether to append the URL after links. PDF export goes through the system print dialog — **the page cannot write a PDF itself**; for page numbers turn on "Headers and footers".
+
+### Data & fonts
+
+Settings and history live in the browser's IndexedDB: nothing uploaded, no network. Fonts (`.ttf` / `.otf` / `.woff` / `.woff2`) import into the browser and survive restarts; settings export and import as JSON for a new device. Interface language: 🌐 in the top bar, 7 in total.
 
 ## History
 
-The **🗂 History** button lists documents written here. You can reopen, delete one entry, or clear all of them.
-Saving is automatic: about 2.6 seconds after you stop typing. Up to 50 entries, oldest dropped first.
+"🗂 History" lists what you have written in this browser: title, last change, word count, storage used. Click a card to keep writing; "Delete" removes one entry, "Clear" removes all (both ask first).
+
+No manual saving: about 2.6 seconds after you stop typing, the snapshot is refreshed, so close the page and come back to the latest version. At most 50 entries; past that the oldest goes first.
+
+> The data stays in this browser on this device (IndexedDB) — nothing is uploaded. A new browser, a new device, cleared site data: it is gone; private windows usually cannot use it at all, and then the interface says so plainly instead of pretending the save worked.
+
+## Local images in your document
+
+Select the `.md` file and the images **together** in "📂 Open"; `![](image-name.png)` is matched by file name, so no paths need editing. Chosen images are stored in the local database and won't be asked for again.
 
 ## Known limits
 
-1. Math is typeset by the inlined **Temml** engine (most of amsmath / amssymb). Anything it does not recognise falls back to the built-in parser, which shows the command literally rather than dropping it.
-2. `\ce{}` covers common school chemistry; exotic mhchem syntax is not guaranteed.
-3. A MathML-capable browser is required (Chrome 109+, Safari 16.4+, Firefox).
-4. Raw HTML and render fences are sanitized: `<script>`, event attributes, external `url()` and `@import` are stripped.
-
-[^1]: A footnote, defined at the bottom of the document.
+1. Math comes from an inlined **Temml** (MIT, bundled here, nothing fetched at runtime) and covers most of amsmath / amssymb. Unrecognized input falls back to the built-in parser; at worst you see the command name, never lost content.
+2. `\ce{…}` is a light-weight converter built into this file (not mhchem): elements, subscripts, charges, `->` `<-` `<=>` with `->[conditions]`, `(g)/(l)/(s)/(aq)` states, hydrate dots, coordination brackets. Obscure mhchem syntax isn't guaranteed; `\pu{…}` likewise.
+3. Formulas need a browser that can display MathML (Chrome 109+ / Safari 16.4+ / all of Firefox) — that has been the baseline all along.
+4. Raw HTML and render fences (`html` / `css` / `svg`) are sanitized: scripts, event attributes, external `url()`, `@import` — all removed.
+5. Page numbers come from the print dialog: turn on "Headers and footers" in the print preview.
 </script>
 
 <script id="temmlLib">
