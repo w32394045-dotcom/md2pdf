@@ -61,9 +61,11 @@ not follow you between entries — pick one and stick with it.
   cites it, or both at once.
 - **Local images stay attached** — images picked together with a `.md` are copied into the browser database on open,
   so reloading the page or reopening the document from History no longer leaves broken images.
-- **Line breaks, exactly** — an optional switch keeps every line break as typed: one Enter is one line, and
-  consecutive blank lines keep their count (paragraph spacing is removed in that mode). Handy for hand-set
-  worksheets where vertical rhythm matters; it applies to preview, print and export alike.
+- **Spacing directives** — put a marker on its own line to control vertical space exactly:
+  `[[gap:3]]` leaves three blank lines (follows the font size), `[[gap:20mm]]` leaves a fixed 20 mm
+  (printer-accurate), `[[rules:3]]` draws three answer rules for filling in by hand, and `[[pagebreak]]`
+  starts a new page when printed. Works in preview, print and exported HTML; invalid markers stay as plain text,
+  and the count is capped (200 lines / 500 mm) so a document cannot balloon into dozens of blank pages.
 - **JSON extensions** — one JSON file can rewrite the text before parsing (`preProcess`), add inline syntax and new
   fences (`customSyntax`), add toolbar buttons that insert a fixed snippet (`uiInjection`), and add CSS for the
   document only (`cssInjection`). The output passes the same sanitiser as render fences; a malformed file disables
