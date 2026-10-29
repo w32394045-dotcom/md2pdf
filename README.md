@@ -38,11 +38,12 @@ not follow you between entries — pick one and stick with it.
   It drives links, the quote bar and tint, table header tint, heading rules, table borders, `==highlight==`, task
   boxes and the UI's own buttons / focus rings. Printing converts it to a print-safe shade automatically.
 - **Page background** — upload an image or pick one from the thumbnail history, then crop it in the built-in
-  frosted-glass cropper: A4 / square / circle, drag to move, wheel or pinch to zoom, rendered at device pixel ratio,
-  plus **Keep original** to skip cropping. Two sliders set the opacity of the image itself and of the tinted content
-  surfaces on top of it (tables, code blocks, quotes, TOC). Printing paints the background as a fixed overlay
-  (Chromium repeats fixed-position elements on each page) — tick **Background graphics** in the print dialog.
-  The image never leaves the browser.
+  frosted-glass cropper: A4 / A5 / Letter / square / circle (A4 and A5 share the ratio; only the output resolution
+  differs), drag to move, wheel or pinch to zoom, rendered at device pixel ratio, plus **Keep original** to skip
+  cropping. Two sliders set the opacity of the image itself and of the tinted content surfaces on top of it
+  (tables, code blocks, quotes, TOC). Printing paints the background as a fixed overlay (Chromium repeats
+  fixed-position elements on each page) — tick **Background graphics** in the print dialog. The image never leaves
+  the browser.
 - **Colour from an image** — sample an accent straight out of the current page background, or from any image chosen
   for the session: a crosshair and a 13×13 pixel magnifier follow the pointer, and on Chromium the system EyeDropper
   can pick from anywhere on screen (the button is greyed out elsewhere). The last 24 colours are kept in a swatch
@@ -51,13 +52,18 @@ not follow you between entries — pick one and stick with it.
   Tag a fence `text` to show the code instead.
 - **Inline SVG** — an `<svg>` written straight into the Markdown stays vector in the PDF; scripts, event attributes
   and external URLs are stripped.
-- **Author card and footer bar** — an optional avatar plus one line of text, placed above or below the document; the
-  footer info bar with the tool name and repository link sits at the bottom and can be switched off. The styles live
-  in the document stylesheet, so preview, print and export match.
+- **Author card and footer bar** — an optional avatar plus one line of text, placed above or below the document, or
+  **repeated at the top / bottom of every printed page**. The avatar can be uploaded or picked from the avatar
+  history; the footer info bar with the tool name and repository link can be switched off, or shown **once per page**
+  with its own switch (off = a single bar at the end). The styles live in the document stylesheet, so preview, print
+  and export match.
 - **Footnote placement** — three modes: all notes at the end (default), each note right after the paragraph that
   cites it, or both at once.
 - **Local images stay attached** — images picked together with a `.md` are copied into the browser database on open,
   so reloading the page or reopening the document from History no longer leaves broken images.
+- **Line breaks, exactly** — an optional switch keeps every line break as typed: one Enter is one line, and
+  consecutive blank lines keep their count (paragraph spacing is removed in that mode). Handy for hand-set
+  worksheets where vertical rhythm matters; it applies to preview, print and export alike.
 - **JSON extensions** — one JSON file can rewrite the text before parsing (`preProcess`), add inline syntax and new
   fences (`customSyntax`), add toolbar buttons that insert a fixed snippet (`uiInjection`), and add CSS for the
   document only (`cssInjection`). The output passes the same sanitiser as render fences; a malformed file disables
