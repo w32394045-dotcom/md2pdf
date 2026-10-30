@@ -62,10 +62,12 @@ not follow you between entries — pick one and stick with it.
   page-edge body text becoming visible behind the strip.
 - **Footnote placement** — three modes: all notes at the end (default), each note right after the paragraph that
   cites it, or both at once.
-- **Pictures embedded as base64** — the **🖼 Image** button compresses a picture to 1600 px on the long edge and
-  writes it straight into the Markdown as `![name](data:image/jpeg;base64,…)`; paste or drop an image into the
-  editor for the same result. The `.md` then carries its own pictures: printing, exporting and moving the file to
-  another machine never breaks them. (Picking images together with the `.md` still works for older documents;
+- **Pictures embedded as base64, with an upload / manage dialog** — the **🖼 Image** button opens a card with two
+  tabs. *Upload* compresses a picture to 1600 px on the long edge and writes it straight into the Markdown as
+  `![name](data:image/jpeg;base64,…)` (paste or drop into the editor works too), so the `.md` carries its own
+  pictures: printing, exporting and moving the file never breaks them. *Manage* lists every image in the document
+  as a thumbnail card — tick the ones to remove and delete; the matching base64 is removed too, no need to select
+  a multi-megabyte string by hand. (Picking images together with the `.md` still works for older documents;
   local paths and remote links are no longer needed.)
 - **Fill-in blanks** — a run of two or more underscores (`Answer: ____`) is drawn as an even answer line
   whose width follows the underscore count (min 2.4 em, capped at 12 underscores). In Chinese text
