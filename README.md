@@ -62,13 +62,17 @@ not follow you between entries — pick one and stick with it.
   page-edge body text becoming visible behind the strip.
 - **Footnote placement** — three modes: all notes at the end (default), each note right after the paragraph that
   cites it, or both at once.
-- **Local images stay attached** — images picked together with a `.md` are copied into the browser database on open,
-  so reloading the page or reopening the document from History no longer leaves broken images.
+- **Pictures embedded as base64** — the **🖼 Image** button compresses a picture to 1600 px on the long edge and
+  writes it straight into the Markdown as `![name](data:image/jpeg;base64,…)`; paste or drop an image into the
+  editor for the same result. The `.md` then carries its own pictures: printing, exporting and moving the file to
+  another machine never breaks them. (Picking images together with the `.md` still works for older documents;
+  local paths and remote links are no longer needed.)
 - **Spacing directives** — put a marker on its own line to control vertical space exactly:
   `[[gap:3]]` leaves three blank lines (follows the font size), `[[gap:20mm]]` leaves a fixed 20 mm
   (printer-accurate), `[[rules:3]]` draws three answer rules for filling in by hand, and `[[pagebreak]]`
-  starts a new page when printed. Works in preview, print and exported HTML; invalid markers stay as plain text,
-  and the count is capped (200 lines / 500 mm) so a document cannot balloon into dozens of blank pages.
+  starts a new page when printed. Several markers may share one line, e.g. `[[gap:10]] [[rules:4]]`; the whole
+  line must contain nothing but markers. Works in preview, print and exported HTML; invalid markers stay as plain
+  text, and the count is capped (200 lines / 500 mm per line) so a document cannot balloon into dozens of blank pages.
 - **JSON extensions** — one JSON file can rewrite the text before parsing (`preProcess`), add inline syntax and new
   fences (`customSyntax`), add toolbar buttons that insert a fixed snippet (`uiInjection`), and add CSS for the
   document only (`cssInjection`). The output passes the same sanitiser as render fences; a malformed file disables
@@ -83,6 +87,8 @@ not follow you between entries — pick one and stick with it.
 - **History** — the **🗂 History** button lists documents written here (title, last edit, word count, size).
   Open, delete one entry, or clear all. Autosaves ~2.6 s after you stop typing, keeps the newest 50.
   Everything sits in the browser's IndexedDB; nothing is uploaded.
+- **Large documents fall back to IndexedDB** — once embedded pictures push the Markdown past the localStorage
+  quota, the text is kept in the local database instead, so reloading the page does not lose it.
 - **Seven UI languages** — 简体中文 · 繁體中文 · 日本語 · 한국어 · Deutsch · Français · English.
   Detected from your browser on first load, switchable from the 🌐 dropdown in the toolbar, and the built-in
   sample document follows the language as well (each language has its own hand-written sample, not machine output).
@@ -93,8 +99,9 @@ not follow you between entries — pick one and stick with it.
 ## Usage
 
 1. Open `index.html` in Chrome or Edge (double-clicking the file works — no server needed).
-2. Click **Open** and pick a `.md`. If the document references local images, select the `.md` **and** the images
-   together; they are matched by file name and copied into the browser database, so a reload will not break them.
+2. Click **Open** and pick a `.md`. To add pictures, click **🖼 Image** (or paste / drop them into the editor) —
+   they are compressed and embedded as base64, so the `.md` keeps them. Older documents that reference images by
+   file name still work: select the `.md` **and** the images together when opening.
 3. Check the preview, then click **Print / Save PDF** and choose *Save as PDF* in the system dialog.
    - A web page cannot write a PDF file by itself; this route is the only one, and it is what yields vector text.
    - Want page numbers? Turn on *Headers and footers* in the print dialog.
