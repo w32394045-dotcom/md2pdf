@@ -67,6 +67,9 @@ not follow you between entries — pick one and stick with it.
   editor for the same result. The `.md` then carries its own pictures: printing, exporting and moving the file to
   another machine never breaks them. (Picking images together with the `.md` still works for older documents;
   local paths and remote links are no longer needed.)
+- **Fill-in blanks** — a run of two or more underscores (`Answer: ____`) is drawn as an even answer line
+  whose width follows the underscore count (min 2.4 em, capped at 12 underscores). In Chinese text
+  `__text__` becomes a blank too, so use `**text**` for bold; a line containing only `___` stays a divider.
 - **Spacing directives** — put a marker on its own line to control vertical space exactly:
   `[[gap:3]]` leaves three blank lines (follows the font size), `[[gap:20mm]]` leaves a fixed 20 mm
   (printer-accurate), `[[rules:3]]` draws three answer rules for filling in by hand, and `[[pagebreak]]`

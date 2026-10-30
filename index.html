@@ -392,6 +392,9 @@ body.show-files .editor-pane,body.show-files .preview-pane{display:none !importa
 .md-gap{display:block;height:0}
 .md-rules{margin:.25em 0}
 .md-rule{height:1.9em;border-bottom:1px solid var(--doc-line)}
+/* 填空空线：连续下划线排成的等高线（比下划线字符更齐、更宽；打印同样有效） */
+.md-fill{display:inline-block;height:.95em;border-bottom:1.5px solid currentColor;
+  vertical-align:-.16em;margin:0 .16em;box-sizing:border-box}
 .md-pagebreak{display:block;height:0;margin:0}
 @media screen{
   .md-pagebreak{height:auto;margin:.9em 0;border-top:1px dashed var(--doc-line)}
@@ -1566,6 +1569,10 @@ $$\ce{Fe2O3 + 3CO ->[高温] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
 三种内置指令控制纸面节奏：每种都要单独成行，一行里可以并排写几个（但不能和正文挤在同一行）；写错了会原样显示，不会被吞掉。
 
+填空直接写连续下划线：`答案：____` 会排成一条等宽的答题空线（下划线越多越长）；`__文字__` 在中文里会被当成空线，加粗请用 `**文字**`；一整行只有 `___` 时仍然是分隔线。
+
+例：当 n = ____ 时，函数取得最大值。
+
 - `[[gap:3]]`：空 3 行（1 行 = 正文行高，随字号变化）
 - `[[gap:20mm]]`：空 20 毫米，打印对齐更精确
 - `[[rules:3]]`：画 3 条答题横线，行距 1.9em
@@ -1824,6 +1831,10 @@ Règles :
 
 Trois directives règlent le rythme de la page : chacune sur sa propre ligne, mais plusieurs peuvent partager une ligne ; mal écrites, elles s’affichent telles quelles.
 
+Pour un blanc, tapez simplement des tirets bas : `Réponse : ____` devient une ligne de réponse régulière (plus de tirets, ligne plus longue). Dans un texte chinois, `__texte__` est traité comme un blanc — pour le gras, utilisez `**texte**` ; une ligne composée uniquement de `___` reste un séparateur.
+
+Exemple : le maximum est atteint pour n = ____.
+
 - `[[gap:3]]` : 3 lignes vides (1 ligne = hauteur de ligne du texte, selon la taille de police)
 - `[[gap:20mm]]` : 20 millimètres de blanc, alignement plus précis à l’impression
 - `[[rules:3]]` : 3 lignes de réponse, interligne 1,9 em
@@ -2081,6 +2092,10 @@ Regeln:
 ## Abstände, Antwortlinien und Seitenumbrüche
 
 Drei Direktiven geben dem Papier seinen Rhythmus: jede braucht eine eigene Zeile, mehrere dürfen aber in einer Zeile stehen; falsch geschrieben erscheinen sie wörtlich, statt verschluckt zu werden.
+
+Für Lücken einfach Unterstriche tippen: `Antwort: ____` wird zu einer gleichmäßig gezeichneten Antwortlinie (mehr Unterstriche, längere Linie). In chinesischem Text gilt `__Text__` als Lücke – für Fett bitte `**Text**` verwenden; eine Zeile nur aus `___` bleibt eine Trennlinie.
+
+Beispiel: Das Maximum liegt bei n = ____.
 
 - `[[gap:3]]`: 3 Leerzeilen (1 Zeile = Zeilenhöhe des Fließtexts, je nach Schriftgröße)
 - `[[gap:20mm]]`: 20 Millimeter Leerraum, genauer beim Ausrichten auf dem Papier
@@ -2341,6 +2356,10 @@ $$\ce{Fe2O3 + 3CO ->[고온] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
 종이 위의 흐름을 직접 다루는 기본 명령이 세 가지 있습니다. 각각 별도의 줄에 써야 하지만, 한 줄에 여러 개를 나란히 써도 됩니다(본문과 같은 줄에 섞으면 효력이 없습니다). 잘못 쓰면 그대로 글자로 표시되며 사라지지 않습니다.
 
+빈칸은 밑줄을 이어서 쓰면 됩니다: `답안: ____`는 같은 두께의 답안 빈칸 줄로 표시됩니다(밑줄이 많을수록 길어집니다). 중국어 본문에서는 `__文字__`가 빈칸으로 처리되므로 굵게 표시하려면 `**文字**`를 쓰세요. 한 줄 전체가 `___`이면 구분선으로 유지됩니다.
+
+예: n = ____일 때 최댓값을 가집니다.
+
 - `[[gap:3]]`: 3줄만큼 비움(1줄 = 본문 행 높이, 글자 크기에 따라 달라집니다)
 - `[[gap:20mm]]`: 20밀리미터 비움. 인쇄에서 위치를 정확히 맞출 때 좋습니다
 - `[[rules:3]]`: 답안 가로줄 3개. 줄 간격은 1.9em
@@ -2599,6 +2618,10 @@ $$\ce{Fe2O3 + 3CO ->[高温] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 ## 余白・解答用の横線・改ページ
 
 紙面のリズムを直接操る組み込み命令が 3 つあります。どれも独立した行に書きますが、1 行に複数並べてもかまいません（本文と同じ行に混ぜると効きません）。書き間違えた場合はそのままの文字として表示され、消えてしまうことはありません。
+
+記入欄は下線を続けて書くだけです：`解答：____` は等幅の解答欄の線になります（下線が多いほど長くなります）。中国語の本文では `__文字__` が空欄扱いになるため、太字は `**文字**` を使ってください。行全体が `___` の場合は区切り線のままです。
+
+例：n = ____ のとき最大値をとります。
 
 - `[[gap:3]]`：3 行分の空き（1 行 = 本文の行高。文字サイズに応じて変わります）
 - `[[gap:20mm]]`：20 ミリの空き。印刷で位置をぴったり合わせたいときに効きます
@@ -2859,6 +2882,10 @@ $$\ce{Fe2O3 + 3CO ->[高溫] 2Fe + 3CO2} \qquad \ce{CuSO4.5H2O}$$
 
 三種內建指令決定紙面節奏：每種都要單獨成行，一行可以並排寫幾個（但不能和正文擠在同一行）；寫錯了會原樣顯示，不會被吞掉。
 
+填空直接寫連續下劃線：`答案：____` 會排成等寬的答題空線（下劃線越多越長）；`__文字__` 在中文裡會被當成空線，加粗請用 `**文字**`；整行只有 `___` 時仍然是分隔線。
+
+例：當 n = ____ 時，函數取得最大值。
+
 - `[[gap:3]]`：空 3 行（1 行 = 1.78em，隨字級一起變）
 - `[[gap:20mm]]`：空 20 毫米，列印對位更精確
 - `[[rules:3]]`：畫 3 條答題橫線，行距 1.9em
@@ -3117,6 +3144,10 @@ These fences **render instead of showing code** — good for diagrams, layout ex
 ## Spacing, answer lines and page breaks
 
 Three built-in directives set the rhythm of the page: each needs a line of its own, though several may share one line; get one wrong and it shows as ordinary text, never silently swallowed.
+
+For a fill-in blank just type underscores: `Answer: ____` turns into an evenly drawn answer line (more underscores, longer line). In Chinese text `__text__` is treated as blanks, so use `**text**` for bold; a line made only of `___` is still a divider.
+
+Example: the maximum is reached when n = ____.
 
 - `[[gap:3]]` — three blank lines (1 line = 1.78em of body line height, following the font size)
 - `[[gap:20mm]]` — 20 mm of white space, for precise alignment on paper
@@ -5005,6 +5036,41 @@ function mdToHtml(src, opts){
    换行不在这里单独算，因为它太常见（段内换行），见下面第二档快速通道。 */
 var INLINE_HOT = /[\\`$<>&\[\]!*_~=:]/;
 
+/* 填空下划线：连续 2 个以上 _（两侧不贴 ASCII 字母数字）排成一条等宽的答题空线。
+   中文考卷里 ____ 是最常见的填空写法；不处理的话会被强调规则吃掉，出现
+   「____ → <strong>__、</strong>___」这种歪歪扭扭的效果。
+   标识符（__init__、a__b）两侧贴着字母数字，保持原样。 */
+var BLANK_MAX = 12;               /* 一条空线最多按 12 个下划线算宽度，再长就封顶 */
+function blankRuns(text){
+  var out = '', i = 0, n = text.length;
+  while (i < n){
+    var ch = text.charAt(i);
+    if (ch === '<'){              /* 已生成的标签整段跳过：别改 href 里的下划线 */
+      var close = text.indexOf('>', i);
+      if (close < 0){ out += text.slice(i); break; }
+      out += text.slice(i, close + 1);
+      i = close + 1;
+      continue;
+    }
+    if (ch !== '_'){ out += ch; i++; continue; }
+    var j = i;
+    while (j < n && text.charAt(j) === '_') j++;
+    var run = j - i;
+    var prev = i > 0 ? text.charAt(i - 1) : '';
+    var next = j < n ? text.charAt(j) : '';
+    if (run >= 2 && !/[A-Za-z0-9]/.test(prev) && !/[A-Za-z0-9]/.test(next)){
+      var cnt = Math.min(run, BLANK_MAX);
+      /* 每个下划线按 0.8em 算，最少 2.4em：比字符下划线长一点，填空不觉得挤 */
+      var w = (Math.max(2.4, cnt * 0.8)).toFixed(2);
+      out += '<span class="md-fill" data-n="' + cnt + '" style="width:' + w + 'em"></span>';
+    } else {
+      out += text.slice(i, j);
+    }
+    i = j;
+  }
+  return out;
+}
+
 function makeInline(ctx){
   var opts = ctx.opts;
   var mathOn = opts.math !== false;
@@ -5135,10 +5201,15 @@ function makeInline(ctx){
       var href = url.indexOf('www.') === 0 ? 'http://' + url : url;
       return put('<a href="' + attr(safeUrl(href)) + '" target="_blank" rel="noopener">' + url + '</a>') + trail;
     });
+    /* 11b. 填空下划线：____ → 等宽答题空线（必须在强调之前，否则会被 __ 强调吃掉） */
+    text = blankRuns(text);
     /* 12. 强调 */
     text = text.replace(/\*\*\*(?=\S)([\s\S]*?\S)\*\*\*/g, '<strong><em>$1</em></strong>');
     text = text.replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>');
     text = text.replace(/(^|[^*\w])\*(?=\S)([^*]*?\S)\*(?!\*)/g, '$1<em>$2</em>');
+    /* __…__ 加粗：只在两侧贴着 ASCII 字母数字时还能生效（__bold__、a__b__c）；
+       中文里的连续下划线已经被上面的 blankRuns 排成答题空线，走不到这里。
+       新文档的加粗统一写 **…**。 */
     text = text.replace(/__(?=\S)([\s\S]*?\S)__/g, '<strong>$1</strong>');
     text = text.replace(/(^|[\s(（])_(?=\S)([^_]*?\S)_(?=[\s)）.,!?，。！？]|$)/g, '$1<em>$2</em>');
     text = text.replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>');
