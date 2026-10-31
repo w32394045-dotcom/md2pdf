@@ -145,6 +145,12 @@ make the browser load them, so keep untrusted documents offline. Intended for do
   offline in 7 languages, and carries the same switchable footer watermark. Use it when the thing to print
   is images rather than Markdown.
 
+- **[pagepicker](https://github.com/w32394045-dotcom/pagepicker)** — [pagerange.xszx.cc.cd](https://pagerange.xszx.cc.cd/) ·
+  the print page-range builder for the same ecosystem: tell it the document's page count, light up the pages
+  you want on the heat-map overview (or type `1-5, 8, 10-13`), and copy the string straight into the print
+  dialog's *Pages / Page range* field. Built for printers without a duplexer — it hands you the odd side and
+  the even side as two separate strings, so you print one side, flip the stack, print the other. Runs fully
+  offline in one HTML file, in 7 languages, and carries the same switchable footer.
 ## Licence
 
 [MIT](LICENSE) © 2026 w32394045-dotcom
