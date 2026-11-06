@@ -145,6 +145,14 @@ make the browser load them, so keep untrusted documents offline. Intended for do
   offline in 7 languages, and carries the same switchable footer watermark. Use it when the thing to print
   is images rather than Markdown.
 
+- **[booklet](booklet/)** — the companion **Booklet Printer** in this same repository: load any PDF, fold-impose it
+  two-up for saddle stitching (A4 → A5, A3 → A4), and print it in three passes straight from the browser —
+  front sides, flip the whole stack, back sides, then the separate jacket sheet last. A **centre-gutter slider**
+  reserves space around the fold, **auto-split** turns thick documents into several booklets, an optional
+  **custom cover PDF** prints on the jacket (page 1 = front cover, page 2 = back cover), and **sheet thumbnails**
+  show which page lands on which half. Rendering uses inlined PDF.js, the file never leaves the browser, printed
+  output carries no watermark, and the UI has the same 7 languages. Open [md2pdf.xszx.cc.cd/booklet](https://md2pdf.xszx.cc.cd/booklet).
+
 - **[pagepicker](https://github.com/w32394045-dotcom/pagepicker)** — [pagerange.xszx.cc.cd](https://pagerange.xszx.cc.cd/) ·
   the print page-range builder for the same ecosystem: tell it the document's page count, light up the pages
   you want on the heat-map overview (or type `1-5, 8, 10-13`), and copy the string straight into the print
