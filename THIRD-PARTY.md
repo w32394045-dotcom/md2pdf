@@ -49,16 +49,3 @@ SOFTWARE.
 | KaTeX | 未引入 | 要正确显示必须带自己的 CSS 和 ~60 个字体文件（约 1MB），单文件离线工具塞不进去；只取它的 MathML 输出则体积翻倍但效果不更好 |
 | MathJax | 未引入 | 完整包 1.3MB 以上，对一个单文件小工具过重 |
 | mhchem | 未引入 | 它是 KaTeX 扩展；本项目用一个几十行的 `\ce{}` 轻量转换覆盖中学常见写法 |
-
-## PDF.js (booklet printer)
-
-- [PDF.js](https://mozilla.github.io/pdf.js/) 3.11.174 — Apache License 2.0. Inlined unmodified
-  (library + worker, from the Mozilla PDF.js distribution) into `booklet/index.html`; it renders the source
-  PDF pages to canvas so the browser can impose and print them directly. The Apache-2.0 notice and project
-  link are kept inside the built file.
-
-## pdf-lib (booklet printer)
-
-- [pdf-lib](https://pdf-lib.js.org/) 1.17.1 — MIT License. Inlined unmodified into `booklet/index.html`; used by
-  the default vector print mode to copy the source PDF page objects onto the imposed sheet pages (two pages per
-  sheet, reordered, scaled) without rasterising them. The MIT notice is kept inside the built file.
