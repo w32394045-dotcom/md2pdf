@@ -1,4 +1,4 @@
-name: booklet
+﻿name: booklet
 
 on:
   push:
@@ -18,4 +18,5 @@ jobs:
         with:
           node-version: '20'
       - name: Validate booklet single-file build
-        run: node booklet/check.mjs
+        run: node booklet/check.cjs
+
