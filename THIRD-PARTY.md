@@ -56,3 +56,9 @@ SOFTWARE.
   (library + worker, from the Mozilla PDF.js distribution) into `booklet/index.html`; it renders the source
   PDF pages to canvas so the browser can impose and print them directly. The Apache-2.0 notice and project
   link are kept inside the built file.
+
+## pdf-lib (booklet printer)
+
+- [pdf-lib](https://pdf-lib.js.org/) 1.17.1 — MIT License. Inlined unmodified into `booklet/index.html`; used by
+  the default vector print mode to copy the source PDF page objects onto the imposed sheet pages (two pages per
+  sheet, reordered, scaled) without rasterising them. The MIT notice is kept inside the built file.
