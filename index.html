@@ -259,10 +259,23 @@ button,input,select,textarea{font-family:inherit}
 #previewScroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:14px}
 @media (max-width:899px){#previewScroll{padding:10px}}
 
-/* 预览区里的文档纸面：用 docCss 的变量，保证「预览 = 打印 = 导出」三者一致 */
+/* 预览区里的文档纸面：宽度 = 真实打印正文宽度（纸张宽 - 左右页边距）。
+   以前这里固定 860px 阅读宽度，比 A4 正文宽，于是「预览放得下、打印被裁掉」。
+   现在两边同宽，换行位置一致；窗口放不下时由 --preview-zoom 整页缩放（applyPreviewGeometry）。
+   手机竖屏退回流式宽度（字太小没法看），打印仍按页宽排版。 */
 .markdown-body{
-  max-width:860px;margin:0 auto;padding:26px 24px 60px;background:var(--panel);
-  border:1px solid var(--line);border-radius:var(--radius);
+  max-width:none;width:calc(var(--doc-page-w,812px) + 50px);margin:0 auto;padding:26px 24px 60px;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+}
+#previewBox{width:calc((var(--doc-page-w,812px) + 50px) * var(--preview-zoom,1));margin:0 auto}
+@media screen{ #preview{zoom:var(--preview-zoom,1)} }
+@media (max-width:640px){
+  .markdown-body{width:auto;max-width:100%}
+  #previewBox{width:auto}
+  #preview{zoom:1}
+  /* 手机上放不下的自定义 HTML 块（v10 按打印页宽缩过）在块内横滑，
+     别把整页撑出横向滚动条 */
+  .md-render{overflow-x:auto}
 }
 
 /* ---------- 确认弹窗 ---------- */
@@ -292,7 +305,9 @@ button,input,select,textarea{font-family:inherit}
   .markdown-body{
     max-width:none !important;margin:0 !important;padding:0 !important;border:0 !important;
     border-radius:0 !important;background:#fff !important;box-shadow:none !important;
+    width:auto !important;zoom:1 !important;
   }
+  #previewBox{width:auto !important;margin:0 !important}
 }
 
 /* ---------- 提示条 ---------- */
@@ -451,6 +466,8 @@ body.show-files .editor-pane,body.show-files .preview-pane{display:none !importa
 }
 .table-wrap{overflow-x:auto;margin:1em 0}
 .markdown-body table{border-collapse:collapse;width:100%;font-size:.95em}
+/* v10：超宽表格由 fitOverflow() 加 .md-tbl-tight 收紧内边距；放 docCss 里，导出的 HTML 同样生效 */
+.markdown-body .md-tbl-tight th,.markdown-body .md-tbl-tight td{padding:.26em .36em}
 .markdown-body th,.markdown-body td{border:1px solid var(--doc-line);padding:.5em .72em;vertical-align:top;background:color-mix(in srgb,var(--doc-bg) calc(var(--doc-surface,1)*100%),transparent)}
 .markdown-body thead th{background:var(--doc-quote);background:color-mix(in srgb,var(--doc-quote) calc(var(--doc-surface,1)*100%),transparent);font-weight:600}
 .markdown-body img{max-width:100%;height:auto;border-radius:8px}
@@ -1244,7 +1261,7 @@ body {
     <textarea id="editor" spellcheck="false" placeholder="在这里写 Markdown，或点上面的「打开」选一个 .md 文件…"></textarea>
   </section>
   <section class="pane preview-pane" id="panePreview">
-    <div id="previewScroll"><article class="markdown-body" id="preview"></article></div>
+    <div id="previewScroll"><div id="previewBox"><article class="markdown-body" id="preview"></article></div></div>
   </section>
   <section class="files-pane" id="paneFiles">
     <div class="files-head">
@@ -3675,16 +3692,21 @@ var TEX_SYM = {
   leq:'≤', le:'≤', geq:'≥', ge:'≥', neq:'≠', ne:'≠', equiv:'≡', approx:'≈',
   sim:'∼', simeq:'≃', cong:'≅', propto:'∝', asymp:'≍', doteq:'≐', models:'⊨',
   perp:'⊥', parallel:'∥', mid:'∣', nmid:'∤', subset:'⊂', subseteq:'⊆',
+  subsetneq:'⊊', subsetneqq:'⫋', supsetneq:'⊋', supsetneqq:'⫌',
+  nsubset:'⊄', nsupset:'⊅', nsubseteq:'⊈', nsupseteq:'⊉',
   supset:'⊃', supseteq:'⊇', sqsubset:'⊏', sqsupset:'⊐', in:'∈', notin:'∉',
   ni:'∋', notni:'∌', prec:'≺', succ:'≻', ll:'≪', gg:'≫',
   /* 箭头 */
   to:'→', gets:'←', rightarrow:'→', leftarrow:'←', leftrightarrow:'↔',
   Rightarrow:'⇒', Leftarrow:'⇐', Leftrightarrow:'⇔', implies:'⟹', iff:'⟺',
+  Longrightarrow:'⟹', Longleftrightarrow:'⟺', Longleftarrow:'⟸',
+  nRightarrow:'⇏', nLeftarrow:'⇍', nLeftrightarrow:'⇎',
   mapsto:'↦', longrightarrow:'⟶', longleftarrow:'⟵', hookrightarrow:'↪',
   uparrow:'↑', downarrow:'↓', updownarrow:'↕', nearrow:'↗', searrow:'↘',
   /* 其他符号 */
   infty:'∞', partial:'∂', nabla:'∇', forall:'∀', exists:'∃', nexists:'∄',
   emptyset:'∅', varnothing:'∅', cup:'∪', cap:'∩', setminus:'∖', smallsetminus:'∖',
+  complement:'∁',
   wedge:'∧', vee:'∨', land:'∧', lor:'∨', neg:'¬', lnot:'¬',
   ldots:'…', dots:'…', cdots:'⋯', vdots:'⋮', ddots:'⋱',
   angle:'∠', therefore:'∴', because:'∵', prime:'′', hbar:'ℏ', ell:'ℓ',
@@ -4050,8 +4072,9 @@ function texParse(tokens, display){
         return '<mi mathvariant="normal" style="font-style:normal">'
                + escapeHtml(name) + '</mi>';
       default:
-        /* 未知命令：按字面显示，不丢内容 */
-        return '<mi mathvariant="normal" style="font-style:normal">' + escapeHtml('\\' + name) + '</mi>';
+        /* 未知命令：内容不丢，但标红 —— 以前静默按字面印黑字，用户打印前根本发现不了 */
+        return '<mi mathvariant="normal" mathcolor="#c00" style="font-style:normal;color:#c00">'
+               + escapeHtml('\\' + name) + '</mi>';
     }
   }
 
@@ -6769,6 +6792,7 @@ function buildStandaloneHtml(o){
       });
       if (state.toc) buildToc();
       applyDecorations();
+      refreshFit();                 /* v10：超宽公式/表格缩进纸里（预览隐藏时只记 pending） */
     } catch (err){
       preview.innerHTML = '<p style="color:#c00">' + escapeHtml(t('解析出错：{0}', err && err.message || err)) + '</p>';
     }
@@ -6977,6 +7001,7 @@ function buildStandaloneHtml(o){
     root.setProperty('--doc-author-text-alpha', alphaPct(state.authorTextAlpha));
     root.setProperty('--doc-paged-alpha', alphaPct(state.pagedBgAlpha));
     pageRule.textContent = '@page{size:' + state.paper + ';margin:' + MARGINS[state.margins] + '}';
+    applyPreviewGeometry();          /* v10：预览纸面跟着纸张/页边距走，保证与打印同宽 */
     document.body.classList.toggle('link-url', !!state.linkUrl);
     document.querySelectorAll('.seg').forEach(function(seg){
       var k = seg.getAttribute('data-key');
@@ -7000,7 +7025,214 @@ function buildStandaloneHtml(o){
     syncDecorAlphaUI();
     applyAvatar();
     applySetTab(state.settingsTab);
+    if (preview.firstChild) scheduleFit();   /* v10：字号/字体/纸张变了，重新适配 */
   }
+
+  /* =====================================================================
+     v10：预览纸面 = 打印正文宽度；超宽公式 / 表格 / 自定义块自动缩进纸里
+     背景（用户报的「打印不完」）：浏览器打印按「纸张宽 - 左右页边距」排版，
+     而以前预览纸面是固定 860px 的阅读宽度。两边宽度不一样，于是预览里放得下
+     的公式、表格，打印时被裁在纸外。这里做四件事：
+       1. 预览纸面宽度 = 真实打印正文宽度（A4 210-16×2=178mm 等），换行位置与打印一致；
+       2. 窗口放不下时整页 zoom 缩放，纸面不横向滚动（手机竖屏退回流式宽度）；
+       3. MathML 不能折行、表格最小宽度也压不下去时，按页宽等比缩字号，缩到下限
+          还超就整体 zoom —— 宁可小一点，也不许印不全；
+       4. 比一页还高的公式缩到一页高、图片按页高等比缩，表格允许跨页 ——
+          否则 page-break-inside:avoid 会把它们整块裁掉。
+     测量统一用布局 px（mm × 96/25.4），和打印引擎同一套坐标，且不受 zoom 影响。
+     ===================================================================== */
+  var MM2PX = 96 / 25.4;
+  var PAPER_MM = { A4:[210, 297], A5:[148, 210], Letter:[215.9, 279.4] };
+  var PAGE_MARGIN_MM = { narrow:[12, 10], normal:[18, 16], wide:[24, 20] };   /* [上下, 左右] */
+  function pageBoxPx(){
+    var paper = PAPER_MM[state.paper] || PAPER_MM.A4;
+    var mg = PAGE_MARGIN_MM[state.margins] || PAGE_MARGIN_MM.normal;
+    return { w:(paper[0] - mg[1] * 2) * MM2PX, h:(paper[1] - mg[0] * 2) * MM2PX };
+  }
+  function roundPx(v){ return Math.round(v * 100) / 100; }
+  /* 预览正文比打印正文再窄 1px：避开 clientWidth 取整（673 vs 672.76）导致「量出来刚好
+     差半像素」的假溢出；同时保证预览里排得下的内容，打印一定排得下。 */
+  function previewPageW(){ return pageBoxPx().w - 1; }
+  function paperOuterPx(){ return previewPageW() + 50; }   /* 正文 + 左右 padding 24×2 + 边框 1×2 */
+
+  /* 预览缩放比：放得下就是 1；放不下就缩到窗口宽；0.42 以下不再缩（再窄就横向滚动） */
+  function applyPreviewZoom(){
+    var pane = $('#previewScroll');
+    var avail = pane ? pane.clientWidth - 28 : 0;         /* 减去 #previewScroll 左右 padding 14 */
+    var outer = paperOuterPx();
+    var z = 1;
+    if (avail > 40 && avail < outer - 1) z = Math.max(0.42, Math.floor(avail / outer * 1000) / 1000);
+    document.documentElement.style.setProperty('--preview-zoom', String(z));
+  }
+  function applyPreviewGeometry(){
+    document.documentElement.style.setProperty('--doc-page-w', roundPx(previewPageW()) + 'px');
+    applyPreviewZoom();
+  }
+
+  /* -------- fitOverflow：把超宽内容缩进纸里（宁可小一点，也不许印不全） --------
+     做法：量「自然宽度」（元素内容实际需要多宽），按页宽算出 zoom 比例。
+     为什么不缩字号：块级元素/表格的 scrollWidth 有「容器宽度」这个地板，缩字号时
+     永远压不到目标以下，会把本来放得下的东西全缩一遍（踩过）。zoom 一次算准，
+     而且打印里 zoom 是布局缩放，不是视觉 transform，分页/换行都正确。 */
+  var fitTouched = [];        /* 记下改过哪些元素/属性，换纸张、换字号时先还原再重算 */
+  function fitSet(el, prop, val){
+    fitTouched.push([el, prop, el.style[prop]]);
+    el.style[prop] = val;
+  }
+  function fitClass(el, cls){
+    if (el.classList.contains(cls)) return;
+    el.classList.add(cls);
+    fitTouched.push([el, '@' + cls, '']);
+  }
+  function resetFit(){
+    for (var i = fitTouched.length - 1; i >= 0; i--){
+      var t = fitTouched[i];
+      if (t[1].charAt(0) === '@') t[0].classList.remove(t[1].slice(1));
+      else t[0].style[t[1]] = t[2];
+    }
+    fitTouched = [];
+  }
+  var fitLast = { math:0, table:0, inline:0, zoom:0, tall:0 };
+  function fitOverflow(){
+    if (!preview || !preview.firstChild) return fitLast;
+    resetFit();
+    fitLast = { math:0, table:0, inline:0, zoom:0, tall:0 };
+    var box = pageBoxPx(), H = box.h;
+    var pcs = getComputedStyle(preview);
+    var contentW = preview.clientWidth - parseFloat(pcs.paddingLeft) - parseFloat(pcs.paddingRight);
+    if (!(contentW > 80)) return fitLast;      /* 预览隐藏/太窄：量不出来，等切到预览再算 */
+    /* 目标宽：不超过屏幕正文宽（整数像素），也不超过打印正文宽 */
+    var W = Math.max(contentW, box.w - 1.5) - 0.5;
+    function zoomFit(el, nat){
+      if (!(nat > W + 0.5)) return false;
+      fitSet(el, 'zoom', Math.max(0.3, (W / nat) * 0.995).toFixed(4));
+      return true;
+    }
+
+    /* 1) 行间公式：MathML 不能折行。超宽按页宽缩；比一页还高也缩（整块跨页会被裁掉） */
+    var i, el, els = preview.querySelectorAll('.math-display');
+    for (i = 0; i < els.length; i++){
+      el = els[i];
+      var nw = el.scrollWidth > el.clientWidth + 1 ? el.scrollWidth : 0;
+      var nh = el.scrollHeight > H * 0.98 ? el.scrollHeight : 0;
+      if (nw || nh){
+        var z = 1;
+        if (nw) z = Math.min(z, W / nw);
+        if (nh) z = Math.min(z, (H * 0.98) / nh);
+        fitSet(el, 'zoom', Math.max(0.3, z * 0.995).toFixed(4));
+        if (nw) fitLast.math++;
+        if (nh) fitLast.tall++;
+      }
+    }
+
+    /* 2) 表格：先紧内边距，仍超页宽就按比例缩字号（表格会重新排列宽、换行，比整体 zoom 可靠）
+       注意：不要给 table 加 zoom —— 表宽是 width:100%，zoom 越小容器内部可用宽度越大，
+       表会"长回去"，越缩越差 2%（实测踩过）。 */
+    els = preview.querySelectorAll('.table-wrap');
+    for (i = 0; i < els.length; i++){
+      var wrap = els[i], table = wrap.querySelector('table');
+      if (!table) continue;
+      if (table.offsetWidth > W + 0.5) fitClass(wrap, 'md-tbl-tight');
+      var tbase = parseFloat(getComputedStyle(table).fontSize) || 15;
+      var tg = 0;
+      while (tg++ < 10 && table.offsetWidth > W + 0.5){
+        var tcur = parseFloat(getComputedStyle(table).fontSize) || tbase;
+        var tnext = Math.max(4, tcur * (W / table.offsetWidth) * 0.995);
+        if (tnext >= tcur - 0.02) break;
+        fitSet(table, 'fontSize', tnext.toFixed(2) + 'px');
+        if (tnext <= 4) break;
+      }
+      if (table.offsetWidth > W + 0.5){
+        fitSet(table, 'zoom', Math.max(0.3, (W / table.offsetWidth) * 0.995).toFixed(4));
+        fitLast.zoom++;
+      }
+      if (table.offsetWidth * (parseFloat(table.style.zoom) || 1) > W + 0.5) fitLast.table++;
+      if (table.offsetHeight * (parseFloat(table.style.zoom) || 1) > H * 0.98){
+        fitSet(table, 'breakInside', 'auto');   /* 比一页高：允许跨页，别整块裁掉 */
+        fitLast.tall++;
+      }
+    }
+
+    /* 3) 行内公式：只缩「单个比整行还宽」的公式（行内元素整体 zoom 会错行，不能这么干）
+       坑：MathML 的 <math> 是 MathMLElement，**没有 offsetWidth**，只能拿 rect 量，
+       而 rect 是乘过预览 zoom 的视觉宽，要除以 zoom 才是排版宽。 */
+    var pz = parseFloat(getComputedStyle(preview).zoom) || 1;
+    els = preview.querySelectorAll('math');
+    for (i = 0; i < els.length; i++){
+      el = els[i];
+      if (el.closest('.math-display') || el.closest('.table-wrap')) continue;
+      var iw = el.getBoundingClientRect().width / pz;
+      if (iw <= W + 0.5) continue;
+      var ibase = parseFloat(getComputedStyle(el).fontSize) || 16;
+      var ig = 0;
+      while (ig++ < 8 && iw > W + 0.5){
+        var icur = parseFloat(getComputedStyle(el).fontSize) || ibase;
+        var inext = Math.max(ibase * 0.5, icur * (W / iw) * 0.995);
+        if (inext >= icur - 0.05) break;
+        fitSet(el, 'fontSize', inext.toFixed(2) + 'px');
+        iw = el.getBoundingClientRect().width / pz;
+      }
+      fitLast.inline++;
+    }
+
+    /* 4) 比一页高的图 / 内联 SVG：按页高等比缩（图片不能分页，印不下只能裁） */
+    els = preview.querySelectorAll('img');
+    for (i = 0; i < els.length; i++){
+      el = els[i];
+      if (el.offsetHeight > H * 0.98){
+        fitSet(el, 'maxHeight', (H * 0.98).toFixed(1) + 'px');
+        if (!el.style.width) fitSet(el, 'width', 'auto');
+        fitLast.tall++;
+      }
+    }
+    els = preview.querySelectorAll('.md-svg > svg');
+    for (i = 0; i < els.length; i++){
+      el = els[i];
+      if (el.offsetHeight > H * 0.98 && el.getAttribute('height')){
+        fitSet(el, 'maxHeight', (H * 0.98).toFixed(1) + 'px');
+        fitLast.tall++;
+      }
+    }
+
+    /* 5) 兜底：其它直接子块（自定义 HTML、写死宽度的东西）整体缩 */
+    els = preview.children;
+    for (i = 0; i < els.length; i++){
+      el = els[i];
+      if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') continue;
+      if (el.classList.contains('math-display') || el.classList.contains('table-wrap')) continue;
+      if (el.tagName === 'PRE') continue;     /* 屏幕上的滚动条给编辑看；打印时靠折行 */
+      if (el.scrollWidth > el.clientWidth + 1 && zoomFit(el, el.scrollWidth)) fitLast.zoom++;
+    }
+
+    preview.setAttribute('data-fit', JSON.stringify(fitLast));
+    return fitLast;
+  }
+
+  /* 预览/设置变化后统一刷新。预览没显示时先记下，等切到预览再算（隐藏时量不到宽度） */
+  var fitPending = true, fitTimer = null;
+  function refreshFit(){
+    if (!preview.firstChild) return;
+    if (!previewVisible()){ fitPending = true; return; }
+    applyPreviewGeometry();
+    fitOverflow();
+    fitPending = false;
+  }
+  function scheduleFit(){
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(refreshFit, 80);
+  }
+  /* 图片解码完才有真实高度（大图 / 表格里的图会影响是否超页）；load 不冒泡，用捕获 */
+  preview.addEventListener('load', function(ev){
+    var el = ev.target;
+    if (el && el.tagName === 'IMG') scheduleFit();
+  }, true);
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then){
+    document.fonts.ready.then(function(){ if (fitPending) scheduleFit(); });
+  }
+  if (window.ResizeObserver){
+    try { new ResizeObserver(function(){ applyPreviewZoom(); }).observe($('#previewScroll')); } catch (e) {}
+  }
+  window.addEventListener('resize', function(){ applyPreviewZoom(); });
 
   /* -------- 设置面板内部 Tab --------
      只切界面显示；state.settingsTab 跟 cfg 一起存，刷新后还停在上次那个 Tab。
@@ -8477,6 +8709,7 @@ function buildStandaloneHtml(o){
     }
 
     toast(t('正在打包…'));
+    refreshFit();                   /* v10：导出的 HTML 里也带上「缩到页宽」的结果 */
     var bodyHtml = preview.innerHTML;
     /* 头像也是 blob:，不换的话导出物里头像打不开 */
     if (avatarUrl && bodyHtml.indexOf(avatarUrl) >= 0){
@@ -8595,7 +8828,7 @@ function buildStandaloneHtml(o){
     $('#panePreview').classList.toggle('on', pane === 'preview');
     $('#paneFiles').classList.toggle('on', showFiles);
     if (showFiles) renderFiles();
-    else if (pane === 'preview') renderIfDirty();
+    else if (pane === 'preview'){ renderIfDirty(); refreshFit(); }
   }
   /* 注意：回调参数别叫 t —— 会把全局取词函数 t() 遮住 */
   document.querySelectorAll('.tab').forEach(function(tabEl){
@@ -8742,13 +8975,14 @@ function buildStandaloneHtml(o){
     }
     flushRender();
     saveSnapshot({ silent:true }).catch(function(){});
+    refreshFit();                   /* v10：打印前最后校正一次，纸面上看到的就是印出来的 */
     if (typeof window.print !== 'function'){ toast(t('当前浏览器不支持打印，请用 Chrome / Edge 打开')); return; }
     var old = setPrintTitle();
     try { window.print(); }   /* 同步调用，保住用户手势（部分安卓浏览器要求） */
     finally { setTimeout(function(){ document.title = old; }, 1500); }
   });
   /* Ctrl+P 绕过按钮时也要让文件名跟着文档标题走 */
-  window.addEventListener('beforeprint', function(){ if (document.title !== docTitle()) setPrintTitle(); });
+  window.addEventListener('beforeprint', function(){ if (document.title !== docTitle()) setPrintTitle(); refreshFit(); });
 
   $('#btnHtml').addEventListener('click', function(){
     saveSnapshot({ silent:true }).catch(function(){});

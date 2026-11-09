@@ -26,10 +26,11 @@ not follow you between entries — pick one and stick with it.
 - **Markdown rendering** — headings, lists, tables, quotes, footnotes, task lists, strikethrough, `==highlight==`,
   code blocks with syntax highlighting, and CJK soft wrapping.
 - **Print typesetting** — A4 / Letter / A5, three margin presets. **Print / Save PDF** → system dialog → *Save as PDF*.
+  - **Nothing gets clipped** — the preview page is exactly as wide as the real printed text area (178 mm on A4 with normal margins), so line breaks match the printout; when the window is too narrow the page is scaled down instead of scrolling sideways. Over-wide display formulas, tables and fixed-width custom HTML shrink to the page width, very tall formulas / images shrink to one page, tall tables may break across pages.
 - **Math** — the inlined [Temml](https://temml.org) 0.14 engine (MIT) converts LaTeX to MathML:
   - covers most of amsmath / amssymb: `\lesssim` `\geqslant` `\boxed` `\cancel` `\overrightarrow` `\operatorname` `\color` `\begin{aligned}` …
   - renders through native browser MathML, so **no font binaries** are shipped; print and export stay vector
-  - anything Temml rejects falls back to a small built-in parser, which shows the command literally instead of dropping it
+  - anything Temml rejects falls back to a small built-in parser (now covering \complement, \subsetneq, \Longrightarrow and friends); commands it still does not know are **shown in red** instead of a silent literal backslash — content is never dropped
 - **Chemistry** — `\ce{…}` and `\pu{…}` without mhchem:
   `\ce{2H2 + O2 -> 2H2O}`, `\ce{N2(g) + 3H2(g) <=> 2NH3(g)}`, `\ce{2H2O2 ->[MnO2] 2H2O + O2}`,
   `\ce{CuSO4.5H2O}`, `\ce{SO4^2-}`, `\pu{1.0e-3 mol/L}`.
