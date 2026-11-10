@@ -27,6 +27,11 @@ not follow you between entries — pick one and stick with it.
   code blocks with syntax highlighting, and CJK soft wrapping.
 - **Print typesetting** — A4 / Letter / A5, three margin presets. **Print / Save PDF** → system dialog → *Save as PDF*.
   - **Nothing gets clipped** — the preview page is exactly as wide as the real printed text area (178 mm on A4 with normal margins), so line breaks match the printout; when the window is too narrow the page is scaled down instead of scrolling sideways. Over-wide display formulas, tables and fixed-width custom HTML shrink to the page width, very tall formulas / images shrink to one page, tall tables may break across pages.
+- **Print colours — your choice** — three modes in *Settings → Print & export*: **As seen** (default) keeps
+  exactly the colours you see on screen; **Balanced** keeps quote bars, table lines and fills as designed and only
+  darkens text accents such as links (same hue) until they read on paper; **Max readability** switches the whole
+  palette to ink (the old behaviour). Dark themes always print as black text on white paper, whichever mode you pick,
+  and an exported HTML prints exactly like the app — the print-colour CSS is baked into it.
 - **Math** — the inlined [Temml](https://temml.org) 0.14 engine (MIT) converts LaTeX to MathML:
   - covers most of amsmath / amssymb: `\lesssim` `\geqslant` `\boxed` `\cancel` `\overrightarrow` `\operatorname` `\color` `\begin{aligned}` …
   - renders through native browser MathML, so **no font binaries** are shipped; print and export stay vector
@@ -37,7 +42,8 @@ not follow you between entries — pick one and stick with it.
 - **Table of contents** — optional, depth H1 … all levels.
 - **Accent colour** — seven presets, a wheel you can drag anywhere, a typed hex value or the brightness slider.
   It drives links, the quote bar and tint, table header tint, heading rules, table borders, `==highlight==`, task
-  boxes and the UI's own buttons / focus rings. Printing converts it to a print-safe shade automatically.
+  boxes and the UI's own buttons / focus rings. What printing does with it is up to the **Print colours** setting:
+  *As seen* leaves it untouched, *Balanced* darkens only text accents, *Max readability* converts everything to ink.
 - **Page background** — upload an image or pick one from the thumbnail history, then crop it in the built-in
   frosted-glass cropper: A4 / A5 / Letter / square / circle (A4 and A5 share the ratio; only the output resolution
   differs), drag to move, wheel or pinch to zoom, rendered at device pixel ratio, plus **Keep original** to skip
